@@ -1,6 +1,3 @@
-# This workflow will build a Swift project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
-
 name: Build and Release
 
 on:
@@ -21,12 +18,20 @@ jobs:
 
     - name: Build
       run: |
-        xcodebuild clean build -project MacMusicPlayer.xcodeproj -scheme MacMusicPlayer -destination 'platform=macOS' CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+        xcodebuild clean archive -project MacMusicPlayer.xcodeproj -scheme MacMusicPlayer -archivePath $PWD/build/MacMusicPlayer.xcarchive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+        
+    - name: Create app
+      run: |
+        xcodebuild -exportArchive -archivePath $PWD/build/MacMusicPlayer.xcarchive -exportOptionsPlist exportOptions.plist -exportPath $PWD/build/export
+
+    - name: Prepare for DMG
+      run: |
+        mkdir -p dist
+        mv build/export/MacMusicPlayer.app dist/
+        ls -R dist
 
     - name: Create DMG
       run: |
-        mkdir -p dist
-        mv build/Release/MacMusicPlayer.app dist/
         hdiutil create -volname MacMusicPlayer -srcfolder dist -ov -format UDZO dist/MacMusicPlayer.dmg
 
     - name: Create Release
