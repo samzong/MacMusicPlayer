@@ -9,20 +9,19 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var playerManager: PlayerManager
-
+    
     var body: some View {
-        VStack {
-            if let track = playerManager.currentTrack {
-                Text(track.title)
-                    .font(.title)
-                Text(track.artist)
-                    .font(.subheadline)
-            } else {
-                Text("No track selected")
-                    .font(.title)
-            }
+        VStack(alignment: .leading, spacing: 4) {
+            Text(playerManager.currentTrack?.title ?? "No track selected")
+                .font(.system(size: 14, weight: .medium))
+                .lineLimit(1)
             
-            HStack {
+            Text(playerManager.currentTrack?.artist ?? "Unknown Artist")
+                .font(.system(size: 12))
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+            
+            HStack(spacing: 16) {
                 Button(action: playerManager.playPrevious) {
                     Image(systemName: "backward.fill")
                 }
@@ -35,18 +34,17 @@ struct ContentView: View {
                     }
                 }) {
                     Image(systemName: playerManager.isPlaying ? "pause.fill" : "play.fill")
+                        .font(.system(size: 20))
                 }
                 
                 Button(action: playerManager.playNext) {
                     Image(systemName: "forward.fill")
                 }
             }
-            .padding()
-            .font(.largeTitle)
-            
-            Text("Playlist: \(playerManager.playlist.count) tracks")
-                .padding()
+            .padding(.top, 4)
         }
+        .padding(8)
+        .frame(width: 280)
     }
 }
 

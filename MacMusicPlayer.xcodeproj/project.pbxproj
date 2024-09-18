@@ -12,6 +12,7 @@
 		991C44502C9A9E0400F2BB76 /* Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C444F2C9A9E0400F2BB76 /* Track.swift */; };
 		991C44522C9A9E1600F2BB76 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C44512C9A9E1600F2BB76 /* ContentView.swift */; };
 		991C44542C9A9E2A00F2BB76 /* ControlOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C44532C9A9E2A00F2BB76 /* ControlOverlay.swift */; };
+		991C445D2C9AB7FA00F2BB76 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C445C2C9AB7FA00F2BB76 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +22,7 @@
 		991C444F2C9A9E0400F2BB76 /* Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Track.swift; sourceTree = "<group>"; };
 		991C44512C9A9E1600F2BB76 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		991C44532C9A9E2A00F2BB76 /* ControlOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlOverlay.swift; sourceTree = "<group>"; };
+		991C445C2C9AB7FA00F2BB76 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -45,6 +47,7 @@
 		991C442E2C9A9C6E00F2BB76 = {
 			isa = PBXGroup;
 			children = (
+				991C445C2C9AB7FA00F2BB76 /* AppDelegate.swift */,
 				991C444C2C9A9DD000F2BB76 /* Helpers */,
 				991C444B2C9A9DC700F2BB76 /* Views */,
 				991C444A2C9A9DBF00F2BB76 /* Models */,
@@ -171,6 +174,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				991C445D2C9AB7FA00F2BB76 /* AppDelegate.swift in Sources */,
 				991C44522C9A9E1600F2BB76 /* ContentView.swift in Sources */,
 				991C44542C9A9E2A00F2BB76 /* ControlOverlay.swift in Sources */,
 				991C443B2C9A9C6E00F2BB76 /* MacMusicPlayerApp.swift in Sources */,
@@ -306,6 +310,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MacMusicPlayer/MacMusicPlayer.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -315,6 +320,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MacMusicPlayer/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -334,6 +341,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MacMusicPlayer/MacMusicPlayer.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -343,6 +351,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MacMusicPlayer/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
