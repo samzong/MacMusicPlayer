@@ -9,7 +9,7 @@ import Foundation
 import AVFoundation
 import SwiftUI
 
-class PlayerManager: ObservableObject {
+class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published var playlist: [Track] = []
     @Published var currentTrack: Track? {
         didSet {
@@ -24,7 +24,8 @@ class PlayerManager: ObservableObject {
     private var player: AVAudioPlayer?
     private var currentIndex = 0
     
-    init() {
+    override init() {
+        super.init()
         loadSavedMusicFolder()
     }
     
@@ -78,21 +79,22 @@ class PlayerManager: ObservableObject {
     }
     
     func play() {
-            guard let track = currentTrack else {
-                print("No current track to play")
-                return
-            }
-            
-            do {
-                player = try AVAudioPlayer(contentsOf: track.url)
-                player?.play()
-                isPlaying = true
-                print("Started playing: \(track.title)")
-            } catch {
-                print("Could not create player for \(track.title): \(error)")
-            }
+        guard let track = currentTrack else {
+            print("No current track to play")
+            return
         }
         
+        do {
+            player = try AVAudioPlayer(contentsOf: track.url)
+            player?.delegate = self // 设置代理
+            player?.play()
+            isPlaying = true
+            print("Started playing: \(track.title)")
+        } catch {
+            print("Could not create player for \(track.title): \(error)")
+        }
+    }
+    
     func pause() {
         player?.pause()
         isPlaying = false
@@ -111,5 +113,12 @@ class PlayerManager: ObservableObject {
         currentIndex = (currentIndex - 1 + playlist.count) % playlist.count
         currentTrack = playlist[currentIndex]
         play()
+    }
+    
+    // AVAudioPlayerDelegate 方法
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        if flag {
+            playNext()
+        }
     }
 }
