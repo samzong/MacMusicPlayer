@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct MacMusicPlayerApp: App {
+    @StateObject private var playerManager = PlayerManager()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(playerManager)
         }
     }
 }

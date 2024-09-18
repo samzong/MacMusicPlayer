@@ -6,8 +6,21 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		991C443B2C9A9C6E00F2BB76 /* MacMusicPlayerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C443A2C9A9C6E00F2BB76 /* MacMusicPlayerApp.swift */; };
+		991C444E2C9A9DEE00F2BB76 /* PlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C444D2C9A9DEE00F2BB76 /* PlayerManager.swift */; };
+		991C44502C9A9E0400F2BB76 /* Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C444F2C9A9E0400F2BB76 /* Track.swift */; };
+		991C44522C9A9E1600F2BB76 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C44512C9A9E1600F2BB76 /* ContentView.swift */; };
+		991C44542C9A9E2A00F2BB76 /* ControlOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C44532C9A9E2A00F2BB76 /* ControlOverlay.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		991C44372C9A9C6E00F2BB76 /* MacMusicPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacMusicPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		991C443A2C9A9C6E00F2BB76 /* MacMusicPlayerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMusicPlayerApp.swift; sourceTree = "<group>"; };
+		991C444D2C9A9DEE00F2BB76 /* PlayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManager.swift; sourceTree = "<group>"; };
+		991C444F2C9A9E0400F2BB76 /* Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Track.swift; sourceTree = "<group>"; };
+		991C44512C9A9E1600F2BB76 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		991C44532C9A9E2A00F2BB76 /* ControlOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlOverlay.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,8 +45,13 @@
 		991C442E2C9A9C6E00F2BB76 = {
 			isa = PBXGroup;
 			children = (
+				991C444C2C9A9DD000F2BB76 /* Helpers */,
+				991C444B2C9A9DC700F2BB76 /* Views */,
+				991C444A2C9A9DBF00F2BB76 /* Models */,
+				991C44492C9A9DB300F2BB76 /* Managers */,
 				991C44392C9A9C6E00F2BB76 /* MacMusicPlayer */,
 				991C44382C9A9C6E00F2BB76 /* Products */,
+				991C443A2C9A9C6E00F2BB76 /* MacMusicPlayerApp.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -43,6 +61,38 @@
 				991C44372C9A9C6E00F2BB76 /* MacMusicPlayer.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		991C44492C9A9DB300F2BB76 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				991C444D2C9A9DEE00F2BB76 /* PlayerManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		991C444A2C9A9DBF00F2BB76 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				991C444F2C9A9E0400F2BB76 /* Track.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		991C444B2C9A9DC700F2BB76 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				991C44512C9A9E1600F2BB76 /* ContentView.swift */,
+				991C44532C9A9E2A00F2BB76 /* ControlOverlay.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		991C444C2C9A9DD000F2BB76 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -94,6 +144,8 @@
 			);
 			mainGroup = 991C442E2C9A9C6E00F2BB76;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 991C44382C9A9C6E00F2BB76 /* Products */;
 			projectDirPath = "";
@@ -119,6 +171,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				991C44522C9A9E1600F2BB76 /* ContentView.swift in Sources */,
+				991C44542C9A9E2A00F2BB76 /* ControlOverlay.swift in Sources */,
+				991C443B2C9A9C6E00F2BB76 /* MacMusicPlayerApp.swift in Sources */,
+				991C444E2C9A9DEE00F2BB76 /* PlayerManager.swift in Sources */,
+				991C44502C9A9E0400F2BB76 /* Track.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,6 +314,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MacMusicPlayer/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -284,6 +342,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MacMusicPlayer/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
