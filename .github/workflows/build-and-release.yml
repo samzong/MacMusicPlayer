@@ -1,0 +1,45 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
+    - name: Build
+      run: |
+        xcodebuild clean archive -project MacMusicPlayer.xcodeproj -scheme MacMusicPlayer -archivePath $PWD/build/MacMusicPlayer.xcarchive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+        
+    - name: Create app
+      run: |
+        xcodebuild -exportArchive -archivePath $PWD/build/MacMusicPlayer.xcarchive -exportOptionsPlist exportOptions.plist -exportPath $PWD/build/export
+
+    - name: Prepare for DMG
+      run: |
+        mkdir -p dist
+        mv build/export/MacMusicPlayer.app dist/
+        ls -R dist
+
+    - name: Create DMG
+      run: |
+        hdiutil create -volname MacMusicPlayer -srcfolder dist -ov -format UDZO dist/MacMusicPlayer.dmg
+
+    - name: Create Release and Upload Asset
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release create v${{ github.run_number }} \
+          --title "Release ${{ github.run_number }}" \
+          --notes "Release ${{ github.run_number }}" \
+          ./dist/MacMusicPlayer.dmg
+
