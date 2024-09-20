@@ -33,10 +33,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func setupMenu() {
         menu = NSMenu()
+        menu.minimumWidth = 200 // 设置固定宽
         
         // Current track info
         let trackInfoItem = NSMenuItem(title: "No selected", action: nil, keyEquivalent: "")
         trackInfoItem.isEnabled = false
+        trackInfoItem.view = NSView(frame: NSRect(x: 0, y: 0, width: 180, height: 20)) // 设置固定宽度的视图
+        let trackLabel = NSTextField(frame: NSRect(x: 10, y: 0, width: 160, height: 20))
+        trackLabel.isEditable = false
+        trackLabel.isBordered = false
+        trackLabel.backgroundColor = .clear
+        trackLabel.lineBreakMode = .byTruncatingTail // 文本过长时显示省略号
+        trackInfoItem.view?.addSubview(trackLabel)
+        
         menu.addItem(trackInfoItem)
         
         menu.addItem(NSMenuItem.separator())
@@ -97,8 +106,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func updateMenuItems() {
-        if let trackInfoItem = menu.item(at: 0) {
-            trackInfoItem.title = playerManager.currentTrack?.title ?? "No track selected"
+        if let trackInfoItem = menu.item(at: 0),
+           let trackLabel = trackInfoItem.view?.subviews.first as? NSTextField {
+            trackLabel.stringValue = playerManager.currentTrack?.title ?? "No track selected"
         }
         
         if let playPauseItem = menu.item(at: 2) {
