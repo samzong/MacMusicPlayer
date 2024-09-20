@@ -6,7 +6,9 @@
 //
 
 import Cocoa
+import MediaPlayer
 import SwiftUI
+import AVFoundation
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
@@ -26,6 +28,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         setupMenu()
+        setupRemoteCommandCenter()
     }
     
     func setupMenu() {
@@ -51,7 +54,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem.separator())
         
         // Reconfigure folder
-        menu.addItem(NSMenuItem(title: "Sources", action: #selector(reconfigureFolder), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Sources", action: #selector(reconfigureFolder), keyEquivalent: "s"))
         
         menu.addItem(NSMenuItem.separator())
         
@@ -61,6 +64,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Set up observers for player state changes
         NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("TrackChanged"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("PlaybackStateChanged"), object: nil)
+    }
+    
+    func setupRemoteCommandCenter() {
+        let commandCenter = MPRemoteCommandCenter.shared()
+        
+        commandCenter.playCommand.addTarget { [weak self] _ in
+            self?.playerManager.play()
+            return .success
+        }
+        
+        commandCenter.pauseCommand.addTarget { [weak self] _ in
+            self?.playerManager.pause()
+            return .success
+        }
+        
+        commandCenter.nextTrackCommand.addTarget { [weak self] _ in
+            self?.playerManager.playNext()
+            return .success
+        }
+        
+        commandCenter.previousTrackCommand.addTarget { [weak self] _ in
+            self?.playerManager.playPrevious()
+            return .success
+        }
     }
     
     @objc func toggleMenu() {

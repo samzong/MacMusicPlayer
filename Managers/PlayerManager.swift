@@ -8,6 +8,7 @@
 import Foundation
 import AVFoundation
 import SwiftUI
+import MediaPlayer
 
 class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published var playlist: [Track] = []
@@ -23,12 +24,15 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
     private var player: AVAudioPlayer?
     private var currentIndex = 0
-    
+    var audioEngine: AVAudioEngine!
+    var playerNode: AVAudioPlayerNode!
+
     override init() {
         super.init()
+        setupAudioEngine()
         loadSavedMusicFolder()
     }
-    
+
     private func loadSavedMusicFolder() {
         if let savedPath = UserDefaults.standard.string(forKey: "MusicFolderPath") {
             loadTracksFromMusicFolder(URL(fileURLWithPath: savedPath))
@@ -36,7 +40,7 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
             requestMusicFolderAccess()
         }
     }
-    
+
     func requestMusicFolderAccess() {
         DispatchQueue.main.async {
             let openPanel = NSOpenPanel()
@@ -53,7 +57,38 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
             }
         }
     }
-    
+
+    func setupAudioEngine() {
+        audioEngine = AVAudioEngine()
+        playerNode = AVAudioPlayerNode()
+        audioEngine.attach(playerNode)
+        let mainMixer = audioEngine.mainMixerNode
+        audioEngine.connect(playerNode, to: mainMixer, format: nil)
+        
+        do {
+            try audioEngine.start()
+        } catch {
+            print("Failed to start audio engine: \(error)")
+        }
+    }
+
+    func updateNowPlayingInfo() {
+        var nowPlayingInfo = [String: Any]()
+        
+        if let currentTrack = currentTrack {
+            nowPlayingInfo[MPMediaItemPropertyTitle] = currentTrack.title
+            nowPlayingInfo[MPMediaItemPropertyArtist] = currentTrack.artist
+            
+            if let player = player {
+                nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = player.duration
+                nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime
+                nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = player.isPlaying ? 1.0 : 0.0
+            }
+        }
+        
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+
     private func loadTracksFromMusicFolder(_ folderURL: URL) {
         do {
             let fileURLs = try FileManager.default.contentsOfDirectory(at: folderURL, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
@@ -77,7 +112,7 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
             print("Error accessing Music folder: \(error)")
         }
     }
-    
+
     func play() {
         guard let track = currentTrack else {
             print("No current track to play")
@@ -93,28 +128,36 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         } catch {
             print("Could not create player for \(track.title): \(error)")
         }
+        
+        updateNowPlayingInfo()
     }
-    
+
     func pause() {
         player?.pause()
         isPlaying = false
         print("Paused playback")
+        
+        updateNowPlayingInfo()
     }
-    
+
     func playNext() {
         guard !playlist.isEmpty else { return }
         currentIndex = (currentIndex + 1) % playlist.count
         currentTrack = playlist[currentIndex]
         play()
+        
+        updateNowPlayingInfo()
     }
-    
+
     func playPrevious() {
         guard !playlist.isEmpty else { return }
         currentIndex = (currentIndex - 1 + playlist.count) % playlist.count
         currentTrack = playlist[currentIndex]
         play()
+        
+        updateNowPlayingInfo()
     }
-    
+
     // AVAudioPlayerDelegate 方法
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         if flag {

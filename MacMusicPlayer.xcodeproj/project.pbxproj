@@ -25,9 +25,22 @@
 		991C445C2C9AB7FA00F2BB76 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		999217BB2C9D42B2008F5CC3 /* Exceptions for "MacMusicPlayer" folder in "MacMusicPlayer" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 991C44362C9A9C6E00F2BB76 /* MacMusicPlayer */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		991C44392C9A9C6E00F2BB76 /* MacMusicPlayer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				999217BB2C9D42B2008F5CC3 /* Exceptions for "MacMusicPlayer" folder in "MacMusicPlayer" target */,
+			);
 			path = MacMusicPlayer;
 			sourceTree = "<group>";
 		};
