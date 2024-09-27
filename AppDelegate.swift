@@ -24,7 +24,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let button = statusItem?.button {
             button.title = "🤡"
             button.target = self
-            button.action = #selector(toggleMenu)
         }
         
         setupMenu()
@@ -34,6 +33,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func setupMenu() {
         menu = NSMenu()
         menu.minimumWidth = 200 // 设置固定宽
+        menu.allowsContextMenuPlugIns = true
         
         // Current track info
         let trackInfoItem = NSMenuItem(title: "No selected", action: nil, keyEquivalent: "")
