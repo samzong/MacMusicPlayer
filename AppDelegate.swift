@@ -14,10 +14,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
     var popover: NSPopover?
     var playerManager: PlayerManager!
+    var sleepManager: SleepManager!
     var menu: NSMenu!
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         playerManager = PlayerManager()
+        sleepManager = SleepManager()
         
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
@@ -51,24 +53,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem.separator())
         
         // Play/Pause
-        let playPauseItem = NSMenuItem(title: "Play", action: #selector(togglePlayPause), keyEquivalent: "")
+        let playPauseItem = NSMenuItem(title: "播放", action: #selector(togglePlayPause), keyEquivalent: "")
         menu.addItem(playPauseItem)
         
         // Previous
-        menu.addItem(NSMenuItem(title: "Previous", action: #selector(playPrevious), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "上一首", action: #selector(playPrevious), keyEquivalent: ""))
         
         // Next
-        menu.addItem(NSMenuItem(title: "Next", action: #selector(playNext), keyEquivalent: ""))
-        
+        menu.addItem(NSMenuItem(title: "下一首", action: #selector(playNext), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         
         // Reconfigure folder
-        menu.addItem(NSMenuItem(title: "Sources", action: #selector(reconfigureFolder), keyEquivalent: "s"))
+        menu.addItem(NSMenuItem(title: "设置音乐源", action: #selector(reconfigureFolder), keyEquivalent: "s"))
+
+        // 防止休眠开关
+        let preventSleepItem = NSMenuItem(title: "防止 Mac 休眠", action: #selector(togglePreventSleep), keyEquivalent: "")
+        preventSleepItem.state = sleepManager.preventSleep ? .on : .off
+        menu.addItem(preventSleepItem)
         
         menu.addItem(NSMenuItem.separator())
         
         // Quit
-        menu.addItem(NSMenuItem(title: "Exit", action: #selector(quit), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "退出", action: #selector(quit), keyEquivalent: ""))
         
         // Set up observers for player state changes
         NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("TrackChanged"), object: nil)
@@ -108,11 +114,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func updateMenuItems() {
         if let trackInfoItem = menu.item(at: 0),
            let trackLabel = trackInfoItem.view?.subviews.first as? NSTextField {
-            trackLabel.stringValue = playerManager.currentTrack?.title ?? "No track selected"
+            trackLabel.stringValue = playerManager.currentTrack?.title ?? "未选择音乐源"
         }
         
         if let playPauseItem = menu.item(at: 2) {
-            playPauseItem.title = playerManager.isPlaying ? "Pause" : "Play"
+            playPauseItem.title = playerManager.isPlaying ? "暂停" : "播放"
         }
     }
     
@@ -138,5 +144,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @objc func quit() {
         NSApplication.shared.terminate(self)
+    }
+    @objc func togglePreventSleep() {
+        sleepManager.preventSleep.toggle()
+        if let preventSleepItem = menu.item(withTitle: "防止 Mac 休眠") {
+            preventSleepItem.state = sleepManager.preventSleep ? .on : .off
+        }
+    }
+        
+    // 添加这个方法来确保应用保持活跃状态
+    func applicationWillTerminate(_ aNotification: Notification) {
+        sleepManager.preventSleep = false
     }
 }

@@ -13,6 +13,7 @@
 		991C44522C9A9E1600F2BB76 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C44512C9A9E1600F2BB76 /* ContentView.swift */; };
 		991C44542C9A9E2A00F2BB76 /* ControlOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C44532C9A9E2A00F2BB76 /* ControlOverlay.swift */; };
 		991C445D2C9AB7FA00F2BB76 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C445C2C9AB7FA00F2BB76 /* AppDelegate.swift */; };
+		99C304BA2CABDEAB00D7B495 /* SleepManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99C304B92CABDEAB00D7B495 /* SleepManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,7 @@
 		991C44512C9A9E1600F2BB76 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		991C44532C9A9E2A00F2BB76 /* ControlOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlOverlay.swift; sourceTree = "<group>"; };
 		991C445C2C9AB7FA00F2BB76 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		99C304B92CABDEAB00D7B495 /* SleepManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -83,6 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				991C444D2C9A9DEE00F2BB76 /* PlayerManager.swift */,
+				99C304B92CABDEAB00D7B495 /* SleepManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -191,6 +194,7 @@
 				991C44522C9A9E1600F2BB76 /* ContentView.swift in Sources */,
 				991C44542C9A9E2A00F2BB76 /* ControlOverlay.swift in Sources */,
 				991C443B2C9A9C6E00F2BB76 /* MacMusicPlayerApp.swift in Sources */,
+				99C304BA2CABDEAB00D7B495 /* SleepManager.swift in Sources */,
 				991C444E2C9A9DEE00F2BB76 /* PlayerManager.swift in Sources */,
 				991C44502C9A9E0400F2BB76 /* Track.swift in Sources */,
 			);
