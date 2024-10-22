@@ -24,7 +24,6 @@ jobs:
             -scheme MacMusicPlayer \
             -archivePath $PWD/build/MacMusicPlayer.xcarchive \
             -configuration Release
-            -sdk macosx \
             -destination 'generic/platform=macOS,name=Any Mac' \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
