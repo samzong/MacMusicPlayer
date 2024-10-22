@@ -9,7 +9,8 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
@@ -27,13 +28,15 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             ONLY_ACTIVE_ARCH=NO \
             ARCHS="arm64 x86_64"
-
+          
       - name: Create app
         run: |
           xcodebuild -exportArchive \
             -archivePath $PWD/build/MacMusicPlayer.xcarchive \
             -exportOptionsPlist exportOptions.plist \
-            -exportPath $PWD/build/export
+            -exportPath $PWD/build/export \
+            ONLY_ACTIVE_ARCH=NO \
+            ARCHS="arm64 x86_64"
 
       - name: Prepare for DMG
         run: |
