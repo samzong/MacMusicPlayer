@@ -22,6 +22,7 @@ jobs:
           xcodebuild clean build \
           -project MacMusicPlayer.xcodeproj \
           -scheme MacMusicPlayer \
+          -archivePath $PWD/build/MacMusicPlayer.xcarchive \
           -configuration Release \
           -sdk macosx \
           -destination 'generic/platform=macOS,name=Any Mac' \
