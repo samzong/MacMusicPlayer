@@ -2,41 +2,82 @@ name: Pull Request Test
 
 on:
   pull_request:
-    branches: ["main"]  # Listen for PRs targeting the main branch
+    branches: [ "main" ]  # 监听针对 main 分支的 PR
 
 jobs:
   build-and-test:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
 
-      - name: Build
-        run: |
-          xcodebuild clean build \
-            -project MacMusicPlayer.xcodeproj \
-            -scheme MacMusicPlayer \
-            -configuration Release \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            ONLY_ACTIVE_ARCH=NO \
-            ARCHS="x86_64 arm64"
+    - name: Build
+      run: |
+        xcodebuild clean build \
+          -project MacMusicPlayer.xcodeproj \
+          -scheme MacMusicPlayer \
+          -configuration Release \
+          -derivedDataPath build \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          ONLY_ACTIVE_ARCH=NO \
+          ARCHS="x86_64 arm64"
 
-      - name: Verify Architectures
-        run: |
-          # Find the path of the application.
-          APP_PATH=$(find $PWD -name MacMusicPlayer.app -type d | head -n 1)
-          echo "App Path: $APP_PATH"
+    - name: Verify Architectures
+      run: |
+        # 定义构建的应用程序路径
+        APP_PATH="build/Build/Products/Release/MacMusicPlayer.app"
+        echo "App Path: $APP_PATH"
 
-          # Find the path of the executable file.
-          EXECUTABLE_PATH="$APP_PATH/Contents/MacOS/MacMusicPlayer"
-          echo "Executable Path: $EXECUTABLE_PATH"
+        # 检查应用程序是否存在
+        if [ ! -d "$APP_PATH" ]; then
+          echo "Error: Application not found at $APP_PATH"
+          exit 1
+        fi
 
-          # Display the architecture information 
-          lipo -info "$EXECUTABLE_PATH"
+        # 查找可执行文件的路径
+        EXECUTABLE_PATH="$APP_PATH/Contents/MacOS/MacMusicPlayer"
+        echo "Executable Path: $EXECUTABLE_PATH"
+
+        # 显示可执行文件的架构信息
+        lipo -info "$EXECUTABLE_PATH"
+
+        # 验证是否支持 x86_64 架构
+        if lipo -info "$EXECUTABLE_PATH" | grep -q "x86_64"; then
+          echo "x86_64 architecture is supported."
+        else
+          echo "Error: x86_64 architecture is not supported!"
+          exit 1
+        fi
+
+        # 验证是否支持 arm64 架构
+        if lipo -info "$EXECUTABLE_PATH" | grep -q "arm64"; then
+          echo "arm64 architecture is supported."
+        else
+          echo "Error: arm64 architecture is not supported!"
+          exit 1
+        fi
+
+    - name: Run Unit Tests
+      run: |
+        xcodebuild test \
+          -project MacMusicPlayer.xcodeproj \
+          -scheme MacMusicPlayer \
+          -configuration Release \
+          -destination 'platform=macOS' \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO
+
+    - name: (Optional) Code Quality Checks
+      # 如果您有代码质量检查工具，可以在这里运行
+      run: |
+        # 示例：运行 SwiftLint
+        # brew install swiftlint
+        # swiftlint
+        echo "No code quality checks are configured."
