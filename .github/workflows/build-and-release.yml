@@ -9,6 +9,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
+      - name: Checkout code
       - uses: actions/checkout@v4
 
       - name: Set up Xcode
@@ -28,11 +29,7 @@ jobs:
           CODE_SIGNING_REQUIRED=NO \
           ONLY_ACTIVE_ARCH=NO \
           ARCHS="x86_64 arm64"
-      
-      - name: Verify architecture
-        run: |
-          lipo -info dist/MacMusicPlayer.app/Contents/MacOS/MacMusicPlayer
-
+          
       - name: Create app
         run: |
           xcodebuild -exportArchive \
