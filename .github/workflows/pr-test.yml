@@ -23,6 +23,8 @@ jobs:
           -project MacMusicPlayer.xcodeproj \
           -scheme MacMusicPlayer \
           -configuration Release \
+          -sdk macosx \
+          -destination 'generic/platform=macOS,name=Any Mac' \
           -derivedDataPath build \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
