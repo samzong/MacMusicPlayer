@@ -18,15 +18,20 @@ jobs:
 
       - name: Build
         run: |
-          xcodebuild clean archive \
-            -project MacMusicPlayer.xcodeproj \
-            -scheme MacMusicPlayer \
-            -archivePath $PWD/build/MacMusicPlayer.xcarchive \
-            -configuration Release
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            ONLY_ACTIVE_ARCH=NO \
-            ARCHS="arm64 x86_64"
+          xcodebuild clean build \
+          -project MacMusicPlayer.xcodeproj \
+          -scheme MacMusicPlayer \
+          -configuration Release \
+          -sdk macosx \
+          -destination 'generic/platform=macOS,name=Any Mac' \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          ONLY_ACTIVE_ARCH=NO \
+          ARCHS="x86_64 arm64"
+      
+      - name: Verify architecture
+        run: |
+          lipo -info dist/MacMusicPlayer.app/Contents/MacOS/MacMusicPlayer
 
       - name: Create app
         run: |
