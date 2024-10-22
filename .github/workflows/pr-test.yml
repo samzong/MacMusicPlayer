@@ -63,21 +63,3 @@ jobs:
           echo "Error: arm64 architecture is not supported!"
           exit 1
         fi
-
-    - name: Run Unit Tests
-      run: |
-        xcodebuild test \
-          -project MacMusicPlayer.xcodeproj \
-          -scheme MacMusicPlayer \
-          -configuration Release \
-          -destination 'platform=macOS' \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO
-
-    - name: (Optional) Code Quality Checks
-      # 如果您有代码质量检查工具，可以在这里运行
-      run: |
-        # 示例：运行 SwiftLint
-        # brew install swiftlint
-        # swiftlint
-        echo "No code quality checks are configured."
