@@ -40,14 +40,15 @@ jobs:
 
       - name: Prepare for DMG
         run: |
-          mkdir -p dist
-          mv build/export/MacMusicPlayer.app dist/
-          ls -R dist
+          mkdir -p dist/dmg_temp
+          mv build/export/MacMusicPlayer.app dist/dmg_temp/
+          ln -s /Applications dist/dmg_temp/Applications
+          ls -R dist/dmg_temp
 
       - name: Create DMG
         run: |
           hdiutil create -volname MacMusicPlayer \
-            -srcfolder dist \
+            -srcfolder dist/dmg_temp \
             -ov -format UDZO dist/MacMusicPlayer.dmg
 
       - name: Create Release and Upload Asset
