@@ -68,11 +68,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let playModeMenu = NSMenu()
         let playModeItem = NSMenuItem(title: NSLocalizedString("Playback Mode", comment: ""), action: nil, keyEquivalent: "")
         
-        let sequentialItem = NSMenuItem(title: NSLocalizedString("Sequential", comment: ""), action: #selector(setPlayMode(_:)), keyEquivalent: "")
+        let sequentialItem = NSMenuItem(title: PlayerManager.PlayMode.sequential.localizedString, action: #selector(setPlayMode(_:)), keyEquivalent: "")
         sequentialItem.tag = 0
-        let singleLoopItem = NSMenuItem(title: NSLocalizedString("Single Loop", comment: ""), action: #selector(setPlayMode(_:)), keyEquivalent: "")
+        let singleLoopItem = NSMenuItem(title: PlayerManager.PlayMode.singleLoop.localizedString, action: #selector(setPlayMode(_:)), keyEquivalent: "")
         singleLoopItem.tag = 1
-        let randomItem = NSMenuItem(title: NSLocalizedString("Random", comment: ""), action: #selector(setPlayMode(_:)), keyEquivalent: "")
+        let randomItem = NSMenuItem(title: PlayerManager.PlayMode.random.localizedString, action: #selector(setPlayMode(_:)), keyEquivalent: "")
         randomItem.tag = 2
         
         playModeMenu.addItem(sequentialItem)
@@ -173,7 +173,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     @objc func togglePreventSleep() {
         sleepManager.preventSleep.toggle()
-        if let preventSleepItem = menu.item(withTitle: "防止 Mac 休眠") {
+        if let preventSleepItem = menu.item(withTitle: NSLocalizedString("Prevent Mac Sleep", comment: "")) {
             preventSleepItem.state = sleepManager.preventSleep ? .on : .off
         }
     }
@@ -195,17 +195,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func updatePlayModeMenuItems() {
-        guard let playModeItem = menu.item(withTitle: "播放模式"),
-              let playModeMenu = playModeItem.submenu else { return }
-        
-        for item in playModeMenu.items {
-            item.state = item.tag == playerManager.playMode.tag ? .on : .off
+        if let playModeItem = menu.item(withTitle: NSLocalizedString("Playback Mode", comment: "")),
+           let playModeMenu = playModeItem.submenu {
+            for item in playModeMenu.items {
+                item.state = item.tag == playerManager.playMode.tag ? .on : .off
+            }
         }
     }
     
     @objc func toggleLaunchAtLogin() {
         launchManager.launchAtLogin.toggle()
-        if let launchAtLoginItem = menu.item(withTitle: "开机自动启动") {
+        if let launchAtLoginItem = menu.item(withTitle: NSLocalizedString("Launch at Login", comment: "")) {
             launchAtLoginItem.state = launchManager.launchAtLogin ? .on : .off
         }
     }

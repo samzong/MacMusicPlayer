@@ -28,9 +28,13 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
     var playerNode: AVAudioPlayerNode!
 
     enum PlayMode: String {
-        case sequential = "顺序"
-        case singleLoop = "单曲循环"
-        case random = "随机"
+        case sequential = "Sequential"
+        case singleLoop = "Single Loop"
+        case random = "Random"
+        
+        var localizedString: String {
+            return NSLocalizedString(self.rawValue, comment: "")
+        }
     }
 
     @Published var playMode: PlayMode = .sequential {
