@@ -27,7 +27,26 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
     var audioEngine: AVAudioEngine!
     var playerNode: AVAudioPlayerNode!
 
+    enum PlayMode: String {
+        case sequential = "顺序"
+        case singleLoop = "单曲循环"
+        case random = "随机"
+    }
+
+    @Published var playMode: PlayMode = .sequential {
+        didSet {
+            UserDefaults.standard.set(playMode.rawValue, forKey: "PlayMode")
+            NotificationCenter.default.post(name: NSNotification.Name("PlayModeChanged"), object: nil)
+        }
+    }
+
     override init() {
+        if let savedMode = UserDefaults.standard.string(forKey: "PlayMode"),
+           let mode = PlayMode(rawValue: savedMode) {
+            playMode = mode
+        } else {
+            playMode = .sequential
+        }
         super.init()
         setupAudioEngine()
         loadSavedMusicFolder()
@@ -142,26 +161,59 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     func playNext() {
         guard !playlist.isEmpty else { return }
-        currentIndex = (currentIndex + 1) % playlist.count
+        
+        switch playMode {
+        case .sequential:
+            currentIndex = (currentIndex + 1) % playlist.count
+        case .singleLoop:
+            break
+        case .random:
+            currentIndex = Int.random(in: 0..<playlist.count)
+        }
+        
         currentTrack = playlist[currentIndex]
         play()
-        
         updateNowPlayingInfo()
     }
 
     func playPrevious() {
         guard !playlist.isEmpty else { return }
-        currentIndex = (currentIndex - 1 + playlist.count) % playlist.count
+        
+        switch playMode {
+        case .sequential, .random:
+            currentIndex = (currentIndex - 1 + playlist.count) % playlist.count
+        case .singleLoop:
+            break
+        }
+        
         currentTrack = playlist[currentIndex]
         play()
-        
         updateNowPlayingInfo()
     }
 
     // AVAudioPlayerDelegate 方法
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         if flag {
-            playNext()
+            switch playMode {
+            case .sequential:
+                if currentIndex < playlist.count - 1 {
+                    playNext()
+                }
+            case .singleLoop:
+                play()
+            case .random:
+                playNext()
+            }
+        }
+    }
+}
+
+extension PlayerManager.PlayMode {
+    var tag: Int {
+        switch self {
+        case .sequential: return 0
+        case .singleLoop: return 1
+        case .random: return 2
         }
     }
 }
