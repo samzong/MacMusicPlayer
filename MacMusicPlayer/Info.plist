@@ -28,7 +28,7 @@
     <key>LSBackgroundOnly</key>
     <false/>
     <key>LSMinimumSystemVersion</key>
-    <string>10.15</string>
+    <string>11.5</string>
     <key>LSUIElement</key>
     <true/>
     <key>CFBundleIdentifier</key>
