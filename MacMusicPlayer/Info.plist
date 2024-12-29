@@ -25,5 +25,13 @@
 	</array>
     <key>NSPowerManagementUsageDescription</key>
     <string>MacMusicPlayer 需要权限来防止系统休眠，以确保音乐播放不被中断。</string>
+    <key>LSBackgroundOnly</key>
+    <false/>
+    <key>LSMinimumSystemVersion</key>
+    <string>10.15</string>
+    <key>LSUIElement</key>
+    <true/>
+    <key>CFBundleIdentifier</key>
+    <string>com.seimotech.MacMusicPlayer</string>
 </dict>
 </plist>

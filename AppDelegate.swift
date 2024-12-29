@@ -15,11 +15,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var popover: NSPopover?
     var playerManager: PlayerManager!
     var sleepManager: SleepManager!
+    var launchManager: LaunchManager!
     var menu: NSMenu!
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         playerManager = PlayerManager()
         sleepManager = SleepManager()
+        launchManager = LaunchManager()
         
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
@@ -88,6 +90,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let preventSleepItem = NSMenuItem(title: "防止 Mac 休眠", action: #selector(togglePreventSleep), keyEquivalent: "")
         preventSleepItem.state = sleepManager.preventSleep ? .on : .off
         menu.addItem(preventSleepItem)
+        
+        // 开机自启动开关
+        let launchAtLoginItem = NSMenuItem(title: "开机自动启动", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        launchAtLoginItem.state = launchManager.launchAtLogin ? .on : .off
+        menu.addItem(launchAtLoginItem)
         
         menu.addItem(NSMenuItem.separator())
         
@@ -194,6 +201,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         for item in playModeMenu.items {
             item.state = item.tag == playerManager.playMode.tag ? .on : .off
+        }
+    }
+    
+    @objc func toggleLaunchAtLogin() {
+        launchManager.launchAtLogin.toggle()
+        if let launchAtLoginItem = menu.item(withTitle: "开机自动启动") {
+            launchAtLoginItem.state = launchManager.launchAtLogin ? .on : .off
         }
     }
     
