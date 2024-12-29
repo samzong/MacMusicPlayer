@@ -1,0 +1,30 @@
+// Menu Items
+"No Music Source" = "No Music Selected";
+"Play" = "Play";
+"Pause" = "Pause";
+"Previous" = "Previous Track";
+"Next" = "Next Track";
+"Playback Mode" = "Playback Mode";
+"Sequential" = "Play in Order";
+"Single Loop" = "Repeat One";
+"Random" = "Shuffle";
+"Set Music Source" = "Choose Music Folder";
+"Prevent Mac Sleep" = "Keep Mac Awake";
+"Launch at Login" = "Start at Login";
+"Quit" = "Quit";
+
+// Dialog
+"Select Music Folder" = "Choose Music Folder";
+"Unknown Artist" = "Unknown Artist";
+
+// Notifications
+"Started playing" = "Now Playing";
+"Paused playback" = "Playback Paused";
+"No current track to play" = "No Music to Play";
+"Error accessing Music folder" = "Cannot Access Music Folder";
+"Could not create player" = "Cannot Initialize Player";
+
+// System
+"Enable launch at login" = "Start at Login Enabled";
+"Disable launch at login" = "Start at Login Disabled";
+"MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "MacMusicPlayer needs permission to keep your Mac awake for uninterrupted music playback."; 

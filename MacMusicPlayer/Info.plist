@@ -24,7 +24,7 @@
 		<string>audio</string>
 	</array>
     <key>NSPowerManagementUsageDescription</key>
-    <string>MacMusicPlayer 需要权限来防止系统休眠，以确保音乐播放不被中断。</string>
+    <string>${PRODUCT_NAME} needs permission to prevent system sleep to ensure uninterrupted music playback.</string>
     <key>LSBackgroundOnly</key>
     <false/>
     <key>LSMinimumSystemVersion</key>

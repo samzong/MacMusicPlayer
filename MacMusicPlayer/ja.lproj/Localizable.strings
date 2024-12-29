@@ -1,0 +1,30 @@
+// Menu Items
+"No Music Source" = "音楽が選択されていません";
+"Play" = "再生";
+"Pause" = "一時停止";
+"Previous" = "前の曲";
+"Next" = "次の曲";
+"Playback Mode" = "再生モード";
+"Sequential" = "順番に再生";
+"Single Loop" = "1曲リピート";
+"Random" = "シャッフル";
+"Set Music Source" = "音楽フォルダを選択";
+"Prevent Mac Sleep" = "システムのスリープを防止";
+"Launch at Login" = "ログイン時に起動";
+"Quit" = "終了";
+
+// Dialog
+"Select Music Folder" = "音楽フォルダを選択";
+"Unknown Artist" = "不明なアーティスト";
+
+// Notifications
+"Started playing" = "再生中";
+"Paused playback" = "一時停止中";
+"No current track to play" = "再生可能な音楽がありません";
+"Error accessing Music folder" = "音楽フォルダにアクセスできません";
+"Could not create player" = "プレーヤーを初期化できません";
+
+// System
+"Enable launch at login" = "ログイン時の起動を有効にしました";
+"Disable launch at login" = "ログイン時の起動を無効にしました";
+"MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "途切れのない音楽再生のため、システムのスリープを防止する権限が必要です"; 

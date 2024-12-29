@@ -37,43 +37,42 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func setupMenu() {
         menu = NSMenu()
-        menu.minimumWidth = 200 // 设置固定宽
+        menu.minimumWidth = 200
         
         // Current track info
-        let trackInfoItem = NSMenuItem(title: "No selected", action: nil, keyEquivalent: "")
+        let trackInfoItem = NSMenuItem(title: NSLocalizedString("No Music Source", comment: ""), action: nil, keyEquivalent: "")
         trackInfoItem.isEnabled = false
-        trackInfoItem.view = NSView(frame: NSRect(x: 0, y: 0, width: 180, height: 20)) // 设置固定宽度的视图
+        trackInfoItem.view = NSView(frame: NSRect(x: 0, y: 0, width: 180, height: 20))
         let trackLabel = NSTextField(frame: NSRect(x: 10, y: 0, width: 160, height: 20))
         trackLabel.isEditable = false
         trackLabel.isBordered = false
         trackLabel.backgroundColor = .clear
-        trackLabel.lineBreakMode = .byTruncatingTail // 文本过长时显示省略号
+        trackLabel.lineBreakMode = .byTruncatingTail
         trackInfoItem.view?.addSubview(trackLabel)
         
         menu.addItem(trackInfoItem)
-        
         menu.addItem(NSMenuItem.separator())
         
         // Play/Pause
-        let playPauseItem = NSMenuItem(title: "播放", action: #selector(togglePlayPause), keyEquivalent: "")
+        let playPauseItem = NSMenuItem(title: NSLocalizedString("Play", comment: ""), action: #selector(togglePlayPause), keyEquivalent: "")
         menu.addItem(playPauseItem)
         
         // Previous
-        menu.addItem(NSMenuItem(title: "上一首", action: #selector(playPrevious), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Previous", comment: ""), action: #selector(playPrevious), keyEquivalent: ""))
         
         // Next
-        menu.addItem(NSMenuItem(title: "下一首", action: #selector(playNext), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Next", comment: ""), action: #selector(playNext), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         
         // 播放模式子菜单
         let playModeMenu = NSMenu()
-        let playModeItem = NSMenuItem(title: "播放模式", action: nil, keyEquivalent: "")
+        let playModeItem = NSMenuItem(title: NSLocalizedString("Playback Mode", comment: ""), action: nil, keyEquivalent: "")
         
-        let sequentialItem = NSMenuItem(title: "顺序播放", action: #selector(setPlayMode(_:)), keyEquivalent: "")
+        let sequentialItem = NSMenuItem(title: NSLocalizedString("Sequential", comment: ""), action: #selector(setPlayMode(_:)), keyEquivalent: "")
         sequentialItem.tag = 0
-        let singleLoopItem = NSMenuItem(title: "单曲循环", action: #selector(setPlayMode(_:)), keyEquivalent: "")
+        let singleLoopItem = NSMenuItem(title: NSLocalizedString("Single Loop", comment: ""), action: #selector(setPlayMode(_:)), keyEquivalent: "")
         singleLoopItem.tag = 1
-        let randomItem = NSMenuItem(title: "随机播放", action: #selector(setPlayMode(_:)), keyEquivalent: "")
+        let randomItem = NSMenuItem(title: NSLocalizedString("Random", comment: ""), action: #selector(setPlayMode(_:)), keyEquivalent: "")
         randomItem.tag = 2
         
         playModeMenu.addItem(sequentialItem)
@@ -84,22 +83,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(playModeItem)
         
         // Reconfigure folder
-        menu.addItem(NSMenuItem(title: "设置音乐源", action: #selector(reconfigureFolder), keyEquivalent: "s"))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Set Music Source", comment: ""), action: #selector(reconfigureFolder), keyEquivalent: "s"))
 
         // 防止休眠开关
-        let preventSleepItem = NSMenuItem(title: "防止 Mac 休眠", action: #selector(togglePreventSleep), keyEquivalent: "")
+        let preventSleepItem = NSMenuItem(title: NSLocalizedString("Prevent Mac Sleep", comment: ""), action: #selector(togglePreventSleep), keyEquivalent: "")
         preventSleepItem.state = sleepManager.preventSleep ? .on : .off
         menu.addItem(preventSleepItem)
         
         // 开机自启动开关
-        let launchAtLoginItem = NSMenuItem(title: "开机自动启动", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        let launchAtLoginItem = NSMenuItem(title: NSLocalizedString("Launch at Login", comment: ""), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         launchAtLoginItem.state = launchManager.launchAtLogin ? .on : .off
         menu.addItem(launchAtLoginItem)
         
         menu.addItem(NSMenuItem.separator())
         
         // Quit
-        menu.addItem(NSMenuItem(title: "退出", action: #selector(quit), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Quit", comment: ""), action: #selector(quit), keyEquivalent: ""))
         
         // Set up observers for player state changes
         NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("TrackChanged"), object: nil)
@@ -139,11 +138,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func updateMenuItems() {
         if let trackInfoItem = menu.item(at: 0),
            let trackLabel = trackInfoItem.view?.subviews.first as? NSTextField {
-            trackLabel.stringValue = playerManager.currentTrack?.title ?? "未选择音乐源"
+            trackLabel.stringValue = playerManager.currentTrack?.title ?? NSLocalizedString("No Music Source", comment: "")
         }
         
         if let playPauseItem = menu.item(at: 2) {
-            playPauseItem.title = playerManager.isPlaying ? "暂停" : "播放"
+            playPauseItem.title = playerManager.isPlaying ? NSLocalizedString("Pause", comment: "") : NSLocalizedString("Play", comment: "")
         }
         
         updatePlayModeMenuItems()
