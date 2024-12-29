@@ -9,7 +9,7 @@ import Foundation
 import IOKit.pwr_mgt
 
 class SleepManager: ObservableObject {
-    @Published var preventSleep = false {
+    @Published var preventSleep = true {
         didSet {
             updateSleepAssertion()
         }
