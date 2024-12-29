@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+    - name: Build
+      run: |
+        xcodebuild clean archive -project MacMusicPlayer.xcodeproj \
+          -scheme MacMusicPlayer \
+          -archivePath ./build/MacMusicPlayer.xcarchive \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+
+    - name: Create DMG
+      run: |
+        # Create a temporary directory for mounting
+        TEMP_DIR=$(mktemp -d)
+        
+        # Create a DMG
+        hdiutil create -volname "MacMusicPlayer" -srcfolder "./build/MacMusicPlayer.xcarchive/Products/Applications/MacMusicPlayer.app" \
+          -ov -format UDZO "MacMusicPlayer-${{ env.VERSION }}.dmg"
+
+    - name: Generate Release Notes
+      id: release_notes
+      run: |
+        echo "## MacMusicPlayer ${{ env.VERSION }}" > release_notes.md
+        echo "" >> release_notes.md
+        echo "### 更新内容" >> release_notes.md
+        echo "- 请查看具体提交记录了解详细更新内容" >> release_notes.md
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: MacMusicPlayer ${{ env.VERSION }}
+        body_path: release_notes.md
+        draft: false
+        prerelease: false
+        files: |
+          MacMusicPlayer-${{ env.VERSION }}.dmg
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Update Latest Tag
+      run: |
+        git tag -f latest
+        git push origin latest --force 

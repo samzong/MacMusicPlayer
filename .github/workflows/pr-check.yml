@@ -1,0 +1,51 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - '.github/**'
+      - '!.github/workflows/**'
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
+    - name: Build
+      run: |
+        xcodebuild clean build -project MacMusicPlayer.xcodeproj \
+          -scheme MacMusicPlayer \
+          -destination "platform=macOS" \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+
+    - name: Check Build Status
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.setFailed('Build failed. Please check the build logs for details.')
+          
+    - name: Comment PR
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '❌ Build failed. Please check the build logs and fix the issues before merging.'
+          }) 
