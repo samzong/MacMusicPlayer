@@ -63,6 +63,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "下一首", action: #selector(playNext), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         
+        // 播放模式子菜单
+        let playModeMenu = NSMenu()
+        let playModeItem = NSMenuItem(title: "播放模式", action: nil, keyEquivalent: "")
+        
+        let sequentialItem = NSMenuItem(title: "顺序播放", action: #selector(setPlayMode(_:)), keyEquivalent: "")
+        sequentialItem.tag = 0
+        let singleLoopItem = NSMenuItem(title: "单曲循环", action: #selector(setPlayMode(_:)), keyEquivalent: "")
+        singleLoopItem.tag = 1
+        let randomItem = NSMenuItem(title: "随机播放", action: #selector(setPlayMode(_:)), keyEquivalent: "")
+        randomItem.tag = 2
+        
+        playModeMenu.addItem(sequentialItem)
+        playModeMenu.addItem(singleLoopItem)
+        playModeMenu.addItem(randomItem)
+        
+        playModeItem.submenu = playModeMenu
+        menu.addItem(playModeItem)
+        
         // Reconfigure folder
         menu.addItem(NSMenuItem(title: "设置音乐源", action: #selector(reconfigureFolder), keyEquivalent: "s"))
 
@@ -120,6 +138,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let playPauseItem = menu.item(at: 2) {
             playPauseItem.title = playerManager.isPlaying ? "暂停" : "播放"
         }
+        
+        updatePlayModeMenuItems()
     }
     
     @objc func togglePlayPause() {
@@ -151,7 +171,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             preventSleepItem.state = sleepManager.preventSleep ? .on : .off
         }
     }
+    
+    @objc func setPlayMode(_ sender: NSMenuItem) {
+        let mode: PlayerManager.PlayMode
+        switch sender.tag {
+        case 0:
+            mode = .sequential
+        case 1:
+            mode = .singleLoop
+        case 2:
+            mode = .random
+        default:
+            return
+        }
+        playerManager.playMode = mode
+        updatePlayModeMenuItems()
+    }
+    
+    func updatePlayModeMenuItems() {
+        guard let playModeItem = menu.item(withTitle: "播放模式"),
+              let playModeMenu = playModeItem.submenu else { return }
         
+        for item in playModeMenu.items {
+            item.state = item.tag == playerManager.playMode.tag ? .on : .off
+        }
+    }
+    
     // 添加这个方法来确保应用保持活跃状态
     func applicationWillTerminate(_ aNotification: Notification) {
         sleepManager.preventSleep = false
