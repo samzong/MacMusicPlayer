@@ -66,7 +66,7 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
             openPanel.canChooseDirectories = true
             openPanel.canChooseFiles = false
             openPanel.allowsMultipleSelection = false
-            openPanel.prompt = "选择音乐文件夹"
+            openPanel.prompt = NSLocalizedString("Select Music Folder", comment: "")
             
             if openPanel.runModal() == .OK {
                 if let url = openPanel.url {
@@ -116,7 +116,7 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
             playlist = mp3Files.compactMap { url in
                 let asset = AVAsset(url: url)
                 let title = asset.metadata.first(where: { $0.commonKey == .commonKeyTitle })?.stringValue ?? url.lastPathComponent
-                let artist = asset.metadata.first(where: { $0.commonKey == .commonKeyArtist })?.stringValue ?? "Unknown"
+                let artist = asset.metadata.first(where: { $0.commonKey == .commonKeyArtist })?.stringValue ?? NSLocalizedString("Unknown Artist", comment: "")
                 
                 return Track(id: UUID(), title: title, artist: artist, url: url)
             }
@@ -128,24 +128,24 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
                 print("Set current track: \(currentTrack?.title ?? "Unknown")")
             }
         } catch {
-            print("Error accessing Music folder: \(error)")
+            print(NSLocalizedString("Error accessing Music folder", comment: ""))
         }
     }
 
     func play() {
         guard let track = currentTrack else {
-            print("No current track to play")
+            print(NSLocalizedString("No current track to play", comment: ""))
             return
         }
         
         do {
             player = try AVAudioPlayer(contentsOf: track.url)
-            player?.delegate = self // 设置代理
+            player?.delegate = self
             player?.play()
             isPlaying = true
-            print("Started playing: \(track.title)")
+            print(NSLocalizedString("Started playing", comment: "") + ": \(track.title)")
         } catch {
-            print("Could not create player for \(track.title): \(error)")
+            print(NSLocalizedString("Could not create player", comment: "") + " \(track.title): \(error)")
         }
         
         updateNowPlayingInfo()
@@ -154,7 +154,7 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
     func pause() {
         player?.pause()
         isPlaying = false
-        print("Paused playback")
+        print(NSLocalizedString("Paused playback", comment: ""))
         
         updateNowPlayingInfo()
     }

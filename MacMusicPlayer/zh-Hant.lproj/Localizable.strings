@@ -1,0 +1,30 @@
+// Menu Items
+"No Music Source" = "未選擇音樂";
+"Play" = "播放";
+"Pause" = "暫停";
+"Previous" = "上一曲";
+"Next" = "下一曲";
+"Playback Mode" = "播放模式";
+"Sequential" = "順序播放";
+"Single Loop" = "單曲重複";
+"Random" = "隨機播放";
+"Set Music Source" = "選擇音樂資料夾";
+"Prevent Mac Sleep" = "保持系統喚醒";
+"Launch at Login" = "開機啟動";
+"Quit" = "結束";
+
+// Dialog
+"Select Music Folder" = "選擇音樂資料夾";
+"Unknown Artist" = "未知藝術家";
+
+// Notifications
+"Started playing" = "正在播放";
+"Paused playback" = "已暫停";
+"No current track to play" = "沒有可播放的音樂";
+"Error accessing Music folder" = "無法訪問音樂資料夾";
+"Could not create player" = "無法初始化播放器";
+
+// System
+"Enable launch at login" = "已開啟開機啟動";
+"Disable launch at login" = "已關閉開機啟動";
+"MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "需要權限保持系統喚醒，以確保音樂不被中斷"; 

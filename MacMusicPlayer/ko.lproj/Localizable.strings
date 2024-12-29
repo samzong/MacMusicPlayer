@@ -1,0 +1,30 @@
+// Menu Items
+"No Music Source" = "음악이 선택되지 않음";
+"Play" = "재생";
+"Pause" = "일시정지";
+"Previous" = "이전 곡";
+"Next" = "다음 곡";
+"Playback Mode" = "재생 모드";
+"Sequential" = "순서대로 재생";
+"Single Loop" = "한 곡 반복";
+"Random" = "무작위 재생";
+"Set Music Source" = "음악 폴더 선택";
+"Prevent Mac Sleep" = "시스템 절전 방지";
+"Launch at Login" = "로그인 시 실행";
+"Quit" = "종료";
+
+// Dialog
+"Select Music Folder" = "음악 폴더 선택";
+"Unknown Artist" = "알 수 없는 아티스트";
+
+// Notifications
+"Started playing" = "재생 중";
+"Paused playback" = "일시정지됨";
+"No current track to play" = "재생할 음악이 없습니다";
+"Error accessing Music folder" = "음악 폴더에 접근할 수 없습니다";
+"Could not create player" = "플레이어를 초기화할 수 없습니다";
+
+// System
+"Enable launch at login" = "로그인 시 실행이 활성화되었습니다";
+"Disable launch at login" = "로그인 시 실행이 비활성화되었습니다";
+"MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "중단 없는 음악 재생을 위해 시스템 절전 방지 권한이 필요합니다"; 
