@@ -36,9 +36,19 @@ jobs:
         # Create a temporary directory for mounting
         TEMP_DIR=$(mktemp -d)
         
+        # Copy app to temp directory
+        mkdir -p $TEMP_DIR
+        cp -r "./build/MacMusicPlayer.xcarchive/Products/Applications/MacMusicPlayer.app" "$TEMP_DIR/"
+        
+        # Create symbolic link to Applications folder
+        ln -s /Applications "$TEMP_DIR/Applications"
+        
         # Create a DMG
-        hdiutil create -volname "MacMusicPlayer" -srcfolder "./build/MacMusicPlayer.xcarchive/Products/Applications/MacMusicPlayer.app" \
+        hdiutil create -volname "MacMusicPlayer" -srcfolder "$TEMP_DIR" \
           -ov -format UDZO "MacMusicPlayer-${{ env.VERSION }}.dmg"
+        
+        # Clean up
+        rm -rf "$TEMP_DIR"
 
     - name: Generate Release Notes
       id: release_notes

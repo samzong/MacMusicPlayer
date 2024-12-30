@@ -28,3 +28,4 @@
 "Enable launch at login" = "已開啟開機啟動";
 "Disable launch at login" = "已關閉開機啟動";
 "MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "需要權限保持系統喚醒，以確保音樂不被中斷"; 
+"Version %@ (%@)" = "版本 %@ (%@)"; 

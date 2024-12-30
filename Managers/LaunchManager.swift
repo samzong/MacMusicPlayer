@@ -12,19 +12,27 @@ class LaunchManager: ObservableObject {
     }
     
     init() {
-        // 从 UserDefaults 读取设置，默认为 false
-        self.launchAtLogin = UserDefaults.standard.bool(forKey: "LaunchAtLogin")
-        // 确保设置与实际状态一致
+        self.launchAtLogin = UserDefaults.standard.object(forKey: "LaunchAtLogin") == nil ? true : UserDefaults.standard.bool(forKey: "LaunchAtLogin")
         setLaunchAtLogin(launchAtLogin)
     }
     
     private func setLaunchAtLogin(_ enable: Bool) {
-        if enable {
-            let success = SMLoginItemSetEnabled(bundleIdentifier as CFString, true)
-            print("Enable launch at login: \(success)")
+        if #available(macOS 13.0, *) {
+            do {
+                if enable {
+                    if SMAppService.mainApp.status == .notRegistered {
+                        try SMAppService.mainApp.register()
+                    }
+                } else {
+                    if SMAppService.mainApp.status == .enabled {
+                        try SMAppService.mainApp.unregister()
+                    }
+                }
+            } catch {
+                print("Failed to \(enable ? "enable" : "disable") launch at login: \(error)")
+            }
         } else {
-            let success = SMLoginItemSetEnabled(bundleIdentifier as CFString, false)
-            print("Disable launch at login: \(success)")
+            _ = SMLoginItemSetEnabled(bundleIdentifier as CFString, enable)
         }
     }
 } 

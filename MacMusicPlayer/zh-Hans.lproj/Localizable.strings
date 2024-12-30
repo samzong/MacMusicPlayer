@@ -27,4 +27,5 @@
 // System
 "Enable launch at login" = "已开启开机启动";
 "Disable launch at login" = "已关闭开机启动";
-"MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "需要权限保持系统唤醒，以确保音乐不被中断"; 
+"MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "需要权限保持系统唤醒，以确保音乐不被中断";
+"Version %@ (%@)" = "版本 %@ (%@)"; 

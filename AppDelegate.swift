@@ -97,6 +97,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         menu.addItem(NSMenuItem.separator())
         
+        // Version info
+        let versionString = getVersionString()
+        let versionItem = NSMenuItem(title: versionString, action: nil, keyEquivalent: "")
+        versionItem.isEnabled = false
+        menu.addItem(versionItem)
+        
         // Quit
         menu.addItem(NSMenuItem(title: NSLocalizedString("Quit", comment: ""), action: #selector(quit), keyEquivalent: ""))
         
@@ -213,5 +219,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // 添加这个方法来确保应用保持活跃状态
     func applicationWillTerminate(_ aNotification: Notification) {
         sleepManager.preventSleep = false
+    }
+    
+    private func getVersionString() -> String {
+        let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+        let buildNumber = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+        return String(format: NSLocalizedString("Version %@ (%@)", comment: ""), appVersion, buildNumber)
     }
 }

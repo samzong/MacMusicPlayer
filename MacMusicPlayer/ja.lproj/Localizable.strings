@@ -28,3 +28,4 @@
 "Enable launch at login" = "ログイン時の起動を有効にしました";
 "Disable launch at login" = "ログイン時の起動を無効にしました";
 "MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "途切れのない音楽再生のため、システムのスリープを防止する権限が必要です"; 
+"Version %@ (%@)" = "バージョン %@ (%@)"; 
