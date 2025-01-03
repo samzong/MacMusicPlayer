@@ -46,3 +46,7 @@ MacMusicPlayer 是一个简洁、轻量级的 macOS 音乐播放器，设计为�
 ---
 
 感谢您使用 MacMusicPlayer！希望它能为您的音乐体验带来便利。
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=samzong/macmusicplayer&type=Timeline)](https://star-history.com/#samzong/macmusicplayer&Timeline)
