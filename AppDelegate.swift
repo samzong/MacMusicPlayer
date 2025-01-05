@@ -26,9 +26,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
         if let button = statusItem?.button {
-            button.title = "🤡"
             button.target = self
             button.action = #selector(toggleMenu)
+            button.imagePosition = .imageLeft
+            updateStatusBarIcon()
         }
         
         setupMenu()
@@ -151,7 +152,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             playPauseItem.title = playerManager.isPlaying ? NSLocalizedString("Pause", comment: "") : NSLocalizedString("Play", comment: "")
         }
         
+        updateStatusBarIcon()
         updatePlayModeMenuItems()
+    }
+    
+    private func updateStatusBarIcon() {
+        if let button = statusItem?.button {
+            let configuration = NSImage.SymbolConfiguration(pointSize: 18, weight: .regular)
+            let symbolName = playerManager.isPlaying ? "headphones.circle.fill" : "headphones.circle"
+            let icon = NSImage(systemSymbolName: symbolName, accessibilityDescription: "Music")?.withSymbolConfiguration(configuration)
+            button.image = icon
+        }
     }
     
     @objc func togglePlayPause() {
