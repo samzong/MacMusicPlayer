@@ -1,52 +1,150 @@
 # MacMusicPlayer
 
-MacMusicPlayer 是一个简洁、轻量级的 macOS 音乐播放器，设计为菜单栏应用程序，让您可以轻松控制音乐播放而不打断工作流程。
+MacMusicPlayer is an elegant and minimalist music player for macOS, designed as a menu bar application to provide a seamless music playback experience. Built with SwiftUI, it perfectly integrates into the macOS ecosystem, delivering an exceptional user experience.
 
-![alt text](image.png)
+![Application Screenshot](image.png)
 
-## 功能特点
+## ✨ Key Features
 
-- 🎵 从指定文件夹加载和播放 MP3 文件
-- 🔄 记住上次选择的音乐文件夹，无需重复配置
-- 🖱️ 通过菜单栏图标快速访问播放控制
-- ⏯️ 播放、暂停、上一曲、下一曲功能
-- 📂 随时重新配置音乐文件夹
-- 🎨 简洁的用户界面，最小化干扰
+- 🎵 Lightweight menu bar player for instant music control
+- 🎨 Native macOS interface with perfect light/dark theme support
+- 🌍 Multi-language support (English, Simplified Chinese, Traditional Chinese, Japanese, Korean)
+- 🎧 MP3 audio format playback
+- 🔄 Multiple playback modes (Sequential, Single Loop, Random)
+- 💾 Smart memory of last music folder location
+- 🚀 Launch at login support
+- 😴 Prevent system sleep for uninterrupted music
+- ⌨️ Media key control support (Play/Pause/Previous/Next)
 
-- 😴 支持防止 Mac 休眠（一键开启）
+## 🛠 Technical Architecture
 
-## 安装
+- **Framework**: SwiftUI + AppKit
+- **Audio Engine**: AVFoundation
+- **Design Pattern**: MVVM
+- **Localization**: Multi-language support
+- **State Management**: Native SwiftUI state management
+- **Persistence**: UserDefaults
+- **System Integration**: 
+  - MediaPlayer framework for media control
+  - ServiceManagement for launch at login
+  - IOKit for sleep management
 
-1. 下载最新的 MacMusicPlayer.dmg 文件。
-2. 打开 DMG 文件并将 MacMusicPlayer 应用程序拖到应用程序文件夹。
-3. 首次运行时，macOS 可能会显示安全警告。请在"系统偏好设置">"安全性与隐私"中允许应用运行。
-4. 如果还是报错，请执行 `sudo xattr -r -d com.apple.quarantine /Applications/MacMusicPlayer.app`
+## 📦 Installation
 
-## 使用方法
+### Method 1: Direct Download
 
-1. 启动 MacMusicPlayer。首次运行时，它会要求您选择音乐文件夹。
-2. 选择包含 MP3 文件的文件夹。
-3. 应用程序图标将出现在菜单栏中。
-4. 点击菜单栏图标访问播放控制和其他选项：
-   - 播放/暂停当前曲目
-   - 切换到上一曲或下一曲
-   - 查看当前播放的曲目信息
-   - 重新配置音乐文件夹
-   - 退出应用程序
+1. Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/samzong/MacMusicPlayer/releases) page
+2. Open the DMG file and drag MacMusicPlayer to your Applications folder
+3. If you encounter a security prompt on first launch, go to "System Settings" > "Security & Privacy" to allow the application to run
 
-## 注意事项
+```bash
+sudo xattr -r -d com.apple.quarantine /Applications/MacMusicPlayer.app
+```
 
-- MacMusicPlayer 目前仅支持 MP3 格式的音频文件。
-- 确保给予应用程序访问您选择的音乐文件夹的权限。
+### Method 2: Command Line Installation (Developers)
 
-## 反馈与支持
+```bash
+git clone https://github.com/samzong/MacMusicPlayer.git
+cd MacMusicPlayer
+make install
+```
 
-如果您遇到任何问题或有改进建议，请创建一个 issue 或联系开发者。
+### Uninstallation
+
+```bash
+make uninstall
+```
+
+## 🚀 Usage Guide
+
+1. On first launch, click the menu bar icon and select "Set Music Source"
+2. Choose a folder containing MP3 files
+3. Access the following features through the menu bar icon:
+   - Play/Pause
+   - Previous/Next Track
+   - Switch Playback Mode
+   - Enable/Disable System Sleep Prevention
+   - Configure Launch at Login
+   - Reconfigure Music Folder
+
+## 🔨 Development Guide
+
+### Requirements
+
+- macOS 13.0+
+- Xcode 15.0+
+- Swift 5.9+
+
+### Build Steps
+
+1. Clone the repository
+```bash
+git clone https://github.com/samzong/MacMusicPlayer.git
+```
+
+2. Open the project
+```bash
+cd MacMusicPlayer
+open MacMusicPlayer.xcodeproj
+```
+
+3. Build and Run
+- Using Xcode: Command + R
+- Using command line: `make build`
+
+### Project Structure
+
+```
+MacMusicPlayer/
+├── Managers/           # Business Managers
+│   ├── PlayerManager   # Playback Control
+│   ├── LaunchManager   # Launch Management
+│   └── SleepManager    # Sleep Control
+├── Models/             # Data Models
+├── Views/              # UI Components
+├── Helpers/            # Utility Classes
+└── Resources/          # Resource Files
+```
+
+### Localization Support
+
+The project supports multiple languages with localization files located at:
+- `MacMusicPlayer/en.lproj/`
+- `MacMusicPlayer/zh-Hans.lproj/`
+- `MacMusicPlayer/zh-Hant.lproj/`
+- `MacMusicPlayer/ja.lproj/`
+- `MacMusicPlayer/ko.lproj/`
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 Development Roadmap
+
+- [ ] Support for more audio formats (FLAC, WAV, AAC, etc.)
+- [ ] Add audio visualization effects
+- [ ] Playlist management support
+- [ ] Add audio equalizer
+- [ ] Online music service integration
+- [ ] Add keyboard shortcut support
+- [ ] Audio format conversion support
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+
+## 🌟 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=samzong/macmusicplayer&type=Timeline)](https://star-history.com/#samzong/macmusicplayer&Timeline)
+
+## 🙏 Acknowledgments
+
+Thanks to all the developers who have contributed to this project!
 
 ---
 
-感谢您使用 MacMusicPlayer！希望它能为您的音乐体验带来便利。
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=samzong/macmusicplayer&type=Timeline)](https://star-history.com/#samzong/macmusicplayer&Timeline)
+For questions or suggestions, please feel free to open an Issue or Pull Request.
