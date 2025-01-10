@@ -158,7 +158,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     private func updateStatusBarIcon() {
         if let button = statusItem?.button {
-            let configuration = NSImage.SymbolConfiguration(pointSize: 18, weight: .regular)
+            let configuration = NSImage.SymbolConfiguration(pointSize: 16, weight: .regular)
             let symbolName = playerManager.isPlaying ? "headphones.circle.fill" : "headphones.circle"
             let icon = NSImage(systemSymbolName: symbolName, accessibilityDescription: "Music")?.withSymbolConfiguration(configuration)
             button.image = icon
