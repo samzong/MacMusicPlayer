@@ -1,0 +1,62 @@
+name: Update Homebrew Tap
+
+on:
+  release:
+    types: [published]
+  repository_dispatch:
+    types: [trigger-homebrew-update]
+    
+jobs:
+  update-homebrew-tap:
+    runs-on: macos-latest
+    if: github.event.release.prerelease != true
+    
+    steps:
+    - name: Get release version
+      id: get_version
+      run: |
+        if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+          VERSION_WITH_V=${{ github.event.client_payload.version }}
+        else
+          VERSION_WITH_V=${GITHUB_REF#refs/tags/}
+        fi
+        # Remove 'v' prefix if it exists
+        echo "VERSION=${VERSION_WITH_V#v}" >> $GITHUB_ENV
+
+    - name: Download DMG
+      run: |
+        curl -L -o MacMusicPlayer.dmg "https://github.com/samzong/MacMusicPlayer/releases/download/v${VERSION}/MacMusicPlayer-v${VERSION}.dmg"
+
+    - name: Calculate SHA256
+      id: shasum
+      run: |
+        echo "SHA256=$(shasum -a 256 MacMusicPlayer.dmg | cut -d ' ' -f 1)" >> $GITHUB_ENV
+
+    - name: Checkout homebrew-tap
+      uses: actions/checkout@v3
+      with:
+        repository: samzong/homebrew-tap
+        token: ${{ secrets.GH_PAT }}
+        path: homebrew-tap
+
+    - name: Update Cask
+      run: |
+        cd homebrew-tap
+        sed -i '' 's/version "[^"]*"/version "'${{ env.VERSION }}'"/' Casks/mac-music-player.rb
+        sed -i '' 's/sha256 "[^"]*"/sha256 "'${{ env.SHA256 }}'"/' Casks/mac-music-player.rb
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GH_PAT }}
+        path: homebrew-tap
+        commit-message: "chore: update MacMusicPlayer to v${{ env.VERSION }}"
+        title: "chore: update MacMusicPlayer to v${{ env.VERSION }}"
+        body: |
+          Update MacMusicPlayer to v${{ env.VERSION }}
+          
+          - Version: ${{ env.VERSION }}
+          - SHA256: ${{ env.SHA256 }}
+        branch: update-mac-music-player-${{ env.VERSION }}
+        base: main
+        delete-branch: true
