@@ -4,6 +4,21 @@ MacMusicPlayer 是一款优雅简洁的 macOS 音乐播放器，以菜单栏应�
 
 ![应用截图](image.png)
 
+## 📦 安装说明
+
+### 方式一：Homebrew
+
+需要先安装 Homebrew，请参考 [Homebrew 安装指南](https://brew.sh/) 安装 Homebrew。
+
+```bash
+brew tap samzong/tap
+brew install samzong/tap/mac-music-player
+```
+
+### 方式二：下载 DMG
+
+从 [Releases](https://github.com/samzong/MacMusicPlayer/releases) 页面下载最新版本的 `MacMusicPlayer.dmg`。
+
 ## ✨ 核心特性
 
 - 🎵 轻量级菜单栏播放器，随时掌控音乐播放
@@ -28,32 +43,6 @@ MacMusicPlayer 是一款优雅简洁的 macOS 音乐播放器，以菜单栏应�
   - MediaPlayer 框架用于媒体控制
   - ServiceManagement 用于开机启动
   - IOKit 用于休眠管理
-
-## 📦 安装说明
-
-### 方式一：直接下载
-
-1. 从 [Releases](https://github.com/samzong/MacMusicPlayer/releases) 页面下载最新版本的 `MacMusicPlayer.dmg`
-2. 打开 DMG 文件，将 MacMusicPlayer 拖入 Applications 文件夹
-3. 首次运行时，如遇到安全提示，请前往"系统设置" > "安全性与隐私"中允许运行
-
-```bash
-sudo xattr -r -d com.apple.quarantine /Applications/MacMusicPlayer.app
-```
-
-### 方式二：命令行安装（开发者）
-
-```bash
-git clone https://github.com/samzong/MacMusicPlayer.git
-cd MacMusicPlayer
-make install
-```
-
-### 卸载方法
-
-```bash
-make uninstall
-```
 
 ## 🚀 使用指南
 

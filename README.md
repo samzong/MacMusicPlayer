@@ -4,6 +4,33 @@ MacMusicPlayer is an elegant and minimalist music player for macOS, designed as 
 
 ![Application Screenshot](image.png)
 
+## 📦 Installation
+
+### Method 1: Homebrew
+
+Need to install Homebrew first, Follow the [Homebrew Installation Guide](https://brew.sh/) to install Homebrew.
+
+```bash
+brew tap samzong/tap
+brew install samzong/tap/mac-music-player
+```
+
+### Method 2: Download DMG
+
+Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/samzong/MacMusicPlayer/releases) page.
+
+## 🚀 Usage Guide
+
+1. On first launch, click the menu bar icon and select "Set Music Source"
+2. Choose a folder containing MP3 files
+3. Access the following features through the menu bar icon:
+   - Play/Pause
+   - Previous/Next Track
+   - Switch Playback Mode
+   - Enable/Disable System Sleep Prevention
+   - Configure Launch at Login
+   - Reconfigure Music Folder
+
 ## ✨ Key Features
 
 - 🎵 Lightweight menu bar player for instant music control
@@ -28,44 +55,6 @@ MacMusicPlayer is an elegant and minimalist music player for macOS, designed as 
   - MediaPlayer framework for media control
   - ServiceManagement for launch at login
   - IOKit for sleep management
-
-## 📦 Installation
-
-### Method 1: Direct Download
-
-1. Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/samzong/MacMusicPlayer/releases) page
-2. Open the DMG file and drag MacMusicPlayer to your Applications folder
-3. If you encounter a security prompt on first launch, go to "System Settings" > "Security & Privacy" to allow the application to run
-
-```bash
-sudo xattr -r -d com.apple.quarantine /Applications/MacMusicPlayer.app
-```
-
-### Method 2: Command Line Installation (Developers)
-
-```bash
-git clone https://github.com/samzong/MacMusicPlayer.git
-cd MacMusicPlayer
-make install
-```
-
-### Uninstallation
-
-```bash
-make uninstall
-```
-
-## 🚀 Usage Guide
-
-1. On first launch, click the menu bar icon and select "Set Music Source"
-2. Choose a folder containing MP3 files
-3. Access the following features through the menu bar icon:
-   - Play/Pause
-   - Previous/Next Track
-   - Switch Playback Mode
-   - Enable/Disable System Sleep Prevention
-   - Configure Launch at Login
-   - Reconfigure Music Folder
 
 ## 🔨 Development Guide
 
