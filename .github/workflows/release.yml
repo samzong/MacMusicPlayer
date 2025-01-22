@@ -42,7 +42,7 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          MacMusicPlayer-${{ env.VERSION }}.dmg
+          build/MacMusicPlayer.dmg
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

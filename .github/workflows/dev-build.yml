@@ -30,21 +30,19 @@ jobs:
     - name: Generate Release Notes
       id: release_notes
       run: |
-        echo "## MacMusicPlayer Development Build" > release_notes.md
-        echo "" >> release_notes.md
-        echo "### 更新内容" >> release_notes.md
-        echo "- 这是最新的开发版本构建" >> release_notes.md
-        echo "- 构建时间: $(date '+%Y-%m-%d %H:%M:%S')" >> release_notes.md
+        echo "### Update content" >> release_notes.md
+        echo "- This is the latest development version build" >> release_notes.md
+        echo "- Build Time: $(date '+%Y-%m-%d %H:%M:%S')" >> release_notes.md
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        name: "Development Build (${{ env.VERSION }})"
+        name: "Development Build"
         body_path: release_notes.md
         draft: false
         prerelease: true
-        tag_name: "dev-${{ env.VERSION }}"
+        tag_name: "develop"
         files: |
-          MacMusicPlayer-${{ env.VERSION }}.dmg
+          build/MacMusicPlayer.dmg
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
