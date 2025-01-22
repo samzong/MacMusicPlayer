@@ -233,8 +233,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     private func getVersionString() -> String {
-        let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
-        let buildNumber = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
-        return String(format: NSLocalizedString("Version %@ (%@)", comment: ""), appVersion, buildNumber)
+        #if DEBUG
+            // 在 Debug 模式下显示 Git 信息
+            let gitCommit = Bundle.main.object(forInfoDictionaryKey: "GitCommit") as? String ?? "unknown"
+            return String(format: NSLocalizedString("Dev: %@", comment: ""), gitCommit)
+        #else
+            // 在 Release 模式下显示正式版本号
+            let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+            return String(format: NSLocalizedString("Version %@", comment: ""), appVersion)
+        #endif
     }
 }

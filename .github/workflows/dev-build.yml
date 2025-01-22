@@ -19,42 +19,13 @@ jobs:
         xcode-version: latest-stable
 
     - name: Set version
-      run: echo "VERSION=develop" >> $GITHUB_ENV
-
-    - name: Build
       run: |
-        xcodebuild clean archive -project MacMusicPlayer.xcodeproj \
-          -scheme MacMusicPlayer \
-          -archivePath ./build/MacMusicPlayer.xcarchive \
-          CODE_SIGN_STYLE=Manual \
-          CODE_SIGN_IDENTITY="-" \
-          DEVELOPMENT_TEAM=""
+        GIT_COMMIT=$(git rev-parse --short HEAD)
+        echo "VERSION=Dev-${GIT_COMMIT}" >> $GITHUB_ENV
 
-    - name: Export App
+    - name: Build and Package
       run: |
-        xcodebuild -exportArchive \
-          -archivePath ./build/MacMusicPlayer.xcarchive \
-          -exportOptionsPlist exportOptions.plist \
-          -exportPath ./build
-
-    - name: Create DMG
-      run: |
-        # Create a temporary directory for mounting
-        TEMP_DIR=$(mktemp -d)
-        
-        # Copy app to temp directory
-        mkdir -p $TEMP_DIR
-        cp -r "./build/MacMusicPlayer.app" "$TEMP_DIR/"
-        
-        # Create symbolic link to Applications folder
-        ln -s /Applications "$TEMP_DIR/Applications"
-        
-        # Create a DMG
-        hdiutil create -volname "MacMusicPlayer" -srcfolder "$TEMP_DIR" \
-          -ov -format UDZO "MacMusicPlayer-${{ env.VERSION }}.dmg"
-        
-        # Clean up
-        rm -rf "$TEMP_DIR"
+        make VERSION=${{ env.VERSION }} dmg
 
     - name: Generate Release Notes
       id: release_notes
@@ -68,11 +39,11 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        name: MacMusicPlayer Development Build
+        name: "Development Build (${{ env.VERSION }})"
         body_path: release_notes.md
         draft: false
         prerelease: true
-        tag_name: develop
+        tag_name: "dev-${{ env.VERSION }}"
         files: |
           MacMusicPlayer-${{ env.VERSION }}.dmg
       env:
