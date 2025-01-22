@@ -22,14 +22,14 @@ jobs:
       with:
         xcode-version: latest-stable
 
+    - name: Set version
+      run: |
+        GIT_COMMIT=$(git rev-parse --short HEAD)
+        echo "VERSION=PR-${GIT_COMMIT}" >> $GITHUB_ENV
+
     - name: Build
       run: |
-        xcodebuild clean build -project MacMusicPlayer.xcodeproj \
-          -scheme MacMusicPlayer \
-          -destination "platform=macOS" \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGNING_ALLOWED=NO
+        make VERSION=${{ env.VERSION }} dmg
 
     - name: Check Build Status
       if: failure()
@@ -48,4 +48,4 @@ jobs:
             owner: context.repo.owner,
             repo: context.repo.repo,
             body: '❌ Build failed. Please check the build logs and fix the issues before merging.'
-          }) 
+          })
