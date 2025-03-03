@@ -1,0 +1,53 @@
+# 📖 Simple document generation tool! Dependence Node.js run.
+# https://github.com/jaywcjlove/idoc
+
+name: idoc
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Create idoc config.
+        run: |
+          cat > idoc.yml << EOF
+          site: MacMusicPlayer
+          description: MacMusicPlayer is an elegant and minimalist music player for macOS, designed as a menu bar application to provide a seamless music playback experience. Built with SwiftUI, it perfectly integrates into the macOS ecosystem, delivering an exceptional user experience.
+          keywords: macOS, music player, menu bar, SwiftUI, seamless,macOS Integration, exceptional, user experience, Minimalist Design,Audio Player
+          favicon: MacMusicPlayer/Assets.xcassets/AppIcon.appiconset/icon-removebg.png
+          logo: MacMusicPlayer/Assets.xcassets/AppIcon.appiconset/icon-removebg.png
+
+          openSource: https://github.com/samzong/MacMusicPlayer
+
+          tocs: false
+
+          element:
+            wrapper: style=max-width:720px;
+
+          menus:
+            Home: index.html
+            About:
+              url: https://github.com/samzong
+              target: __blank
+          sideEffectFiles:
+            - README_zh.md
+          EOF
+
+      - run: npm install idoc@1 -g
+      - run: idoc
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
