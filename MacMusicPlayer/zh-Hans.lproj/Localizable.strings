@@ -28,4 +28,46 @@
 "Enable launch at login" = "已开启开机启动";
 "Disable launch at login" = "已关闭开机启动";
 "MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "需要权限保持系统唤醒，以确保音乐不被中断";
-"Version %@ (%@)" = "版本 %@ (%@)"; 
+"Version %@ (%@)" = "版本 %@ (%@)";
+
+// Download Manager
+"Failed to get available formats" = "无法获取可用格式";
+"Download failed: %@" = "下载失败: %@";
+"Invalid URL" = "无效的 URL";
+"yt-dlp not found, please make sure it's installed (brew install yt-dlp)" = "找不到 yt-dlp，请确保已安装 (brew install yt-dlp)";
+"ffmpeg not found, please make sure it's installed (brew install ffmpeg)" = "找不到 ffmpeg，请确保已安装 (brew install ffmpeg)";
+"Failed to get video title" = "无法获取视频标题";
+"Found ffmpeg path: %@" = "找到 ffmpeg 路径: %@";
+"Error checking ffmpeg: %@" = "检查 ffmpeg 时出错: %@";
+"Found yt-dlp path: %@" = "找到 yt-dlp 路径: %@";
+"Error checking yt-dlp: %@" = "检查 yt-dlp 时出错: %@";
+"Error getting video title: %@" = "获取视频标题时出错: %@";
+"Getting available formats, URL: %@" = "获取可用格式，URL: %@";
+"🎵 Best Quality (Auto Select)" = "🎵 最佳音质 (自动选择)";
+"stereo" = "立体声";
+"mono" = "单声道";
+"5.1 channels" = "5.1声道";
+"🎵 %@ Audio (%@" = "🎵 %@ 音频 (%@";
+"🎵 %@ Audio" = "🎵 %@ 音频";
+"🎵 M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "🎵 M4A 音频 (128kbps, 44kHz, 立体声, 3.5MiB) [AAC]";
+"🎵 WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "🎵 WebM 音频 (160kbps, 48kHz, 立体声, 3.2MiB) [Opus]";
+"Failed to get formats: %@" = "获取格式失败: %@";
+"Error getting formats: %@" = "获取格式时出错: %@";
+"Starting audio download, URL: %@, Format ID: %@" = "开始下载音频，URL: %@, 格式ID: %@";
+"Video title: %@" = "视频标题: %@";
+"Downloading to file: %@" = "下载到文件: %@";
+"Executing download command..." = "执行下载命令...";
+"Download output: %@" = "下载输出: %@";
+"Download error output: %@" = "下载错误输出: %@";
+"Waiting for download to complete..." = "等待下载完成...";
+"Download successful" = "下载成功";
+"Download failed, exit status: %d" = "下载失败，退出状态: %d";
+"Error during download: %@" = "下载时出错: %@";
+
+// New UI Strings
+"Not installed" = "未安装";
+"Please install missing dependencies" = "请安装缺少的依赖";
+"Please select a format to download" = "请选择要下载的格式";
+"Enter video URL" = "输入视频URL";
+"Detect" = "检测";
+"Download" = "下载"; 

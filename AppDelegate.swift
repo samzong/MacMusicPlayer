@@ -18,6 +18,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var launchManager: LaunchManager!
     var menu: NSMenu!
     
+    // 保持对窗口的强引用
+    private var downloadWindow: NSWindow?
+    
     func applicationDidFinishLaunching(_ notification: Notification) {
         playerManager = PlayerManager()
         sleepManager = SleepManager()
@@ -85,7 +88,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Reconfigure folder
         menu.addItem(NSMenuItem(title: NSLocalizedString("Set Music Source", comment: ""), action: #selector(reconfigureFolder), keyEquivalent: "s"))
-
+        
+        // 下载音乐
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Download Music", comment: ""), action: #selector(showDownloadWindow), keyEquivalent: "d"))
+        
         // 防止休眠开关
         let preventSleepItem = NSMenuItem(title: NSLocalizedString("Prevent Mac Sleep", comment: ""), action: #selector(togglePreventSleep), keyEquivalent: "")
         preventSleepItem.state = sleepManager.preventSleep ? .on : .off
@@ -253,5 +259,37 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
             return String(format: NSLocalizedString("Version %@", comment: ""), appVersion)
         #endif
+    }
+    
+    @objc func showDownloadWindow() {
+        let downloadVC = DownloadViewController()
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 500, height: 400),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.contentViewController = downloadVC
+        window.title = NSLocalizedString("Download Music", comment: "")
+        window.center()
+        
+        // 设置窗口关闭时的回调
+        window.isReleasedWhenClosed = false
+        window.delegate = self
+        
+        // 保存对窗口的引用
+        self.downloadWindow = window
+        
+        window.makeKeyAndOrderFront(self)
+    }
+}
+
+// MARK: - NSWindowDelegate
+extension AppDelegate: NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        if let window = notification.object as? NSWindow, window == downloadWindow {
+            // 释放对窗口的引用
+            downloadWindow = nil
+        }
     }
 }
