@@ -14,6 +14,7 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published var playlist: [Track] = []
     @Published var currentTrack: Track? {
         didSet {
+            player = nil  // Reset player when track changes
             NotificationCenter.default.post(name: NSNotification.Name("TrackChanged"), object: nil)
         }
     }
@@ -142,15 +143,19 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
             return
         }
         
-        do {
-            player = try AVAudioPlayer(contentsOf: track.url)
-            player?.delegate = self
-            player?.play()
-            isPlaying = true
-            print(NSLocalizedString("Started playing", comment: "") + ": \(track.title)")
-        } catch {
-            print(NSLocalizedString("Could not create player", comment: "") + " \(track.title): \(error)")
+        if player == nil {
+            do {
+                player = try AVAudioPlayer(contentsOf: track.url)
+                player?.delegate = self
+            } catch {
+                print(NSLocalizedString("Could not create player", comment: "") + " \(track.title): \(error)")
+                return
+            }
         }
+        
+        player?.play()
+        isPlaying = true
+        print(NSLocalizedString("Started playing", comment: "") + ": \(track.title)")
         
         updateNowPlayingInfo()
     }

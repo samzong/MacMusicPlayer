@@ -69,3 +69,5 @@ help:
 	@echo "  make archive   - Create an archive"
 	@echo "  make dmg       - Create a DMG installer"
 	@echo "  make version   - Show version information"
+
+.DEFAULT_GOAL := help

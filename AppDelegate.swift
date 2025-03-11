@@ -125,6 +125,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return .success
         }
         
+        commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
+            if let isPlaying = self?.playerManager.isPlaying {
+                if isPlaying {
+                    self?.playerManager.pause()
+                } else {
+                    self?.playerManager.play()
+                }
+            }
+            return .success
+        }
+        
         commandCenter.nextTrackCommand.addTarget { [weak self] _ in
             self?.playerManager.playNext()
             return .success
