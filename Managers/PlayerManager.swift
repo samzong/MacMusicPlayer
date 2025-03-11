@@ -53,6 +53,13 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
             playMode = .sequential
         }
         super.init()
+        
+        // 监听刷新音乐库通知
+        NotificationCenter.default.addObserver(self,
+                                            selector: #selector(refreshMusicLibrary),
+                                            name: NSNotification.Name("RefreshMusicLibrary"),
+                                            object: nil)
+        
         setupAudioEngine()
         loadSavedMusicFolder()
     }
@@ -214,6 +221,10 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
                 playNext()
             }
         }
+    }
+
+    @objc private func refreshMusicLibrary() {
+        loadSavedMusicFolder()
     }
 }
 

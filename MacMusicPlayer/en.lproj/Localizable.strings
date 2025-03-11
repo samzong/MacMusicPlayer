@@ -29,3 +29,45 @@
 "Disable launch at login" = "Start at Login Disabled";
 "MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "MacMusicPlayer needs permission to keep your Mac awake for uninterrupted music playback."; 
 "Version %@ (%@)" = "Version %@ (%@)"; 
+
+// Download Manager
+"Failed to get available formats" = "Failed to get available formats";
+"Download failed: %@" = "Download failed: %@";
+"Invalid URL" = "Invalid URL";
+"yt-dlp not found, please make sure it's installed (brew install yt-dlp)" = "yt-dlp not found, please make sure it's installed (brew install yt-dlp)";
+"ffmpeg not found, please make sure it's installed (brew install ffmpeg)" = "ffmpeg not found, please make sure it's installed (brew install ffmpeg)";
+"Failed to get video title" = "Failed to get video title";
+"Found ffmpeg path: %@" = "Found ffmpeg path: %@";
+"Error checking ffmpeg: %@" = "Error checking ffmpeg: %@";
+"Found yt-dlp path: %@" = "Found yt-dlp path: %@";
+"Error checking yt-dlp: %@" = "Error checking yt-dlp: %@";
+"Error getting video title: %@" = "Error getting video title: %@";
+"Getting available formats, URL: %@" = "Getting available formats, URL: %@";
+"🎵 Best Quality (Auto Select)" = "🎵 Best Quality (Auto Select)";
+"stereo" = "stereo";
+"mono" = "mono";
+"5.1 channels" = "5.1 channels";
+"🎵 %@ Audio (%@" = "🎵 %@ Audio (%@";
+"🎵 %@ Audio" = "🎵 %@ Audio";
+"🎵 M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "🎵 M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]";
+"🎵 WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "🎵 WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]";
+"Failed to get formats: %@" = "Failed to get formats: %@";
+"Error getting formats: %@" = "Error getting formats: %@";
+"Starting audio download, URL: %@, Format ID: %@" = "Starting audio download, URL: %@, Format ID: %@";
+"Video title: %@" = "Video title: %@";
+"Downloading to file: %@" = "Downloading to file: %@";
+"Executing download command..." = "Executing download command...";
+"Download output: %@" = "Download output: %@";
+"Download error output: %@" = "Download error output: %@";
+"Waiting for download to complete..." = "Waiting for download to complete...";
+"Download successful" = "Download successful";
+"Download failed, exit status: %d" = "Download failed, exit status: %d";
+"Error during download: %@" = "Error during download: %@";
+
+// New UI Strings
+"Not installed" = "Not installed";
+"Please install missing dependencies" = "Please install missing dependencies";
+"Please select a format to download" = "Please select a format to download";
+"Enter video URL" = "Enter video URL";
+"Detect" = "Detect";
+"Download" = "Download"; 

@@ -29,3 +29,45 @@
 "Disable launch at login" = "로그인 시 실행이 비활성화되었습니다";
 "MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "중단 없는 음악 재생을 위해 시스템 절전 방지 권한이 필요합니다"; 
 "Version %@ (%@)" = "버전 %@ (%@)"; 
+
+// Download Manager
+"Failed to get available formats" = "사용 가능한 형식을 가져오지 못했습니다";
+"Download failed: %@" = "다운로드 실패: %@";
+"Invalid URL" = "잘못된 URL";
+"yt-dlp not found, please make sure it's installed (brew install yt-dlp)" = "yt-dlp를 찾을 수 없습니다. 설치되어 있는지 확인하세요 (brew install yt-dlp)";
+"ffmpeg not found, please make sure it's installed (brew install ffmpeg)" = "ffmpeg를 찾을 수 없습니다. 설치되어 있는지 확인하세요 (brew install ffmpeg)";
+"Failed to get video title" = "비디오 제목을 가져오지 못했습니다";
+"Found ffmpeg path: %@" = "ffmpeg 경로를 찾았습니다: %@";
+"Error checking ffmpeg: %@" = "ffmpeg 확인 중 오류 발생: %@";
+"Found yt-dlp path: %@" = "yt-dlp 경로를 찾았습니다: %@";
+"Error checking yt-dlp: %@" = "yt-dlp 확인 중 오류 발생: %@";
+"Error getting video title: %@" = "비디오 제목을 가져오는 중 오류 발생: %@";
+"Getting available formats, URL: %@" = "사용 가능한 형식을 가져오는 중, URL: %@";
+"🎵 Best Quality (Auto Select)" = "🎵 최고 품질 (자동 선택)";
+"stereo" = "스테레오";
+"mono" = "모노";
+"5.1 channels" = "5.1 채널";
+"🎵 %@ Audio (%@" = "🎵 %@ 오디오 (%@";
+"🎵 %@ Audio" = "🎵 %@ 오디오";
+"🎵 M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "🎵 M4A 오디오 (128kbps, 44kHz, 스테레오, 3.5MiB) [AAC]";
+"🎵 WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "🎵 WebM 오디오 (160kbps, 48kHz, 스테레오, 3.2MiB) [Opus]";
+"Failed to get formats: %@" = "형식을 가져오지 못했습니다: %@";
+"Error getting formats: %@" = "형식을 가져오는 중 오류 발생: %@";
+"Starting audio download, URL: %@, Format ID: %@" = "오디오 다운로드 시작, URL: %@, 형식 ID: %@";
+"Video title: %@" = "비디오 제목: %@";
+"Downloading to file: %@" = "파일로 다운로드 중: %@";
+"Executing download command..." = "다운로드 명령 실행 중...";
+"Download output: %@" = "다운로드 출력: %@";
+"Download error output: %@" = "다운로드 오류 출력: %@";
+"Waiting for download to complete..." = "다운로드 완료 대기 중...";
+"Download successful" = "다운로드 성공";
+"Download failed, exit status: %d" = "다운로드 실패, 종료 상태: %d";
+"Error during download: %@" = "다운로드 중 오류 발생: %@";
+
+// New UI Strings
+"Not installed" = "설치되지 않음";
+"Please install missing dependencies" = "누락된 종속성을 설치하세요";
+"Please select a format to download" = "다운로드할 형식을 선택하세요";
+"Enter video URL" = "비디오 URL 입력";
+"Detect" = "감지";
+"Download" = "다운로드"; 
