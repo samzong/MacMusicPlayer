@@ -1,10 +1,12 @@
-.PHONY: clean archive dmg update-homebrew
+.PHONY: clean dmg update-homebrew check-arch
 
 # Variables
 APP_NAME = MacMusicPlayer
 BUILD_DIR = build
-ARCHIVE_PATH = $(BUILD_DIR)/$(APP_NAME).xcarchive
-DMG_PATH = $(BUILD_DIR)/$(APP_NAME).dmg
+INTEL_ARCHIVE_PATH = $(BUILD_DIR)/$(APP_NAME)-Intel.xcarchive
+ARM64_ARCHIVE_PATH = $(BUILD_DIR)/$(APP_NAME)-ARM64.xcarchive
+INTEL_DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-Intel.dmg
+ARM64_DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-ARM64.dmg
 DMG_VOLUME_NAME = "$(APP_NAME)"
 
 # Version information
@@ -23,45 +25,119 @@ clean:
 	rm -rf $(BUILD_DIR)
 	xcodebuild clean -scheme $(APP_NAME)
 
-# Create archive
-archive:
+# Build for Intel
+build-intel:
+	@echo "==> 构建 Intel 架构的应用..."
 	xcodebuild clean archive \
 		-project $(APP_NAME).xcodeproj \
 		-scheme $(APP_NAME) \
 		-configuration Release \
-		-archivePath $(ARCHIVE_PATH) \
+		-archivePath $(INTEL_ARCHIVE_PATH) \
 		CODE_SIGN_STYLE=Manual \
 		CODE_SIGN_IDENTITY="-" \
 		DEVELOPMENT_TEAM="" \
 		CURRENT_PROJECT_VERSION=$(VERSION) \
-		MARKETING_VERSION=$(VERSION)
+		MARKETING_VERSION=$(VERSION) \
+		ARCHS="x86_64"
 
-# Create DMG
-dmg: archive
-	# Export archive
+# Build for Apple Silicon
+build-arm64:
+	@echo "==> 构建 Apple Silicon 架构的应用..."
+	xcodebuild clean archive \
+		-project $(APP_NAME).xcodeproj \
+		-scheme $(APP_NAME) \
+		-configuration Release \
+		-archivePath $(ARM64_ARCHIVE_PATH) \
+		CODE_SIGN_STYLE=Manual \
+		CODE_SIGN_IDENTITY="-" \
+		DEVELOPMENT_TEAM="" \
+		CURRENT_PROJECT_VERSION=$(VERSION) \
+		MARKETING_VERSION=$(VERSION) \
+		ARCHS="arm64"
+
+# Create DMG (builds Intel and Apple Silicon versions)
+dmg: build-intel build-arm64
+	# Export Intel archive
 	xcodebuild -exportArchive \
-		-archivePath $(ARCHIVE_PATH) \
-		-exportPath $(BUILD_DIR) \
+		-archivePath $(INTEL_ARCHIVE_PATH) \
+		-exportPath $(BUILD_DIR)/Intel \
 		-exportOptionsPlist exportOptions.plist
 	
-	# Create temporary directory for DMG
-	rm -rf $(BUILD_DIR)/tmp
-	mkdir -p $(BUILD_DIR)/tmp
+	# Create temporary directory for Intel DMG
+	rm -rf $(BUILD_DIR)/tmp-intel
+	mkdir -p $(BUILD_DIR)/tmp-intel
 	
 	# Copy application to temporary directory
-	cp -r "$(BUILD_DIR)/$(APP_NAME).app" "$(BUILD_DIR)/tmp/"
+	cp -r "$(BUILD_DIR)/Intel/$(APP_NAME).app" "$(BUILD_DIR)/tmp-intel/"
 	
 	# Create symbolic link to Applications folder
-	ln -s /Applications "$(BUILD_DIR)/tmp/Applications"
+	ln -s /Applications "$(BUILD_DIR)/tmp-intel/Applications"
 	
-	# Create DMG
-	hdiutil create -volname $(DMG_VOLUME_NAME) \
-		-srcfolder "$(BUILD_DIR)/tmp" \
+	# Create Intel DMG
+	hdiutil create -volname "$(DMG_VOLUME_NAME) (Intel)" \
+		-srcfolder "$(BUILD_DIR)/tmp-intel" \
 		-ov -format UDZO \
-		"$(DMG_PATH)"
+		"$(INTEL_DMG_PATH)"
 	
 	# Clean up
-	rm -rf $(BUILD_DIR)/tmp
+	rm -rf $(BUILD_DIR)/tmp-intel $(BUILD_DIR)/Intel
+	
+	# Export ARM64 archive
+	xcodebuild -exportArchive \
+		-archivePath $(ARM64_ARCHIVE_PATH) \
+		-exportPath $(BUILD_DIR)/ARM64 \
+		-exportOptionsPlist exportOptions.plist
+	
+	# Create temporary directory for ARM64 DMG
+	rm -rf $(BUILD_DIR)/tmp-arm64
+	mkdir -p $(BUILD_DIR)/tmp-arm64
+	
+	# Copy application to temporary directory
+	cp -r "$(BUILD_DIR)/ARM64/$(APP_NAME).app" "$(BUILD_DIR)/tmp-arm64/"
+	
+	# Create symbolic link to Applications folder
+	ln -s /Applications "$(BUILD_DIR)/tmp-arm64/Applications"
+	
+	# Create ARM64 DMG
+	hdiutil create -volname "$(DMG_VOLUME_NAME) (Apple Silicon)" \
+		-srcfolder "$(BUILD_DIR)/tmp-arm64" \
+		-ov -format UDZO \
+		"$(ARM64_DMG_PATH)"
+	
+	# Clean up
+	rm -rf $(BUILD_DIR)/tmp-arm64 $(BUILD_DIR)/ARM64
+	
+	# 检查架构兼容性
+	@make check-arch
+	
+	@echo "==> 所有 DMG 文件已创建:"
+	@echo "    - Intel 版本: $(INTEL_DMG_PATH)"
+	@echo "    - Apple Silicon 版本: $(ARM64_DMG_PATH)"
+
+# Check architecture compatibility
+check-arch:
+	@echo "==> 检查应用架构兼容性..."
+	@if [ -f "$(INTEL_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" ]; then \
+		echo "==> 检查 Intel 版本架构:"; \
+		lipo -info "$(INTEL_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"; \
+		if lipo -info "$(INTEL_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" | grep -q "x86_64"; then \
+			echo "✅ Intel 版本支持 x86_64 架构"; \
+		else \
+			echo "❌ Intel 版本不支持 x86_64 架构"; \
+			exit 1; \
+		fi; \
+	fi
+	
+	@if [ -f "$(ARM64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" ]; then \
+		echo "==> 检查 Apple Silicon 版本架构:"; \
+		lipo -info "$(ARM64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"; \
+		if lipo -info "$(ARM64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" | grep -q "arm64"; then \
+			echo "✅ Apple Silicon 版本支持 arm64 架构"; \
+		else \
+			echo "❌ Apple Silicon 版本不支持 arm64 架构"; \
+			exit 1; \
+		fi; \
+	fi
 
 # Show version information
 version:
@@ -83,11 +159,13 @@ update-homebrew:
 	@echo "==> Preparing working directory..."
 	@rm -rf tmp && mkdir -p tmp
 	
-	@echo "==> Downloading DMG file..."
-	@curl -L -o tmp/$(APP_NAME).dmg "https://github.com/samzong/$(APP_NAME)/releases/download/v$(CLEAN_VERSION)/$(APP_NAME).dmg"
+	@echo "==> Downloading DMG files..."
+	@curl -L -o tmp/$(APP_NAME)-Intel.dmg "https://github.com/samzong/$(APP_NAME)/releases/download/v$(CLEAN_VERSION)/$(APP_NAME)-Intel.dmg"
+	@curl -L -o tmp/$(APP_NAME)-ARM64.dmg "https://github.com/samzong/$(APP_NAME)/releases/download/v$(CLEAN_VERSION)/$(APP_NAME)-ARM64.dmg"
 	
-	@echo "==> Calculating SHA256..."
-	@SHA256=$$(shasum -a 256 tmp/$(APP_NAME).dmg | cut -d ' ' -f 1) && echo "    - SHA256: $$SHA256"
+	@echo "==> Calculating SHA256 checksums..."
+	@INTEL_SHA256=$$(shasum -a 256 tmp/$(APP_NAME)-Intel.dmg | cut -d ' ' -f 1) && echo "    - Intel SHA256: $$INTEL_SHA256"
+	@ARM64_SHA256=$$(shasum -a 256 tmp/$(APP_NAME)-ARM64.dmg | cut -d ' ' -f 1) && echo "    - ARM64 SHA256: $$ARM64_SHA256"
 	
 	@echo "==> Cloning Homebrew tap repository..."
 	@cd tmp && git clone https://$(GH_PAT)@github.com/samzong/$(HOMEBREW_TAP_REPO).git
@@ -95,9 +173,39 @@ update-homebrew:
 
 	@echo "==> Updating cask file..."
 	@cd tmp/$(HOMEBREW_TAP_REPO) && \
-	SHA256=$$(shasum -a 256 ../$(APP_NAME).dmg | cut -d ' ' -f 1) && \
-	sed -i '' 's/version "[^"]*"/version "$(CLEAN_VERSION)"/' $(CASK_FILE) && \
-	sed -i '' 's/sha256 "[^"]*"/sha256 "'$$SHA256'"/' $(CASK_FILE)
+	INTEL_SHA256=$$(shasum -a 256 ../$(APP_NAME)-Intel.dmg | cut -d ' ' -f 1) && \
+	ARM64_SHA256=$$(shasum -a 256 ../$(APP_NAME)-ARM64.dmg | cut -d ' ' -f 1) && \
+	cat > $(CASK_FILE) << EOF \
+cask "mac-music-player" do\
+  version "$(CLEAN_VERSION)"\
+  \
+  on_intel do\
+    sha256 "$$INTEL_SHA256"\
+    \
+    url "https://github.com/samzong/MacMusicPlayer/releases/download/v#{version}/MacMusicPlayer-Intel.dmg"\
+  end\
+  \
+  on_arm do\
+    sha256 "$$ARM64_SHA256"\
+    \
+    url "https://github.com/samzong/MacMusicPlayer/releases/download/v#{version}/MacMusicPlayer-ARM64.dmg"\
+  end\
+  \
+  name "MacMusicPlayer"\
+  desc "Simple music player for macOS"\
+  homepage "https://github.com/samzong/MacMusicPlayer"\
+  \
+  auto_updates false\
+  \
+  app "MacMusicPlayer.app"\
+  \
+  zap trash: [\
+    "~/Library/Application Support/MacMusicPlayer",\
+    "~/Library/Caches/MacMusicPlayer",\
+    "~/Library/Preferences/com.seimotech.MacMusicPlayer.plist",\
+  ]\
+end\
+EOF
 	
 	@echo "==> Checking for changes..."
 	@cd tmp/$(HOMEBREW_TAP_REPO) && \
@@ -110,7 +218,7 @@ update-homebrew:
 		git push -u origin $(BRANCH_NAME); \
 		pr_data=$$(jq -n \
 			--arg title "chore: update MacMusicPlayer to v$(CLEAN_VERSION)" \
-			--arg body "Auto-generated PR\n- Version: $(CLEAN_VERSION)\n- SHA256: $$SHA256" \
+			--arg body "Auto-generated PR\n- Version: $(CLEAN_VERSION)\n- Intel SHA256: $$INTEL_SHA256\n- ARM64 SHA256: $$ARM64_SHA256" \
 			--arg head "$(BRANCH_NAME)" \
 			--arg base "main" \
 			'{title: $$title, body: $$body, head: $$head, base: $$base}'); \
@@ -133,9 +241,9 @@ update-homebrew:
 help:
 	@echo "Available commands:"
 	@echo "  make clean           - Clean build artifacts"
-	@echo "  make archive         - Create an archive"
-	@echo "  make dmg             - Create a DMG installer"
+	@echo "  make dmg             - Create DMG installers (Intel and Apple Silicon)"
 	@echo "  make version         - Show version information"
+	@echo "  make check-arch      - 检查应用架构兼容性"
 	@echo "  make update-homebrew - Update Homebrew cask (requires GH_PAT)"
 
 .DEFAULT_GOAL := help
