@@ -27,6 +27,7 @@ Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/
    - Play/Pause
    - Previous/Next Track
    - Switch Playback Mode
+   - Download Music from Online Sources
    - Enable/Disable System Sleep Prevention
    - Configure Launch at Login
    - Reconfigure Music Folder
@@ -38,6 +39,7 @@ Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/
 - 🌍 Multi-language support (English, Simplified Chinese, Traditional Chinese, Japanese, Korean)
 - 🎧 MP3 audio format playback
 - 🔄 Multiple playback modes (Sequential, Single Loop, Random)
+- 📥 Download music from online sources (YouTube, SoundCloud, etc.)
 - 💾 Smart memory of last music folder location
 - 🚀 Launch at login support
 - 😴 Prevent system sleep for uninterrupted music
@@ -55,6 +57,9 @@ Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/
   - MediaPlayer framework for media control
   - ServiceManagement for launch at login
   - IOKit for sleep management
+- **Download Engine**:
+  - yt-dlp for online media extraction
+  - ffmpeg for audio conversion
 
 ## 🔨 Development Guide
 
@@ -63,6 +68,7 @@ Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/
 - macOS 13.0+
 - Xcode 15.0+
 - Swift 5.9+
+- For music download feature: yt-dlp and ffmpeg (can be installed via Homebrew)
 
 ### Build Steps
 
@@ -88,7 +94,8 @@ MacMusicPlayer/
 ├── Managers/           # Business Managers
 │   ├── PlayerManager   # Playback Control
 │   ├── LaunchManager   # Launch Management
-│   └── SleepManager    # Sleep Control
+│   ├── SleepManager    # Sleep Control
+│   └── DownloadManager # Music Download
 ├── Models/             # Data Models
 ├── Views/              # UI Components
 ├── Helpers/            # Utility Classes
@@ -114,6 +121,7 @@ The project supports multiple languages with localization files located at:
 
 ## 📝 Development Roadmap
 
+- [x] Support for downloading music from online sources
 - [ ] Support for more audio formats (FLAC, WAV, AAC, etc.)
 - [ ] Add audio visualization effects
 - [ ] Playlist management support

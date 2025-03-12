@@ -10,7 +10,8 @@ class DownloadViewController: NSViewController {
     private let progressIndicator = NSProgressIndicator()
     private let versionInfoLabel = NSTextField()
     private let githubLinkButton = NSButton()
-    private let backgroundView = NSView()
+    private let backgroundView = NSVisualEffectView()
+    private let tableBackgroundView = NSVisualEffectView()
     
     // MARK: - Properties
     private var formats: [DownloadManager.DownloadFormat] = []
@@ -22,7 +23,8 @@ class DownloadViewController: NSViewController {
     
     // MARK: - Lifecycle
     override func loadView() {
-        self.view = NSView(frame: NSRect(x: 0, y: 0, width: 600, height: 300))
+        // 设置一个合适的初始大小，与后续使用的compactHeight保持一致
+        self.view = NSView(frame: NSRect(x: 0, y: 0, width: 600, height: 140))
     }
     
     override func viewDidLoad() {
@@ -31,10 +33,30 @@ class DownloadViewController: NSViewController {
         checkDependencies()
     }
     
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        
+        // 确保窗口成为焦点窗口
+        if let window = view.window {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            
+            // 将焦点设置到URL输入框
+            self.view.window?.makeFirstResponder(urlTextField)
+        }
+    }
+    
     // MARK: - UI Setup
     private func setupUI() {
+        // 应用半透明材质效果
         view.wantsLayer = true
-        view.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+        
+        // 设置窗口标题居中
+        if let window = view.window {
+            window.title = NSLocalizedString("Download Music", comment: "")
+            window.titleVisibility = .visible
+            window.titlebarAppearsTransparent = false
+        }
         
         setupURLField()
         setupDetectButton()
@@ -43,35 +65,24 @@ class DownloadViewController: NSViewController {
         setupProgressIndicator()
         setupVersionInfo()
         setupGithubLink()
-        
-        // 根据初始视图状态调整窗口大小
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self, let window = self.view.window else { return }
-            // 初始窗口高度：只显示URL输入框、状态标签和版本信息
-            let compactHeight: CGFloat = 140
-            let frame = NSRect(
-                x: window.frame.origin.x,
-                y: window.frame.origin.y + window.frame.height - compactHeight,
-                width: window.frame.width,
-                height: compactHeight
-            )
-            window.setFrame(frame, display: true, animate: false)
-        }
     }
     
     private func setupURLField() {
-        urlTextField.frame = NSRect(x: 20, y: view.frame.height - 50, width: view.frame.width - 130, height: 30)
-        urlTextField.placeholderString = NSLocalizedString("Enter video URL", comment: "")
-        urlTextField.font = NSFont.systemFont(ofSize: 14)
-        urlTextField.bezelStyle = .roundedBezel
         urlTextField.translatesAutoresizingMaskIntoConstraints = false
+        urlTextField.placeholderString = NSLocalizedString("Enter video URL", comment: "")
+        urlTextField.font = NSFont.systemFont(ofSize: 13)
+        urlTextField.bezelStyle = .roundedBezel
+        urlTextField.focusRingType = .exterior
+        // 添加回车键支持
+        urlTextField.target = self
+        urlTextField.action = #selector(detectFormats)
         view.addSubview(urlTextField)
         
         NSLayoutConstraint.activate([
             urlTextField.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
             urlTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             urlTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -110),
-            urlTextField.heightAnchor.constraint(equalToConstant: 30)
+            urlTextField.heightAnchor.constraint(equalToConstant: 28)
         ])
     }
     
@@ -81,14 +92,24 @@ class DownloadViewController: NSViewController {
         detectButton.bezelStyle = .rounded
         detectButton.target = self
         detectButton.action = #selector(detectFormats)
-        detectButton.font = NSFont.systemFont(ofSize: 14)
+        detectButton.font = NSFont.systemFont(ofSize: 13, weight: .medium)
+        detectButton.contentTintColor = .white
+        detectButton.wantsLayer = true
+        
+        // 设置为蓝色按钮样式
+        if #available(macOS 11.0, *) {
+            detectButton.bezelColor = NSColor.controlAccentColor
+        } else {
+            detectButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+        }
+        
         view.addSubview(detectButton)
         
         NSLayoutConstraint.activate([
             detectButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
-            detectButton.leadingAnchor.constraint(equalTo: urlTextField.trailingAnchor, constant: 10),
+            detectButton.leadingAnchor.constraint(equalTo: urlTextField.trailingAnchor, constant: 8),
             detectButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            detectButton.heightAnchor.constraint(equalToConstant: 30)
+            detectButton.heightAnchor.constraint(equalToConstant: 28)
         ])
     }
     
@@ -97,16 +118,17 @@ class DownloadViewController: NSViewController {
         statusLabel.isEditable = false
         statusLabel.isBordered = false
         statusLabel.backgroundColor = .clear
-        statusLabel.alignment = .center
-        statusLabel.font = NSFont.systemFont(ofSize: 13)
+        statusLabel.alignment = .left
+        statusLabel.font = NSFont.systemFont(ofSize: 12)
         statusLabel.textColor = NSColor.secondaryLabelColor
+        statusLabel.stringValue = ""
         view.addSubview(statusLabel)
         
         NSLayoutConstraint.activate([
-            statusLabel.topAnchor.constraint(equalTo: urlTextField.bottomAnchor, constant: 10),
+            statusLabel.topAnchor.constraint(equalTo: urlTextField.bottomAnchor, constant: 12),
             statusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             statusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            statusLabel.heightAnchor.constraint(equalToConstant: 20)
+            statusLabel.heightAnchor.constraint(equalToConstant: 16)
         ])
     }
     
@@ -133,33 +155,29 @@ class DownloadViewController: NSViewController {
         scrollView.autohidesScrollers = true
         scrollView.borderType = .noBorder
         scrollView.drawsBackground = false
-        scrollView.wantsLayer = true
         
-        // 添加圆角背景视图
-        backgroundView.translatesAutoresizingMaskIntoConstraints = false
-        backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
-        backgroundView.layer?.cornerRadius = 8
-        backgroundView.layer?.borderWidth = 0.5  // 更细的边框
-        backgroundView.layer?.borderColor = NSColor.separatorColor.withAlphaComponent(0.2).cgColor  // 更淡的边框颜色
-        backgroundView.layer?.shadowOpacity = 0.1  // 添加轻微阴影
-        backgroundView.layer?.shadowOffset = CGSize(width: 0, height: 1)
-        backgroundView.layer?.shadowRadius = 2
-        view.addSubview(backgroundView)
+        // 使用半透明材质背景
+        tableBackgroundView.translatesAutoresizingMaskIntoConstraints = false
+        tableBackgroundView.material = .popover
+        tableBackgroundView.state = .active
+        tableBackgroundView.wantsLayer = true
+        tableBackgroundView.layer?.cornerRadius = 8
+        tableBackgroundView.layer?.masksToBounds = true
+        view.addSubview(tableBackgroundView)
         view.addSubview(scrollView)
         
         NSLayoutConstraint.activate([
-            backgroundView.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 10),
-            backgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            backgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -60)
+            tableBackgroundView.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 12),
+            tableBackgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            tableBackgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            tableBackgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -50)
         ])
         
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: backgroundView.topAnchor, constant: 5),
-            scrollView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor, constant: 5),
-            scrollView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor, constant: -5),
-            scrollView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor, constant: -5)
+            scrollView.topAnchor.constraint(equalTo: tableBackgroundView.topAnchor, constant: 0),
+            scrollView.leadingAnchor.constraint(equalTo: tableBackgroundView.leadingAnchor, constant: 0),
+            scrollView.trailingAnchor.constraint(equalTo: tableBackgroundView.trailingAnchor, constant: 0),
+            scrollView.bottomAnchor.constraint(equalTo: tableBackgroundView.bottomAnchor, constant: 0)
         ])
         
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -181,7 +199,7 @@ class DownloadViewController: NSViewController {
         scrollView.documentView = tableView
         
         // 初始状态下隐藏背景视图和表格
-        backgroundView.isHidden = true
+        tableBackgroundView.isHidden = true
         scrollView.isHidden = true
     }
     
@@ -191,14 +209,14 @@ class DownloadViewController: NSViewController {
         versionInfoLabel.isBordered = false
         versionInfoLabel.backgroundColor = .clear
         versionInfoLabel.alignment = .left
-        versionInfoLabel.font = NSFont.systemFont(ofSize: 11)
-        versionInfoLabel.textColor = NSColor.secondaryLabelColor
+        versionInfoLabel.font = NSFont.systemFont(ofSize: 10)
+        versionInfoLabel.textColor = NSColor.tertiaryLabelColor
         view.addSubview(versionInfoLabel)
         
         NSLayoutConstraint.activate([
             versionInfoLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            versionInfoLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
-            versionInfoLabel.heightAnchor.constraint(equalToConstant: 20)
+            versionInfoLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
+            versionInfoLabel.heightAnchor.constraint(equalToConstant: 16)
         ])
     }
     
@@ -209,15 +227,46 @@ class DownloadViewController: NSViewController {
         githubLinkButton.isBordered = false
         githubLinkButton.target = self
         githubLinkButton.action = #selector(openGithub)
-        githubLinkButton.font = NSFont.systemFont(ofSize: 11)
+        githubLinkButton.font = NSFont.systemFont(ofSize: 10)
         githubLinkButton.contentTintColor = NSColor.linkColor
+        
+        // 添加鼠标悬停时显示下划线效果
+        let trackingArea = NSTrackingArea(
+            rect: NSRect.zero,
+            options: [.inVisibleRect, .activeAlways, .mouseEnteredAndExited],
+            owner: self,
+            userInfo: ["button": "github"]
+        )
+        githubLinkButton.addTrackingArea(trackingArea)
+        
         view.addSubview(githubLinkButton)
         
         NSLayoutConstraint.activate([
             githubLinkButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            githubLinkButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
-            githubLinkButton.heightAnchor.constraint(equalToConstant: 20)
+            githubLinkButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
+            githubLinkButton.heightAnchor.constraint(equalToConstant: 16)
         ])
+    }
+    
+    // MARK: - Mouse Tracking for GitHub Link
+    override func mouseEntered(with event: NSEvent) {
+        super.mouseEntered(with: event)
+        if let userInfo = event.trackingArea?.userInfo as? [String: String],
+           userInfo["button"] == "github" {
+            let attributedString = NSMutableAttributedString(string: githubLinkButton.title)
+            attributedString.addAttribute(.underlineStyle, 
+                                         value: NSUnderlineStyle.single.rawValue, 
+                                         range: NSRange(location: 0, length: attributedString.length))
+            githubLinkButton.attributedTitle = attributedString
+        }
+    }
+    
+    override func mouseExited(with event: NSEvent) {
+        super.mouseExited(with: event)
+        if let userInfo = event.trackingArea?.userInfo as? [String: String],
+           userInfo["button"] == "github" {
+            githubLinkButton.attributedTitle = NSAttributedString(string: githubLinkButton.title)
+        }
     }
     
     // MARK: - Dependencies Check
@@ -432,6 +481,9 @@ class DownloadViewController: NSViewController {
         if !isYtDlpInstalled || !isFfmpegInstalled {
             statusLabel.stringValue = NSLocalizedString("Please install missing dependencies", comment: "")
             statusLabel.textColor = NSColor.systemRed
+        } else {
+            // 依赖工具正常安装时，清空状态信息
+            statusLabel.stringValue = ""
         }
     }
     
@@ -445,123 +497,171 @@ class DownloadViewController: NSViewController {
             return
         }
         
-        // 检查依赖是否已安装
-        if !isYtDlpInstalled || !isFfmpegInstalled {
-            statusLabel.stringValue = NSLocalizedString("Please install missing dependencies", comment: "")
-            statusLabel.textColor = NSColor.systemRed
-            return
-        }
+        // 添加平滑的UI状态过渡
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.3
+            // 显示进度指示器
+            progressIndicator.isHidden = false
+            progressIndicator.startAnimation(nil)
+            
+            // 更新状态标签
+            statusLabel.stringValue = NSLocalizedString("Detecting available formats...", comment: "")
+            statusLabel.textColor = NSColor.secondaryLabelColor
+        })
         
-        statusLabel.stringValue = NSLocalizedString("Detecting available formats...", comment: "")
-        statusLabel.textColor = NSColor.secondaryLabelColor
-        detectButton.isEnabled = false
-        progressIndicator.isHidden = false
-        progressIndicator.startAnimation(nil)
+        // 清空现有格式
+        formats = []
+        tableView.reloadData()
         
+        // 使用Task执行异步操作
         Task {
             do {
-                formats = try await DownloadManager.shared.fetchAvailableFormats(from: urlString)
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
+                // 检查是否安装了依赖
+                if !self.isYtDlpInstalled {
+                    DispatchQueue.main.async {
+                        self.hideProgressIndicator()
+                        self.statusLabel.stringValue = NSLocalizedString("yt-dlp not found, please make sure it's installed (brew install yt-dlp)", comment: "")
+                        self.statusLabel.textColor = NSColor.systemRed
+                    }
+                    return
+                }
+                
+                if !self.isFfmpegInstalled {
+                    DispatchQueue.main.async {
+                        self.hideProgressIndicator()
+                        self.statusLabel.stringValue = NSLocalizedString("ffmpeg not found, please make sure it's installed (brew install ffmpeg)", comment: "")
+                        self.statusLabel.textColor = NSColor.systemRed
+                    }
+                    return
+                }
+                
+                // 检测可用格式
+                let newFormats = try await DownloadManager.shared.fetchAvailableFormats(from: urlString)
+                
+                DispatchQueue.main.async {
+                    self.formats = newFormats
                     
-                    self.tableView.reloadData()
-                    self.backgroundView.isHidden = false
-                    self.scrollView.isHidden = false
-                    self.statusLabel.stringValue = NSLocalizedString("Please select a format to download", comment: "")
-                    self.statusLabel.textColor = NSColor.secondaryLabelColor
-                    self.detectButton.isEnabled = true
-                    self.progressIndicator.stopAnimation(nil)
-                    self.progressIndicator.isHidden = true
-                    
-                    // 调整窗口大小以适应表格内容
-                    if let window = self.view.window {
-                        // 计算所需的高度：URL输入框+状态标签+表格+版本信息
-                        let headerHeight: CGFloat = 60 // URL输入框和状态标签的高度加上边距
-                        let footerHeight: CGFloat = 40 // 版本信息的高度加上边距
-                        
-                        // 计算表格高度，但确保不会太高
-                        let itemHeight: CGFloat = 40 // 每行的高度
-                        let padding: CGFloat = 20 // 表格上下的内边距
-                        let maxRows = 5 // 最多显示的行数
-                        let visibleRows = min(self.formats.count, maxRows)
-                        let tableHeight = CGFloat(visibleRows) * itemHeight + padding
-                        
-                        let totalHeight = headerHeight + tableHeight + footerHeight
-                        
-                        let frame = NSRect(
-                            x: window.frame.origin.x,
-                            y: window.frame.origin.y + window.frame.height - totalHeight,
-                            width: window.frame.width,
-                            height: totalHeight
-                        )
-                        window.setFrame(frame, display: true, animate: true)
+                    // 平滑展示结果
+                    if !self.formats.isEmpty {
+                        NSAnimationContext.runAnimationGroup({ context in
+                            context.duration = 0.3
+                            self.hideProgressIndicator()
+                            
+                            // 展示表格并调整窗口大小
+                            self.tableBackgroundView.isHidden = false
+                            self.scrollView.isHidden = false
+                            
+                            self.statusLabel.stringValue = String(format: NSLocalizedString("Found %d available formats", comment: ""), self.formats.count)
+                            self.statusLabel.textColor = NSColor.secondaryLabelColor
+                        }, completionHandler: {
+                            self.tableView.reloadData()
+                            
+                            // 平滑调整窗口大小
+                            if let window = self.view.window {
+                                let expandedHeight: CGFloat = min(540, 140 + CGFloat(min(8, self.formats.count)) * 40 + 60)
+                                
+                                let newFrame = NSRect(
+                                    x: window.frame.origin.x,
+                                    y: window.frame.origin.y + window.frame.height - expandedHeight,
+                                    width: window.frame.width,
+                                    height: expandedHeight
+                                )
+                                
+                                window.animator().setFrame(newFrame, display: true)
+                            }
+                        })
+                    } else {
+                        self.hideProgressIndicator()
+                        self.statusLabel.stringValue = NSLocalizedString("No formats found", comment: "")
+                        self.statusLabel.textColor = NSColor.secondaryLabelColor
                     }
                 }
             } catch {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    if let downloadError = error as? DownloadManager.DownloadError {
-                        self.statusLabel.stringValue = downloadError.localizedDescription
-                    } else {
-                        self.statusLabel.stringValue = NSLocalizedString("Failed to detect formats", comment: "")
-                    }
+                DispatchQueue.main.async {
+                    self.hideProgressIndicator()
+                    self.statusLabel.stringValue = String(format: NSLocalizedString("Error: %@", comment: ""), error.localizedDescription)
                     self.statusLabel.textColor = NSColor.systemRed
-                    self.detectButton.isEnabled = true
-                    self.progressIndicator.stopAnimation(nil)
-                    self.progressIndicator.isHidden = true
                 }
             }
         }
     }
     
+    private func hideProgressIndicator() {
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.2
+            progressIndicator.animator().alphaValue = 0
+        }, completionHandler: {
+            self.progressIndicator.stopAnimation(nil)
+            self.progressIndicator.isHidden = true
+            self.progressIndicator.alphaValue = 1
+        })
+    }
+    
     @objc private func downloadAudio(sender: NSButton) {
-        // 获取点击的行
         let row = sender.tag
         guard row >= 0 && row < formats.count else { return }
         
         let format = formats[row]
-        let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let videoUrl = urlTextField.stringValue
         
-        if urlString.isEmpty { return }
-        
-        statusLabel.stringValue = NSLocalizedString("Downloading...", comment: "")
-        statusLabel.textColor = NSColor.secondaryLabelColor
+        // 更新UI状态
         sender.isEnabled = false
-        detectButton.isEnabled = false
+        
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.2
+            sender.animator().alphaValue = 0.6
+        })
+        
         progressIndicator.isHidden = false
         progressIndicator.startAnimation(nil)
+        statusLabel.stringValue = NSLocalizedString("Starting download...", comment: "")
         
+        // 使用Task执行异步操作
         Task {
             do {
-                try await DownloadManager.shared.downloadAudio(from: urlString, formatId: format.formatId)
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.statusLabel.stringValue = NSLocalizedString("Download completed", comment: "")
+                try await DownloadManager.shared.downloadAudio(from: videoUrl, formatId: format.formatId)
+                
+                DispatchQueue.main.async {
+                    self.hideProgressIndicator()
+                    self.statusLabel.stringValue = NSLocalizedString("Download completed successfully", comment: "")
                     self.statusLabel.textColor = NSColor.systemGreen
-                    sender.isEnabled = true
-                    self.detectButton.isEnabled = true
-                    self.progressIndicator.stopAnimation(nil)
-                    self.progressIndicator.isHidden = true
+                    
+                    // 恢复按钮状态
+                    NSAnimationContext.runAnimationGroup({ context in
+                        context.duration = 0.2
+                        sender.animator().alphaValue = 1.0
+                    }, completionHandler: {
+                        sender.isEnabled = true
+                    })
+                    
+                    // 通知播放器刷新音乐库
+                    NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
                 }
             } catch {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    if let downloadError = error as? DownloadManager.DownloadError {
-                        self.statusLabel.stringValue = downloadError.localizedDescription
-                    } else {
-                        self.statusLabel.stringValue = NSLocalizedString("Download failed", comment: "")
-                    }
+                DispatchQueue.main.async {
+                    self.hideProgressIndicator()
+                    self.statusLabel.stringValue = String(format: NSLocalizedString("Download failed: %@", comment: ""), error.localizedDescription)
                     self.statusLabel.textColor = NSColor.systemRed
-                    sender.isEnabled = true
-                    self.detectButton.isEnabled = true
-                    self.progressIndicator.stopAnimation(nil)
-                    self.progressIndicator.isHidden = true
+                    
+                    // 恢复按钮状态
+                    NSAnimationContext.runAnimationGroup({ context in
+                        context.duration = 0.2
+                        sender.animator().alphaValue = 1.0
+                    }, completionHandler: {
+                        sender.isEnabled = true
+                    })
                 }
             }
         }
+    }
+    
+    private func showAlert(message: String) {
+        let alert = NSAlert()
+        alert.messageText = NSLocalizedString("Information", comment: "")
+        alert.informativeText = message
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: NSLocalizedString("OK", comment: ""))
+        alert.beginSheetModal(for: view.window!) { _ in }
     }
     
     @objc private func openGithub() {
@@ -607,19 +707,41 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             text.isBordered = false
             text.backgroundColor = .clear
             text.drawsBackground = false
-            text.font = NSFont.systemFont(ofSize: 13)
+            text.font = NSFont.systemFont(ofSize: 12)
             text.lineBreakMode = .byTruncatingTail
+            // 添加辅助功能标签
+            text.setAccessibilityLabel("Audio format")
             containerView.addSubview(text)
             
-            // 下载按钮
+            // 下载按钮 - 使用更现代的样式
             let downloadButton = NSButton()
             downloadButton.identifier = NSUserInterfaceItemIdentifier("DownloadButton")
             downloadButton.translatesAutoresizingMaskIntoConstraints = false
             downloadButton.title = NSLocalizedString("Download", comment: "")
             downloadButton.bezelStyle = .rounded
-            downloadButton.font = NSFont.systemFont(ofSize: 12)
+            downloadButton.font = NSFont.systemFont(ofSize: 12, weight: .medium)
             downloadButton.target = self
             downloadButton.action = #selector(downloadAudio(sender:))
+            downloadButton.setAccessibilityLabel("Download this audio format")
+            
+            // 设置按钮样式
+            downloadButton.wantsLayer = true
+            downloadButton.contentTintColor = NSColor.white
+            
+            if #available(macOS 11.0, *) {
+                downloadButton.bezelColor = NSColor.controlAccentColor
+            } else {
+                downloadButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+            }
+            
+            // 添加鼠标悬停效果
+            let trackingArea = NSTrackingArea(
+                rect: NSRect.zero,
+                options: [.inVisibleRect, .activeAlways, .mouseEnteredAndExited],
+                owner: downloadButton,
+                userInfo: nil
+            )
+            downloadButton.addTrackingArea(trackingArea)
             
             // 确保按钮宽度足够显示文本
             let minButtonWidth: CGFloat = 90
@@ -636,10 +758,58 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 downloadButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -5),
                 downloadButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 downloadButton.widthAnchor.constraint(equalToConstant: actualButtonWidth),
-                downloadButton.heightAnchor.constraint(equalToConstant: 24)
+                downloadButton.heightAnchor.constraint(equalToConstant: 26)
             ])
             
             cell?.textField = text
+            
+            // 为按钮添加悬停和点击动画效果
+            class ButtonAnimationDelegate: NSObject {
+                @objc func mouseEntered(_ sender: NSEvent) {
+                    guard let button = sender.trackingArea?.owner as? NSButton else { return }
+                    NSAnimationContext.runAnimationGroup({ context in
+                        context.duration = 0.2
+                        button.animator().alphaValue = 0.9
+                    })
+                }
+                
+                @objc func mouseExited(_ sender: NSEvent) {
+                    guard let button = sender.trackingArea?.owner as? NSButton else { return }
+                    NSAnimationContext.runAnimationGroup({ context in
+                        context.duration = 0.2
+                        button.animator().alphaValue = 1.0
+                    })
+                }
+                
+                @objc func mouseDown(_ sender: NSEvent) {
+                    guard let button = sender.trackingArea?.owner as? NSButton else { return }
+                    NSAnimationContext.runAnimationGroup({ context in
+                        context.duration = 0.1
+                        button.animator().setFrameOrigin(NSPoint(x: button.frame.origin.x, y: button.frame.origin.y - 1))
+                    })
+                }
+                
+                @objc func mouseUp(_ sender: NSEvent) {
+                    guard let button = sender.trackingArea?.owner as? NSButton else { return }
+                    NSAnimationContext.runAnimationGroup({ context in
+                        context.duration = 0.1
+                        button.animator().setFrameOrigin(NSPoint(x: button.frame.origin.x, y: button.frame.origin.y + 1))
+                    })
+                }
+            }
+            
+            // 附加动画委托对象到按钮
+            let animationDelegate = ButtonAnimationDelegate()
+            objc_setAssociatedObject(downloadButton, "animationDelegate", animationDelegate, .OBJC_ASSOCIATION_RETAIN)
+            
+            NotificationCenter.default.addObserver(forName: NSWindow.didBecomeKeyNotification, object: nil, queue: .main) { _ in
+                downloadButton.contentTintColor = NSColor.white
+                if #available(macOS 11.0, *) {
+                    downloadButton.bezelColor = NSColor.controlAccentColor
+                } else {
+                    downloadButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+                }
+            }
         }
         
         // 更新内容
@@ -683,7 +853,8 @@ class CustomTableRowView: NSTableRowView {
         
         // 绘制底部分隔线
         let bottomLine = NSBezierPath()
-        NSColor.separatorColor.withAlphaComponent(0.3).setStroke()
+        NSColor.separatorColor.withAlphaComponent(0.2).setStroke()
+        bottomLine.lineWidth = 0.5
         bottomLine.move(to: NSPoint(x: 10, y: 0))
         bottomLine.line(to: NSPoint(x: self.bounds.width - 10, y: 0))
         bottomLine.stroke()
@@ -705,11 +876,20 @@ class CustomTableRowView: NSTableRowView {
     override func mouseEntered(with event: NSEvent) {
         super.mouseEntered(with: event)
         self.wantsLayer = true
-        self.layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.1).cgColor
+        
+        // 使用系统强调色的淡化版本作为悬停效果
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.2
+            self.animator().layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.1).cgColor
+        })
     }
     
     override func mouseExited(with event: NSEvent) {
         super.mouseExited(with: event)
-        self.layer?.backgroundColor = NSColor.clear.cgColor
+        
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.2
+            self.animator().layer?.backgroundColor = NSColor.clear.cgColor
+        })
     }
 } 
