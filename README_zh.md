@@ -26,6 +26,7 @@ brew install samzong/tap/mac-music-player
 - 🌍 多语言支持（简体中文、繁体中文、英语、日语、韩语）
 - 🎧 支持 MP3 音频格式播放
 - 🔄 多种播放模式（顺序播放、单曲循环、随机播放）
+- 📥 支持从在线源下载音乐（YouTube、SoundCloud 等）
 - 💾 智能记忆上次音乐文件夹位置
 - 🚀 支持开机自启动
 - 😴 防止系统休眠功能，确保音乐不间断
@@ -43,6 +44,9 @@ brew install samzong/tap/mac-music-player
   - MediaPlayer 框架用于媒体控制
   - ServiceManagement 用于开机启动
   - IOKit 用于休眠管理
+- **下载引擎**:
+  - yt-dlp 用于在线媒体提取
+  - ffmpeg 用于音频转换
 
 ## 🚀 使用指南
 
@@ -52,6 +56,7 @@ brew install samzong/tap/mac-music-player
    - 播放/暂停
    - 上一曲/下一曲
    - 切换播放模式
+   - 从在线源下载音乐
    - 开启/关闭防止系统休眠
    - 设置开机启动
    - 重新选择音乐文件夹
@@ -63,6 +68,7 @@ brew install samzong/tap/mac-music-player
 - macOS 13.0+
 - Xcode 15.0+
 - Swift 5.9+
+- 音乐下载功能需要: yt-dlp 和 ffmpeg（可通过 Homebrew 安装）
 
 ### 构建步骤
 
@@ -88,7 +94,8 @@ MacMusicPlayer/
 ├── Managers/           # 业务管理器
 │   ├── PlayerManager   # 播放控制
 │   ├── LaunchManager   # 启动管理
-│   └── SleepManager    # 休眠控制
+│   ├── SleepManager    # 休眠控制
+│   └── DownloadManager # 音乐下载
 ├── Models/             # 数据模型
 ├── Views/              # 界面组件
 ├── Helpers/            # 工具类
@@ -114,6 +121,7 @@ MacMusicPlayer/
 
 ## 📝 开发计划
 
+- [x] 支持从在线源下载音乐
 - [ ] 支持更多音频格式（FLAC、WAV、AAC等）
 - [ ] 添加音频可视化效果
 - [ ] 支持播放列表管理
