@@ -1,12 +1,12 @@
-.PHONY: clean dmg update-homebrew check-arch user-guide
+.PHONY: clean dmg update-homebrew check-arch
 
 # Variables
 APP_NAME = MacMusicPlayer
 BUILD_DIR = build
-INTEL_ARCHIVE_PATH = $(BUILD_DIR)/$(APP_NAME)-Intel.xcarchive
-ARM64_ARCHIVE_PATH = $(BUILD_DIR)/$(APP_NAME)-ARM64.xcarchive
-INTEL_DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-Intel.dmg
-ARM64_DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-ARM64.dmg
+X86_64_ARCHIVE_PATH = $(BUILD_DIR)/$(APP_NAME)-x86_64.xcarchive
+ARM64_ARCHIVE_PATH = $(BUILD_DIR)/$(APP_NAME)-arm64.xcarchive
+X86_64_DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-x86_64.dmg
+ARM64_DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-arm64.dmg
 DMG_VOLUME_NAME = "$(APP_NAME)"
 
 # 签名相关变量 - 使用自签名选项
@@ -32,14 +32,14 @@ clean:
 	rm -rf $(BUILD_DIR)
 	xcodebuild clean -scheme $(APP_NAME)
 
-# Build for Intel
-build-intel:
-	@echo "==> 构建 Intel 架构的应用..."
+# Build for x86_64 (Intel)
+build-x86_64:
+	@echo "==> 构建 x86_64 架构的应用..."
 	xcodebuild clean archive \
 		-project $(APP_NAME).xcodeproj \
 		-scheme $(APP_NAME) \
 		-configuration Release \
-		-archivePath $(INTEL_ARCHIVE_PATH) \
+		-archivePath $(X86_64_ARCHIVE_PATH) \
 		CODE_SIGN_STYLE=Manual \
 		CODE_SIGN_IDENTITY="-" \
 		DEVELOPMENT_TEAM="" \
@@ -48,9 +48,9 @@ build-intel:
 		ARCHS="x86_64" \
 		OTHER_CODE_SIGN_FLAGS="--options=runtime"
 
-# Build for Apple Silicon
+# Build for arm64 (Apple Silicon)
 build-arm64:
-	@echo "==> 构建 Apple Silicon 架构的应用..."
+	@echo "==> 构建 arm64 架构的应用..."
 	xcodebuild clean archive \
 		-project $(APP_NAME).xcodeproj \
 		-scheme $(APP_NAME) \
@@ -64,72 +64,72 @@ build-arm64:
 		ARCHS="arm64" \
 		OTHER_CODE_SIGN_FLAGS="--options=runtime"
 
-# Create DMG (builds Intel and Apple Silicon versions)
-dmg: build-intel build-arm64
-	# Export Intel archive
+# Create DMG (builds x86_64 and arm64 versions)
+dmg: build-x86_64 build-arm64
+	# Export x86_64 archive
 	xcodebuild -exportArchive \
-		-archivePath $(INTEL_ARCHIVE_PATH) \
-		-exportPath $(BUILD_DIR)/Intel \
+		-archivePath $(X86_64_ARCHIVE_PATH) \
+		-exportPath $(BUILD_DIR)/x86_64 \
 		-exportOptionsPlist exportOptions.plist
 	
-	# Create temporary directory for Intel DMG
-	rm -rf $(BUILD_DIR)/tmp-intel
-	mkdir -p $(BUILD_DIR)/tmp-intel
+	# Create temporary directory for x86_64 DMG
+	rm -rf $(BUILD_DIR)/tmp-x86_64
+	mkdir -p $(BUILD_DIR)/tmp-x86_64
 	
 	# Copy application to temporary directory
-	cp -r "$(BUILD_DIR)/Intel/$(APP_NAME).app" "$(BUILD_DIR)/tmp-intel/"
+	cp -r "$(BUILD_DIR)/x86_64/$(APP_NAME).app" "$(BUILD_DIR)/tmp-x86_64/"
 	
-	# 对 Intel 应用进行自签名
-	@echo "==> 对 Intel 应用进行自签名..."
-	codesign --force --deep --sign - "$(BUILD_DIR)/tmp-intel/$(APP_NAME).app"
+	# 对 x86_64 应用进行自签名
+	@echo "==> 对 x86_64 应用进行自签名..."
+	codesign --force --deep --sign - "$(BUILD_DIR)/tmp-x86_64/$(APP_NAME).app"
 	
 	# Create symbolic link to Applications folder
-	ln -s /Applications "$(BUILD_DIR)/tmp-intel/Applications"
+	ln -s /Applications "$(BUILD_DIR)/tmp-x86_64/Applications"
 	
-	# Create Intel DMG
+	# Create x86_64 DMG
 	hdiutil create -volname "$(DMG_VOLUME_NAME) (Intel)" \
-		-srcfolder "$(BUILD_DIR)/tmp-intel" \
+		-srcfolder "$(BUILD_DIR)/tmp-x86_64" \
 		-ov -format UDZO \
-		"$(INTEL_DMG_PATH)"
+		"$(X86_64_DMG_PATH)"
 	
 	# Clean up
-	rm -rf $(BUILD_DIR)/tmp-intel $(BUILD_DIR)/Intel
+	rm -rf $(BUILD_DIR)/tmp-x86_64 $(BUILD_DIR)/x86_64
 	
-	# Export ARM64 archive
+	# Export arm64 archive
 	xcodebuild -exportArchive \
 		-archivePath $(ARM64_ARCHIVE_PATH) \
-		-exportPath $(BUILD_DIR)/ARM64 \
+		-exportPath $(BUILD_DIR)/arm64 \
 		-exportOptionsPlist exportOptions.plist
 	
-	# Create temporary directory for ARM64 DMG
+	# Create temporary directory for arm64 DMG
 	rm -rf $(BUILD_DIR)/tmp-arm64
 	mkdir -p $(BUILD_DIR)/tmp-arm64
 	
 	# Copy application to temporary directory
-	cp -r "$(BUILD_DIR)/ARM64/$(APP_NAME).app" "$(BUILD_DIR)/tmp-arm64/"
+	cp -r "$(BUILD_DIR)/arm64/$(APP_NAME).app" "$(BUILD_DIR)/tmp-arm64/"
 	
-	# 对 ARM64 应用进行自签名
-	@echo "==> 对 ARM64 应用进行自签名..."
+	# 对 arm64 应用进行自签名
+	@echo "==> 对 arm64 应用进行自签名..."
 	codesign --force --deep --sign - "$(BUILD_DIR)/tmp-arm64/$(APP_NAME).app"
 	
 	# Create symbolic link to Applications folder
 	ln -s /Applications "$(BUILD_DIR)/tmp-arm64/Applications"
 	
-	# Create ARM64 DMG
+	# Create arm64 DMG
 	hdiutil create -volname "$(DMG_VOLUME_NAME) (Apple Silicon)" \
 		-srcfolder "$(BUILD_DIR)/tmp-arm64" \
 		-ov -format UDZO \
 		"$(ARM64_DMG_PATH)"
 	
 	# Clean up
-	rm -rf $(BUILD_DIR)/tmp-arm64 $(BUILD_DIR)/ARM64
+	rm -rf $(BUILD_DIR)/tmp-arm64 $(BUILD_DIR)/arm64
 	
 	# 检查架构兼容性
 	@make check-arch
 	
 	@echo "==> 所有 DMG 文件已创建:"
-	@echo "    - Intel 版本: $(INTEL_DMG_PATH)"
-	@echo "    - Apple Silicon 版本: $(ARM64_DMG_PATH)"
+	@echo "    - x86_64 版本: $(X86_64_DMG_PATH)"
+	@echo "    - arm64 版本: $(ARM64_DMG_PATH)"
 	@echo ""
 	@echo "注意: 这些应用使用了自签名，用户首次运行时可能需要在系统偏好设置中手动允许运行。"
 	@echo "在 README 中添加相关说明可以帮助用户解决这个问题。"
@@ -137,42 +137,28 @@ dmg: build-intel build-arm64
 # Check architecture compatibility
 check-arch:
 	@echo "==> 检查应用架构兼容性..."
-	@if [ -f "$(INTEL_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" ]; then \
-		echo "==> 检查 Intel 版本架构:"; \
-		lipo -info "$(INTEL_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"; \
-		if lipo -info "$(INTEL_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" | grep -q "x86_64"; then \
-			echo "✅ Intel 版本支持 x86_64 架构"; \
+	@if [ -f "$(X86_64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" ]; then \
+		echo "==> 检查 x86_64 版本架构:"; \
+		lipo -info "$(X86_64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"; \
+		if lipo -info "$(X86_64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" | grep -q "x86_64"; then \
+			echo "✅ x86_64 版本支持 x86_64 架构"; \
 		else \
-			echo "❌ Intel 版本不支持 x86_64 架构"; \
+			echo "❌ x86_64 版本不支持 x86_64 架构"; \
 			exit 1; \
 		fi; \
 	fi
 	
 	@if [ -f "$(ARM64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" ]; then \
-		echo "==> 检查 Apple Silicon 版本架构:"; \
+		echo "==> 检查 arm64 版本架构:"; \
 		lipo -info "$(ARM64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"; \
 		if lipo -info "$(ARM64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" | grep -q "arm64"; then \
-			echo "✅ Apple Silicon 版本支持 arm64 架构"; \
+			echo "✅ arm64 版本支持 arm64 架构"; \
 		else \
-			echo "❌ Apple Silicon 版本不支持 arm64 架构"; \
+			echo "❌ arm64 版本不支持 arm64 架构"; \
 			exit 1; \
 		fi; \
 	fi
 
-# 添加用户指南命令
-user-guide:
-	@echo "==> MacMusicPlayer 用户指南"
-	@echo "由于应用未经过 Apple 公证，用户首次运行时可能会遇到安全警告。"
-	@echo ""
-	@echo "解决方法:"
-	@echo "1. 右键点击应用，选择'打开'"
-	@echo "2. 在弹出的对话框中，点击'打开'"
-	@echo "3. 之后应用将被系统记住，可以正常使用"
-	@echo ""
-	@echo "对于 Homebrew 用户，可以在安装后运行以下命令:"
-	@echo "xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app"
-	@echo ""
-	@echo "这将移除应用的隔离属性，允许应用正常运行。"
 
 # Show version information
 version:
@@ -195,12 +181,12 @@ update-homebrew:
 	@rm -rf tmp && mkdir -p tmp
 	
 	@echo "==> Downloading DMG files..."
-	@curl -L -o tmp/$(APP_NAME)-Intel.dmg "https://github.com/samzong/$(APP_NAME)/releases/download/v$(CLEAN_VERSION)/$(APP_NAME)-Intel.dmg"
-	@curl -L -o tmp/$(APP_NAME)-ARM64.dmg "https://github.com/samzong/$(APP_NAME)/releases/download/v$(CLEAN_VERSION)/$(APP_NAME)-ARM64.dmg"
+	@curl -L -o tmp/$(APP_NAME)-x86_64.dmg "https://github.com/samzong/$(APP_NAME)/releases/download/v$(CLEAN_VERSION)/$(APP_NAME)-x86_64.dmg"
+	@curl -L -o tmp/$(APP_NAME)-arm64.dmg "https://github.com/samzong/$(APP_NAME)/releases/download/v$(CLEAN_VERSION)/$(APP_NAME)-arm64.dmg"
 	
 	@echo "==> Calculating SHA256 checksums..."
-	@INTEL_SHA256=$$(shasum -a 256 tmp/$(APP_NAME)-Intel.dmg | cut -d ' ' -f 1) && echo "    - Intel SHA256: $$INTEL_SHA256"
-	@ARM64_SHA256=$$(shasum -a 256 tmp/$(APP_NAME)-ARM64.dmg | cut -d ' ' -f 1) && echo "    - ARM64 SHA256: $$ARM64_SHA256"
+	@X86_64_SHA256=$$(shasum -a 256 tmp/$(APP_NAME)-x86_64.dmg | cut -d ' ' -f 1) && echo "    - x86_64 SHA256: $$X86_64_SHA256"
+	@ARM64_SHA256=$$(shasum -a 256 tmp/$(APP_NAME)-arm64.dmg | cut -d ' ' -f 1) && echo "    - arm64 SHA256: $$ARM64_SHA256"
 	
 	@echo "==> Cloning Homebrew tap repository..."
 	@cd tmp && git clone https://$(GH_PAT)@github.com/samzong/$(HOMEBREW_TAP_REPO).git
@@ -208,51 +194,52 @@ update-homebrew:
 
 	@echo "==> Updating cask file..."
 	@cd tmp/$(HOMEBREW_TAP_REPO) && \
-	INTEL_SHA256=$$(shasum -a 256 ../$(APP_NAME)-Intel.dmg | cut -d ' ' -f 1) && \
-	ARM64_SHA256=$$(shasum -a 256 ../$(APP_NAME)-ARM64.dmg | cut -d ' ' -f 1) && \
-	cat > $(CASK_FILE) << EOF \
-cask "mac-music-player" do\
+	X86_64_SHA256=$$(shasum -a 256 ../$(APP_NAME)-x86_64.dmg | cut -d ' ' -f 1) && \
+	ARM64_SHA256=$$(shasum -a 256 ../$(APP_NAME)-arm64.dmg | cut -d ' ' -f 1) && \
+	if [ -f $(CASK_FILE) ]; then \
+		echo "    - Updating existing cask file with sed..."; \
+		sed -i '' "s/version \".*\"/version \"$(CLEAN_VERSION)\"/" $(CASK_FILE); \
+		if grep -q "Hardware::CPU.arm" $(CASK_FILE); then \
+			# 使用 Hardware::CPU.arm? 格式的 Cask 文件 \
+			sed -i '' "/if Hardware::CPU.arm/,/else/ s/sha256 \".*\"/sha256 \"$$ARM64_SHA256\"/" $(CASK_FILE); \
+			sed -i '' "/else/,/end/ s/sha256 \".*\"/sha256 \"$$X86_64_SHA256\"/" $(CASK_FILE); \
+			# 更新下载 URL \
+			sed -i '' "s|url \".*v#{version}/.*-ARM64.dmg\"|url \"https://github.com/samzong/$(APP_NAME)/releases/download/v#{version}/$(APP_NAME)-arm64.dmg\"|" $(CASK_FILE); \
+			sed -i '' "s|url \".*v#{version}/.*-Intel.dmg\"|url \"https://github.com/samzong/$(APP_NAME)/releases/download/v#{version}/$(APP_NAME)-x86_64.dmg\"|" $(CASK_FILE); \
+		else \
+			echo "❌ Unknown cask format, cannot update SHA256 values"; \
+			exit 1; \
+		fi; \
+	else \
+		echo "    - Creating new cask file..."; \
+		cat > $(CASK_FILE) << EOF \
+cask "$(shell echo $(APP_NAME) | tr '[:upper:]' '[:lower:]')" do\
   version "$(CLEAN_VERSION)"\
   \
-  on_intel do\
-    sha256 "$$INTEL_SHA256"\
-    \
-    url "https://github.com/samzong/MacMusicPlayer/releases/download/v#{version}/MacMusicPlayer-Intel.dmg"\
-  end\
-  \
-  on_arm do\
+  if Hardware::CPU.arm?\
+    url "https://github.com/samzong/$(APP_NAME)/releases/download/v#{version}/$(APP_NAME)-arm64.dmg"\
     sha256 "$$ARM64_SHA256"\
-    \
-    url "https://github.com/samzong/MacMusicPlayer/releases/download/v#{version}/MacMusicPlayer-ARM64.dmg"\
+  else\
+    url "https://github.com/samzong/$(APP_NAME)/releases/download/v#{version}/$(APP_NAME)-x86_64.dmg"\
+    sha256 "$$X86_64_SHA256"\
   end\
   \
-  name "MacMusicPlayer"\
+  name "$(APP_NAME)"\
   desc "Simple music player for macOS"\
-  homepage "https://github.com/samzong/MacMusicPlayer"\
+  homepage "https://github.com/samzong/$(APP_NAME)"\
   \
   auto_updates false\
   \
-  app "MacMusicPlayer.app"\
-  \
-  postflight do\
-    system_command "/usr/bin/xattr",\
-                   args: ["-dr", "com.apple.quarantine", "#{appdir}/MacMusicPlayer.app"],\
-                   sudo: false\
-  end\
-  \
-  caveats <<~EOS\
-    由于应用未经过 Apple 公证，首次运行时可能会遇到安全警告。\
-    如果安装后仍然无法打开，请尝试在终端中运行:\
-      xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app\
-  EOS\
+  app "$(APP_NAME).app"\
   \
   zap trash: [\
-    "~/Library/Application Support/MacMusicPlayer",\
-    "~/Library/Caches/MacMusicPlayer",\
-    "~/Library/Preferences/com.seimotech.MacMusicPlayer.plist",\
+    "~/Library/Application Support/$(APP_NAME)",\
+    "~/Library/Caches/$(APP_NAME)",\
+    "~/Library/Preferences/com.seimotech.$(APP_NAME).plist",\
   ]\
 end\
-EOF
+EOF \
+	fi
 	
 	@echo "==> Checking for changes..."
 	@cd tmp/$(HOMEBREW_TAP_REPO) && \
@@ -261,11 +248,11 @@ EOF
 		git add $(CASK_FILE); \
 		git config user.name "GitHub Actions"; \
 		git config user.email "actions@github.com"; \
-		git commit -m "chore: update MacMusicPlayer to v$(CLEAN_VERSION)"; \
+		git commit -m "chore: update $(APP_NAME) to v$(CLEAN_VERSION)"; \
 		git push -u origin $(BRANCH_NAME); \
 		pr_data=$$(jq -n \
-			--arg title "chore: update MacMusicPlayer to v$(CLEAN_VERSION)" \
-			--arg body "Auto-generated PR\n- Version: $(CLEAN_VERSION)\n- Intel SHA256: $$INTEL_SHA256\n- ARM64 SHA256: $$ARM64_SHA256" \
+			--arg title "chore: update $(APP_NAME) to v$(CLEAN_VERSION)" \
+			--arg body "Auto-generated PR\n- Version: $(CLEAN_VERSION)\n- x86_64 SHA256: $$X86_64_SHA256\n- arm64 SHA256: $$ARM64_SHA256" \
 			--arg head "$(BRANCH_NAME)" \
 			--arg base "main" \
 			'{title: $$title, body: $$body, head: $$head, base: $$base}'); \
@@ -292,6 +279,5 @@ help:
 	@echo "  make version         - Show version information"
 	@echo "  make check-arch      - 检查应用架构兼容性"
 	@echo "  make update-homebrew - Update Homebrew cask (requires GH_PAT)"
-	@echo "  make user-guide      - 显示用户指南，帮助用户解决安全警告问题"
 
 .DEFAULT_GOAL := help
