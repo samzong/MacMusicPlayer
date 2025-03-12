@@ -1,4 +1,4 @@
-.PHONY: clean dmg update-homebrew check-arch
+.PHONY: clean dmg update-homebrew check-arch user-guide
 
 # Variables
 APP_NAME = MacMusicPlayer
@@ -8,6 +8,13 @@ ARM64_ARCHIVE_PATH = $(BUILD_DIR)/$(APP_NAME)-ARM64.xcarchive
 INTEL_DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-Intel.dmg
 ARM64_DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-ARM64.dmg
 DMG_VOLUME_NAME = "$(APP_NAME)"
+
+# 签名相关变量 - 使用自签名选项
+SELF_SIGN = true
+TEAM_ID = 
+APPLE_ID = 
+APP_BUNDLE_ID = com.seimotech.MacMusicPlayer
+APP_PASSWORD = 
 
 # Version information
 GIT_COMMIT = $(shell git rev-parse --short HEAD)
@@ -38,7 +45,8 @@ build-intel:
 		DEVELOPMENT_TEAM="" \
 		CURRENT_PROJECT_VERSION=$(VERSION) \
 		MARKETING_VERSION=$(VERSION) \
-		ARCHS="x86_64"
+		ARCHS="x86_64" \
+		OTHER_CODE_SIGN_FLAGS="--options=runtime"
 
 # Build for Apple Silicon
 build-arm64:
@@ -53,7 +61,8 @@ build-arm64:
 		DEVELOPMENT_TEAM="" \
 		CURRENT_PROJECT_VERSION=$(VERSION) \
 		MARKETING_VERSION=$(VERSION) \
-		ARCHS="arm64"
+		ARCHS="arm64" \
+		OTHER_CODE_SIGN_FLAGS="--options=runtime"
 
 # Create DMG (builds Intel and Apple Silicon versions)
 dmg: build-intel build-arm64
@@ -69,6 +78,10 @@ dmg: build-intel build-arm64
 	
 	# Copy application to temporary directory
 	cp -r "$(BUILD_DIR)/Intel/$(APP_NAME).app" "$(BUILD_DIR)/tmp-intel/"
+	
+	# 对 Intel 应用进行自签名
+	@echo "==> 对 Intel 应用进行自签名..."
+	codesign --force --deep --sign - "$(BUILD_DIR)/tmp-intel/$(APP_NAME).app"
 	
 	# Create symbolic link to Applications folder
 	ln -s /Applications "$(BUILD_DIR)/tmp-intel/Applications"
@@ -95,6 +108,10 @@ dmg: build-intel build-arm64
 	# Copy application to temporary directory
 	cp -r "$(BUILD_DIR)/ARM64/$(APP_NAME).app" "$(BUILD_DIR)/tmp-arm64/"
 	
+	# 对 ARM64 应用进行自签名
+	@echo "==> 对 ARM64 应用进行自签名..."
+	codesign --force --deep --sign - "$(BUILD_DIR)/tmp-arm64/$(APP_NAME).app"
+	
 	# Create symbolic link to Applications folder
 	ln -s /Applications "$(BUILD_DIR)/tmp-arm64/Applications"
 	
@@ -113,6 +130,9 @@ dmg: build-intel build-arm64
 	@echo "==> 所有 DMG 文件已创建:"
 	@echo "    - Intel 版本: $(INTEL_DMG_PATH)"
 	@echo "    - Apple Silicon 版本: $(ARM64_DMG_PATH)"
+	@echo ""
+	@echo "注意: 这些应用使用了自签名，用户首次运行时可能需要在系统偏好设置中手动允许运行。"
+	@echo "在 README 中添加相关说明可以帮助用户解决这个问题。"
 
 # Check architecture compatibility
 check-arch:
@@ -138,6 +158,21 @@ check-arch:
 			exit 1; \
 		fi; \
 	fi
+
+# 添加用户指南命令
+user-guide:
+	@echo "==> MacMusicPlayer 用户指南"
+	@echo "由于应用未经过 Apple 公证，用户首次运行时可能会遇到安全警告。"
+	@echo ""
+	@echo "解决方法:"
+	@echo "1. 右键点击应用，选择'打开'"
+	@echo "2. 在弹出的对话框中，点击'打开'"
+	@echo "3. 之后应用将被系统记住，可以正常使用"
+	@echo ""
+	@echo "对于 Homebrew 用户，可以在安装后运行以下命令:"
+	@echo "xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app"
+	@echo ""
+	@echo "这将移除应用的隔离属性，允许应用正常运行。"
 
 # Show version information
 version:
@@ -199,6 +234,18 @@ cask "mac-music-player" do\
   \
   app "MacMusicPlayer.app"\
   \
+  postflight do\
+    system_command "/usr/bin/xattr",\
+                   args: ["-dr", "com.apple.quarantine", "#{appdir}/MacMusicPlayer.app"],\
+                   sudo: false\
+  end\
+  \
+  caveats <<~EOS\
+    由于应用未经过 Apple 公证，首次运行时可能会遇到安全警告。\
+    如果安装后仍然无法打开，请尝试在终端中运行:\
+      xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app\
+  EOS\
+  \
   zap trash: [\
     "~/Library/Application Support/MacMusicPlayer",\
     "~/Library/Caches/MacMusicPlayer",\
@@ -245,5 +292,6 @@ help:
 	@echo "  make version         - Show version information"
 	@echo "  make check-arch      - 检查应用架构兼容性"
 	@echo "  make update-homebrew - Update Homebrew cask (requires GH_PAT)"
+	@echo "  make user-guide      - 显示用户指南，帮助用户解决安全警告问题"
 
 .DEFAULT_GOAL := help

@@ -19,6 +19,23 @@ brew install samzong/tap/mac-music-player
 
 从 [Releases](https://github.com/samzong/MacMusicPlayer/releases) 页面下载最新版本的 `MacMusicPlayer.dmg`。
 
+### ⚠️ 关于安全警告
+
+由于应用未经过 Apple 公证，首次运行时可能会遇到"无法打开"的安全警告。这是 macOS 的安全机制，不代表应用存在安全问题。
+
+**解决方法：**
+
+1. **右键点击应用**，选择"打开"（而不是双击）
+2. 在弹出的对话框中，点击"打开"
+3. 之后应用将被系统记住，可以正常使用
+
+**通过 Homebrew 安装的用户**：安装脚本会自动处理这个问题，无需额外操作。
+
+**如果仍然无法打开**，请在终端中运行以下命令：
+```bash
+xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app
+```
+
 ## ✨ 核心特性
 
 - 🎵 轻量级菜单栏播放器，随时掌控音乐播放

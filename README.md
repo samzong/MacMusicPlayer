@@ -19,6 +19,23 @@ brew install samzong/tap/mac-music-player
 
 Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/samzong/MacMusicPlayer/releases) page.
 
+### ⚠️ About Security Warnings
+
+Since the app is not notarized by Apple, you may encounter a security warning when first launching it. This is a macOS security feature and does not indicate any security issues with the app.
+
+**Solution:**
+
+1. **Right-click on the app** and select "Open" (instead of double-clicking)
+2. In the dialog that appears, click "Open"
+3. After this, the system will remember your choice and allow normal usage
+
+**For Homebrew users**: The installation script automatically handles this issue, no additional steps required.
+
+**If you still can't open the app**, run this command in Terminal:
+```bash
+xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app
+```
+
 ## 🚀 Usage Guide
 
 1. On first launch, click the menu bar icon and select "Set Music Source"
