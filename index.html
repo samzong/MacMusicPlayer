@@ -59,6 +59,7 @@ brew install samzong/tap/mac-music-player
               <li>Play/Pause</li>
               <li>Previous/Next Track</li>
               <li>Switch Playback Mode</li>
+              <li>Download Music from Online Sources</li>
               <li>Enable/Disable System Sleep Prevention</li>
               <li>Configure Launch at Login</li>
               <li>Reconfigure Music Folder</li>
@@ -72,6 +73,7 @@ brew install samzong/tap/mac-music-player
           <li>🌍 Multi-language support (English, Simplified Chinese, Traditional Chinese, Japanese, Korean)</li>
           <li>🎧 MP3 audio format playback</li>
           <li>🔄 Multiple playback modes (Sequential, Single Loop, Random)</li>
+          <li>📥 Download music from online sources (YouTube, SoundCloud, etc.)</li>
           <li>💾 Smart memory of last music folder location</li>
           <li>🚀 Launch at login support</li>
           <li>😴 Prevent system sleep for uninterrupted music</li>
@@ -92,6 +94,12 @@ brew install samzong/tap/mac-music-player
               <li>IOKit for sleep management</li>
             </ul>
           </li>
+          <li><strong>Download Engine</strong>:
+            <ul>
+              <li>yt-dlp for online media extraction</li>
+              <li>ffmpeg for audio conversion</li>
+            </ul>
+          </li>
         </ul>
         <h2 id="-development-guide"><a aria-hidden="true" tabindex="-1" href="#-development-guide" class="anchor"><span class="icon icon-link"></span></a>🔨 Development Guide</h2>
         <h3 id="requirements"><a aria-hidden="true" tabindex="-1" href="#requirements" class="anchor"><span class="icon icon-link"></span></a>Requirements</h3>
@@ -99,6 +107,7 @@ brew install samzong/tap/mac-music-player
           <li>macOS 13.0+</li>
           <li>Xcode 15.0+</li>
           <li>Swift 5.9+</li>
+          <li>For music download feature: yt-dlp and ffmpeg (can be installed via Homebrew)</li>
         </ul>
         <h3 id="build-steps"><a aria-hidden="true" tabindex="-1" href="#build-steps" class="anchor"><span class="icon icon-link"></span></a>Build Steps</h3>
         <ol>
@@ -127,16 +136,18 @@ open MacMusicPlayer.xcodeproj
 </span><span class="code-line line-number" line="2">├── Managers/           # Business Managers
 </span><span class="code-line line-number" line="3">│   ├── PlayerManager   # Playback Control
 </span><span class="code-line line-number" line="4">│   ├── LaunchManager   # Launch Management
-</span><span class="code-line line-number" line="5">│   └── SleepManager    # Sleep Control
-</span><span class="code-line line-number" line="6">├── Models/             # Data Models
-</span><span class="code-line line-number" line="7">├── Views/              # UI Components
-</span><span class="code-line line-number" line="8">├── Helpers/            # Utility Classes
-</span><span class="code-line line-number" line="9">└── Resources/          # Resource Files
+</span><span class="code-line line-number" line="5">│   ├── SleepManager    # Sleep Control
+</span><span class="code-line line-number" line="6">│   └── DownloadManager # Music Download
+</span><span class="code-line line-number" line="7">├── Models/             # Data Models
+</span><span class="code-line line-number" line="8">├── Views/              # UI Components
+</span><span class="code-line line-number" line="9">├── Helpers/            # Utility Classes
+</span><span class="code-line line-number" line="10">└── Resources/          # Resource Files
 </span></code><input type="hidden" value="MacMusicPlayer/
 ├── Managers/           # Business Managers
 │   ├── PlayerManager   # Playback Control
 │   ├── LaunchManager   # Launch Management
-│   └── SleepManager    # Sleep Control
+│   ├── SleepManager    # Sleep Control
+│   └── DownloadManager # Music Download
 ├── Models/             # Data Models
 ├── Views/              # UI Components
 ├── Helpers/            # Utility Classes
@@ -161,6 +172,7 @@ open MacMusicPlayer.xcodeproj
         </ol>
         <h2 id="-development-roadmap"><a aria-hidden="true" tabindex="-1" href="#-development-roadmap" class="anchor"><span class="icon icon-link"></span></a>📝 Development Roadmap</h2>
         <ul class="contains-task-list">
+          <li class="task-list-item"><input type="checkbox" checked disabled> Support for downloading music from online sources</li>
           <li class="task-list-item"><input type="checkbox" disabled> Support for more audio formats (FLAC, WAV, AAC, etc.)</li>
           <li class="task-list-item"><input type="checkbox" disabled> Add audio visualization effects</li>
           <li class="task-list-item"><input type="checkbox" disabled> Playlist management support</li>
