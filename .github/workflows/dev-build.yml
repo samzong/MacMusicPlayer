@@ -29,7 +29,7 @@ jobs:
 
     - name: Verify Architecture Support
       run: |
-        echo "检查开发版本架构兼容性..."
+        echo "Checking development version architecture compatibility..."
         make check-arch
 
     - name: Generate Release Notes
@@ -38,18 +38,18 @@ jobs:
         echo "### Update content" >> release_notes.md
         echo "- This is the latest development version build" >> release_notes.md
         echo "- Build Time: $(date '+%Y-%m-%d %H:%M:%S')" >> release_notes.md
-        echo "- 支持 Intel 和 Apple Silicon 芯片" >> release_notes.md
+        echo "- Supports Intel and Apple Silicon chips" >> release_notes.md
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
-        name: "Development Build"
+        name: "Development"
         body_path: release_notes.md
         draft: false
         prerelease: true
         tag_name: "develop"
         files: |
-          build/MacMusicPlayer-Intel.dmg
-          build/MacMusicPlayer-ARM64.dmg
+          build/MacMusicPlayer-x86_64.dmg
+          build/MacMusicPlayer-arm64.dmg
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   release:
@@ -11,62 +11,63 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: latest-stable
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
 
-    - name: Get version from tag
-      id: get_version
-      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-    - name: Build Packages
-      run: |
-        make VERSION=${{ env.VERSION }} dmg
+      - name: Build Packages
+        run: |
+          make VERSION=${{ env.VERSION }} dmg
 
-    - name: Verify Architecture Support
-      run: |
-        echo "==> 检查发布版本架构兼容性..."
-        make check-arch
+      - name: Verify Architecture Support
+        run: |
+          echo "==> Checking release version architecture compatibility..."
+          make check-arch
 
-    - name: Generate Release Notes
-      id: release_notes
-      run: |
-        echo "## MacMusicPlayer ${{ env.VERSION }}" > release_notes.md
-        echo "" >> release_notes.md
-        echo "### Update content" >> release_notes.md
-        echo "- Please check the specific submission records for detailed update content." >> release_notes.md
-        echo "" >> release_notes.md
-        echo "### 支持的系统" >> release_notes.md
-        echo "- macOS 11.5 及以上版本" >> release_notes.md
-        echo "- 提供两种版本:" >> release_notes.md
-        echo "  - Intel 版本: 适用于 Intel 芯片的 Mac" >> release_notes.md
-        echo "  - Apple Silicon 版本: 适用于 M 系列芯片的 Mac" >> release_notes.md
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          echo "## MacMusicPlayer ${{ env.VERSION }}" > release_notes.md
+          echo "" >> release_notes.md
+          echo "### Update content" >> release_notes.md
+          echo "- Please check the specific submission records for detailed update content." >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### Supported systems" >> release_notes.md
+          echo "- macOS 11.5 or later" >> release_notes.md
+          echo "- Two versions are provided:" >> release_notes.md
+          echo "  - Intel version: Suitable for Mac with Intel chips" >> release_notes.md
+          echo "  - Apple Silicon version: Suitable for Mac with M series chips" >> release_notes.md
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        name: ${{ env.VERSION }}
-        body_path: release_notes.md
-        draft: false
-        prerelease: false
-        files: |
-          build/MacMusicPlayer-Intel.dmg
-          build/MacMusicPlayer-ARM64.dmg
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ env.VERSION }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: |
+            build/MacMusicPlayer-x86_64.dmg
+            build/MacMusicPlayer-arm64.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Trigger Homebrew Update
-      if: success()  # 只在前面的步骤都成功时才触发
-      uses: peter-evans/repository-dispatch@v2
-      with:
-        token: ${{ secrets.GH_PAT }}
-        event-type: trigger-homebrew-update
-        client-payload: '{"version": "${{ env.VERSION }}"}'
+      - name: Trigger Homebrew Update
+        # Only trigger the workflow if the release is successful
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GH_PAT }}
+          event-type: trigger-homebrew-update
+          client-payload: '{"version": "${{ env.VERSION }}"}'
 
-    - name: Update Latest Tag
-      run: |
-        git tag -f latest
-        git push origin latest --force
+      - name: Update Latest Tag
+        run: |
+          git tag -f latest
+          git push origin latest --force
