@@ -1,5 +1,7 @@
 # MacMusicPlayer
 
+[English](README.md) | [简体中问](README_zh.md)
+
 MacMusicPlayer is an elegant and minimalist music player for macOS, designed as a menu bar application to provide a seamless music playback experience. Built with SwiftUI, it perfectly integrates into the macOS ecosystem, delivering an exceptional user experience.
 
 ![Application Screenshot](image.png)
@@ -37,6 +39,8 @@ xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app
 ```
 
 ## 🚀 Usage Guide
+
+[![VIDEO](https://img.youtube.com/vi/fzz35W4FNkw/0.jpg)](https://www.youtube.com/watch?v=fzz35W4FNkw)
 
 1. On first launch, click the menu bar icon and select "Set Music Source"
 2. Choose a folder containing MP3 files

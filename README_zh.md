@@ -1,5 +1,7 @@
 # MacMusicPlayer
 
+[English](README.md) | [简体中问题](README_zh.md)
+
 MacMusicPlayer 是一款优雅简洁的 macOS 音乐播放器，以菜单栏应用的形式为您提供流畅的音乐播放体验。它采用 SwiftUI 构建，完美融入 macOS 生态系统，为您带来极致的用户体验。
 
 ![应用截图](image.png)
@@ -66,6 +68,8 @@ xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app
   - ffmpeg 用于音频转换
 
 ## 🚀 使用指南
+
+[![VIDEO](https://img.youtube.com/vi/fzz35W4FNkw/0.jpg)](https://www.youtube.com/watch?v=fzz35W4FNkw)
 
 1. 首次启动时，点击菜单栏图标，选择"选择音乐文件夹"
 2. 选择包含 MP3 文件的文件夹
