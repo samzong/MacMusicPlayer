@@ -262,6 +262,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func showDownloadWindow() {
+        // 如果窗口已经存在，只需要激活它
+        if let existingWindow = self.downloadWindow {
+            existingWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        
         let downloadVC = DownloadViewController()
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 500, height: 400),
@@ -280,7 +287,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // 保存对窗口的引用
         self.downloadWindow = window
         
-        window.makeKeyAndOrderFront(self)
+        // 显示窗口并确保它成为焦点窗口
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 }
 
