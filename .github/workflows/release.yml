@@ -22,9 +22,14 @@ jobs:
       id: get_version
       run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-    - name: Build and Package
+    - name: Build Packages
       run: |
         make VERSION=${{ env.VERSION }} dmg
+
+    - name: Verify Architecture Support
+      run: |
+        echo "==> 检查发布版本架构兼容性..."
+        make check-arch
 
     - name: Generate Release Notes
       id: release_notes
@@ -33,6 +38,12 @@ jobs:
         echo "" >> release_notes.md
         echo "### Update content" >> release_notes.md
         echo "- Please check the specific submission records for detailed update content." >> release_notes.md
+        echo "" >> release_notes.md
+        echo "### 支持的系统" >> release_notes.md
+        echo "- macOS 11.5 及以上版本" >> release_notes.md
+        echo "- 提供两种版本:" >> release_notes.md
+        echo "  - Intel 版本: 适用于 Intel 芯片的 Mac" >> release_notes.md
+        echo "  - Apple Silicon 版本: 适用于 M 系列芯片的 Mac" >> release_notes.md
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
@@ -42,7 +53,8 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          build/MacMusicPlayer.dmg
+          build/MacMusicPlayer-Intel.dmg
+          build/MacMusicPlayer-ARM64.dmg
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

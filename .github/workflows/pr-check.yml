@@ -27,9 +27,14 @@ jobs:
         GIT_COMMIT=$(git rev-parse --short HEAD)
         echo "VERSION=PR-${GIT_COMMIT}" >> $GITHUB_ENV
 
-    - name: Build
+    - name: Build and Package
       run: |
         make VERSION=${{ env.VERSION }} dmg
+
+    - name: Verify Architecture Support
+      run: |
+        echo "检查 PR 构建架构兼容性..."
+        make check-arch
 
     - name: Check Build Status
       if: failure()
@@ -47,5 +52,5 @@ jobs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: '❌ Build failed. Please check the build logs and fix the issues before merging.'
+            body: '❌ Build failed. Please check the build logs and fix the issues before merging. 确保应用同时支持 Intel (x86_64) 和 Apple Silicon (arm64) 架构。'
           })
