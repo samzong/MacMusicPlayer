@@ -1,4 +1,4 @@
-.PHONY: clean archive dmg
+.PHONY: clean archive dmg update-homebrew
 
 # Variables
 APP_NAME = MacMusicPlayer
@@ -11,6 +11,12 @@ DMG_VOLUME_NAME = "$(APP_NAME)"
 GIT_COMMIT = $(shell git rev-parse --short HEAD)
 # If CI_BUILD is set (for release), use git tag; otherwise use commit hash for dev build
 VERSION ?= $(if $(CI_BUILD),$(shell git describe --tags --always),Dev-$(shell git rev-parse --short HEAD))
+CLEAN_VERSION = $(shell echo $(VERSION) | sed 's/^v//')
+
+# Homebrew related variables
+HOMEBREW_TAP_REPO = homebrew-tap
+CASK_FILE = Casks/mac-music-player.rb
+BRANCH_NAME = update-mac-music-player-$(CLEAN_VERSION)
 
 # Clean build artifacts
 clean:
@@ -62,12 +68,74 @@ version:
 	@echo "Version:     $(VERSION)"
 	@echo "Git Commit:  $(GIT_COMMIT)"
 
+# Update Homebrew Cask
+update-homebrew:
+	@echo "==> Starting Homebrew cask update process..."
+	@if [ -z "$(GH_PAT)" ]; then \
+		echo "❌ Error: GH_PAT environment variable is required"; \
+		exit 1; \
+	fi
+
+	@echo "==> Current version information:"
+	@echo "    - VERSION: $(VERSION)"
+	@echo "    - CLEAN_VERSION: $(CLEAN_VERSION)"
+
+	@echo "==> Preparing working directory..."
+	@rm -rf tmp && mkdir -p tmp
+	
+	@echo "==> Downloading DMG file..."
+	@curl -L -o tmp/$(APP_NAME).dmg "https://github.com/samzong/$(APP_NAME)/releases/download/v$(CLEAN_VERSION)/$(APP_NAME).dmg"
+	
+	@echo "==> Calculating SHA256..."
+	@SHA256=$$(shasum -a 256 tmp/$(APP_NAME).dmg | cut -d ' ' -f 1) && echo "    - SHA256: $$SHA256"
+	
+	@echo "==> Cloning Homebrew tap repository..."
+	@cd tmp && git clone https://$(GH_PAT)@github.com/samzong/$(HOMEBREW_TAP_REPO).git
+	@cd tmp/$(HOMEBREW_TAP_REPO) && echo "    - Creating new branch: $(BRANCH_NAME)" && git checkout -b $(BRANCH_NAME)
+
+	@echo "==> Updating cask file..."
+	@cd tmp/$(HOMEBREW_TAP_REPO) && \
+	SHA256=$$(shasum -a 256 ../$(APP_NAME).dmg | cut -d ' ' -f 1) && \
+	sed -i '' 's/version "[^"]*"/version "$(CLEAN_VERSION)"/' $(CASK_FILE) && \
+	sed -i '' 's/sha256 "[^"]*"/sha256 "'$$SHA256'"/' $(CASK_FILE)
+	
+	@echo "==> Checking for changes..."
+	@cd tmp/$(HOMEBREW_TAP_REPO) && \
+	if ! git diff --quiet $(CASK_FILE); then \
+		echo "    - Changes detected, creating pull request..."; \
+		git add $(CASK_FILE); \
+		git config user.name "GitHub Actions"; \
+		git config user.email "actions@github.com"; \
+		git commit -m "chore: update MacMusicPlayer to v$(CLEAN_VERSION)"; \
+		git push -u origin $(BRANCH_NAME); \
+		pr_data=$$(jq -n \
+			--arg title "chore: update MacMusicPlayer to v$(CLEAN_VERSION)" \
+			--arg body "Auto-generated PR\n- Version: $(CLEAN_VERSION)\n- SHA256: $$SHA256" \
+			--arg head "$(BRANCH_NAME)" \
+			--arg base "main" \
+			'{title: $$title, body: $$body, head: $$head, base: $$base}'); \
+		curl -X POST \
+			-H "Authorization: token $(GH_PAT)" \
+			-H "Content-Type: application/json" \
+			https://api.github.com/repos/samzong/$(HOMEBREW_TAP_REPO)/pulls \
+			-d "$$pr_data"; \
+		echo "✅ Pull request created successfully"; \
+	else \
+		echo "❌ No changes detected in cask file"; \
+		exit 1; \
+	fi
+
+	@echo "==> Cleaning up temporary files..."
+	@rm -rf tmp
+	@echo "✅ Homebrew cask update process completed"
+
 # Help command
 help:
 	@echo "Available commands:"
-	@echo "  make clean     - Clean build artifacts"
-	@echo "  make archive   - Create an archive"
-	@echo "  make dmg       - Create a DMG installer"
-	@echo "  make version   - Show version information"
+	@echo "  make clean           - Clean build artifacts"
+	@echo "  make archive         - Create an archive"
+	@echo "  make dmg             - Create a DMG installer"
+	@echo "  make version         - Show version information"
+	@echo "  make update-homebrew - Update Homebrew cask (requires GH_PAT)"
 
 .DEFAULT_GOAL := help

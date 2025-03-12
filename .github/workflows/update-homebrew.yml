@@ -3,60 +3,45 @@ name: Update Homebrew Tap
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '指定要更新的版本号（不含v前缀）'
+        required: true
+        type: string
   repository_dispatch:
     types: [trigger-homebrew-update]
     
 jobs:
   update-homebrew-tap:
     runs-on: macos-latest
-    if: github.event.release.prerelease != true
+    if: ${{ github.event_name != 'release' || github.event.release.prerelease != true }}
     
     steps:
     - name: Get release version
       id: get_version
       run: |
-        if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+        elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
           VERSION_WITH_V=${{ github.event.client_payload.version }}
+          echo "VERSION=${VERSION_WITH_V#v}" >> $GITHUB_ENV
         else
           VERSION_WITH_V=${GITHUB_REF#refs/tags/}
+          echo "VERSION=${VERSION_WITH_V#v}" >> $GITHUB_ENV
         fi
-        # Remove 'v' prefix if it exists
-        echo "VERSION=${VERSION_WITH_V#v}" >> $GITHUB_ENV
+        echo "Using version: $VERSION"
 
-    - name: Download DMG
-      run: |
-        curl -L -o MacMusicPlayer.dmg "https://github.com/samzong/MacMusicPlayer/releases/download/v${VERSION}/MacMusicPlayer-v${VERSION}.dmg"
-
-    - name: Calculate SHA256
-      id: shasum
-      run: |
-        echo "SHA256=$(shasum -a 256 MacMusicPlayer.dmg | cut -d ' ' -f 1)" >> $GITHUB_ENV
-
-    - name: Checkout homebrew-tap
-      uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v4
       with:
-        repository: samzong/homebrew-tap
-        token: ${{ secrets.GH_PAT }}
-        path: homebrew-tap
+        fetch-depth: 0
 
-    - name: Update Cask
-      run: |
-        cd homebrew-tap
-        sed -i '' 's/version "[^"]*"/version "'${{ env.VERSION }}'"/' Casks/mac-music-player.rb
-        sed -i '' 's/sha256 "[^"]*"/sha256 "'${{ env.SHA256 }}'"/' Casks/mac-music-player.rb
+    - name: Install jq
+      run: brew install jq
 
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v5
-      with:
-        token: ${{ secrets.GH_PAT }}
-        path: homebrew-tap
-        commit-message: "chore: update MacMusicPlayer to v${{ env.VERSION }}"
-        title: "chore: update MacMusicPlayer to v${{ env.VERSION }}"
-        body: |
-          Update MacMusicPlayer to v${{ env.VERSION }}
-          
-          - Version: ${{ env.VERSION }}
-          - SHA256: ${{ env.SHA256 }}
-        branch: update-mac-music-player-${{ env.VERSION }}
-        base: main
-        delete-branch: true
+    - name: Update Homebrew Cask
+      env:
+        GH_PAT: ${{ secrets.GH_PAT }}
+        CI_BUILD: true
+      run: make update-homebrew
