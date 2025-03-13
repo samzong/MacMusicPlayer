@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  MacMusicPlayer
 //
-//  Created by X on 9/18/24.
+//  Created by X on 2024/09/18.
 //
 
 import SwiftUI
@@ -32,14 +32,15 @@ struct ContentView: View {
                     } else {
                         playerManager.play()
                     }
-                }) {
+                }, label: {
                     Image(systemName: playerManager.isPlaying ? "pause.fill" : "play.fill")
                         .font(.system(size: 20))
-                }
+                })
                 
-                Button(action: playerManager.playNext) {
+                Button(action: playerManager.playNext, label: {
                     Image(systemName: "forward.fill")
-                }
+                        .font(.system(size: 20))
+                })
             }
             .padding(.top, 4)
         }

@@ -2,7 +2,7 @@
 //  SleepManager.swift
 //  MacMusicPlayer
 //
-//  Created by X on 10/1/24.
+//  Created by X on 2024/10/01.
 //
 
 import Foundation

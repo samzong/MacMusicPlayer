@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  MacMusicPlayer
 //
-//  Created by X on 9/18/24.
+//  Created by samzong<samzong.lu@gmail.com> on 2024/09/18.
 //
 
 import Cocoa
@@ -18,7 +18,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var launchManager: LaunchManager!
     var menu: NSMenu!
     
-    // 保持对窗口的强引用
+    // Strong reference to the window
     private var downloadWindow: NSWindow?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -43,7 +43,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu = NSMenu()
         menu.minimumWidth = 200
         
-        // Current track info
         let trackInfoItem = NSMenuItem(title: NSLocalizedString("No Music Source", comment: ""), action: nil, keyEquivalent: "")
         trackInfoItem.isEnabled = false
         trackInfoItem.view = NSView(frame: NSRect(x: 0, y: 0, width: 180, height: 20))
@@ -57,18 +56,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(trackInfoItem)
         menu.addItem(NSMenuItem.separator())
         
-        // Play/Pause
         let playPauseItem = NSMenuItem(title: NSLocalizedString("Play", comment: ""), action: #selector(togglePlayPause), keyEquivalent: "")
         menu.addItem(playPauseItem)
         
-        // Previous
-        menu.addItem(NSMenuItem(title: NSLocalizedString("Previous", comment: ""), action: #selector(playPrevious), keyEquivalent: ""))
-        
-        // Next
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Previous", comment: ""), action: #selector(playPrevious), keyEquivalent: ""))        
         menu.addItem(NSMenuItem(title: NSLocalizedString("Next", comment: ""), action: #selector(playNext), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         
-        // 播放模式子菜单
+        // Playback mode submenu
         let playModeMenu = NSMenu()
         let playModeItem = NSMenuItem(title: NSLocalizedString("Playback Mode", comment: ""), action: nil, keyEquivalent: "")
         
@@ -86,31 +81,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         playModeItem.submenu = playModeMenu
         menu.addItem(playModeItem)
         
-        // Reconfigure folder
-        menu.addItem(NSMenuItem(title: NSLocalizedString("Set Music Source", comment: ""), action: #selector(reconfigureFolder), keyEquivalent: "s"))
-        
-        // 下载音乐
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Set Music Source", comment: ""), action: #selector(reconfigureFolder), keyEquivalent: "s"))        
         menu.addItem(NSMenuItem(title: NSLocalizedString("Download Music", comment: ""), action: #selector(showDownloadWindow), keyEquivalent: "d"))
         
-        // 防止休眠开关
         let preventSleepItem = NSMenuItem(title: NSLocalizedString("Prevent Mac Sleep", comment: ""), action: #selector(togglePreventSleep), keyEquivalent: "")
         preventSleepItem.state = sleepManager.preventSleep ? .on : .off
         menu.addItem(preventSleepItem)
         
-        // 开机自启动开关
+        // Launch at login toggle
         let launchAtLoginItem = NSMenuItem(title: NSLocalizedString("Launch at Login", comment: ""), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         launchAtLoginItem.state = launchManager.launchAtLogin ? .on : .off
         menu.addItem(launchAtLoginItem)
         
         menu.addItem(NSMenuItem.separator())
         
-        // Version info
         let versionString = getVersionString()
         let versionItem = NSMenuItem(title: versionString, action: nil, keyEquivalent: "")
         versionItem.isEnabled = false
         menu.addItem(versionItem)
         
-        // Quit
         menu.addItem(NSMenuItem(title: NSLocalizedString("Quit", comment: ""), action: #selector(quit), keyEquivalent: ""))
         
         // Set up observers for player state changes
@@ -244,25 +233,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    // 添加这个方法来确保应用保持活跃状态
+    // Method to ensure the application stays active
     func applicationWillTerminate(_ aNotification: Notification) {
         sleepManager.preventSleep = false
     }
     
     private func getVersionString() -> String {
         #if DEBUG
-            // 在 Debug 模式下显示 Git 信息
+            // Display Git info in Debug mode
             let gitCommit = Bundle.main.object(forInfoDictionaryKey: "GitCommit") as? String ?? "unknown"
             return String(format: NSLocalizedString("Dev: %@", comment: ""), gitCommit)
         #else
-            // 在 Release 模式下显示正式版本号
+            // Display official version number in Release mode
             let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
             return String(format: NSLocalizedString("Version %@", comment: ""), appVersion)
         #endif
     }
     
     @objc func showDownloadWindow() {
-        // 如果窗口已经存在，只需要激活它
+        // If window already exists, just activate it
         if let existingWindow = self.downloadWindow {
             existingWindow.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
@@ -280,14 +269,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.title = NSLocalizedString("Download Music", comment: "")
         window.center()
         
-        // 设置窗口关闭时的回调
+        // Set callback for window close
         window.isReleasedWhenClosed = false
         window.delegate = self
         
-        // 保存对窗口的引用
+        // Save reference to window
         self.downloadWindow = window
         
-        // 显示窗口并确保它成为焦点窗口
+        // Show window and ensure it becomes the focus window
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
@@ -297,7 +286,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 extension AppDelegate: NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         if let window = notification.object as? NSWindow, window == downloadWindow {
-            // 释放对窗口的引用
+            // Release window reference
             downloadWindow = nil
         }
     }
