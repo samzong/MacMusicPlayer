@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  MacMusicPlayer
 //
-//  Created by X on 9/18/24.
+//  Created by samzong<samzong.lu@gmail.com> on 2024/09/18.
 //
 
 import Cocoa

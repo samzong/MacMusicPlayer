@@ -2,7 +2,7 @@
 //  ControlOverlay.swift
 //  MacMusicPlayer
 //
-//  Created by X on 9/18/24.
+//  Created by X on 2024/09/18.
 //
 
 import SwiftUI
@@ -24,14 +24,14 @@ struct ControlOverlay: View {
                     } else {
                         playerManager.play()
                     }
-                }) {
+                }, label: {
                     Image(systemName: playerManager.isPlaying ? "pause.fill" : "play.fill")
-                }
+                })
                 .buttonStyle(.plain)
 
-                Button(action: playerManager.playNext) {
+                Button(action: playerManager.playNext, label: {
                     Image(systemName: "forward.fill")
-                }
+                })
                 .buttonStyle(.plain)
             }
             .font(.largeTitle)

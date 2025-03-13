@@ -1,0 +1,75 @@
+# Disabled rules
+disabled_rules:
+  - trailing_whitespace
+  - line_length
+  - force_cast
+  - cyclomatic_complexity
+
+# Enabled Rules
+opt_in_rules:
+  - empty_count
+  - missing_docs
+  - file_header
+  - todo
+
+# Included paths
+included:
+  - MacMusicPlayer
+
+# Excluded paths
+excluded:
+  - Pods
+  - fastlane
+  - vendor
+  - DerivedData
+
+# Custom rules configuration
+line_length:
+  warning: 120
+  error: 200
+
+file_length:
+  warning: 900
+  error: 1200
+
+type_body_length:
+  warning: 550
+  error: 700
+
+function_body_length:
+  warning: 150
+  error: 200
+
+# Comment rules configuration
+missing_docs:
+  warning:
+    - public
+    - open
+
+# File header comment template
+file_header:
+  required_pattern: |
+    \/\/
+    \/\/  .*?\.swift
+    \/\/  MacMusicPlayer
+    \/\/
+    \/\/  Created by .* on \d{4}\/\d{2}\/\d{2}\.
+    \/\/
+
+# Custom rules
+custom_rules:
+  comments_space:
+    name: "Comments Space"
+    regex: '//[^\s]'
+    match_kinds:
+      - comment
+    message: "A space is required after the comment symbol //"
+    severity: warning
+
+  todo_author:
+    name: "TODO Author"
+    regex: "// TODO(?!:)"
+    match_kinds:
+      - comment
+    message: "TODO comments should include the author's name, for example: // TODO(Author): Description"
+    severity: warning
