@@ -200,10 +200,8 @@ update-homebrew:
 		echo "    - Updating existing cask file with sed..."; \
 		sed -i '' "s/version \".*\"/version \"$(CLEAN_VERSION)\"/" $(CASK_FILE); \
 		if grep -q "Hardware::CPU.arm" $(CASK_FILE); then \
-			# 使用 Hardware::CPU.arm? 格式的 Cask 文件 \
 			sed -i '' "/if Hardware::CPU.arm/,/else/ s/sha256 \".*\"/sha256 \"$$ARM64_SHA256\"/" $(CASK_FILE); \
 			sed -i '' "/else/,/end/ s/sha256 \".*\"/sha256 \"$$X86_64_SHA256\"/" $(CASK_FILE); \
-			# 更新下载 URL \
 			sed -i '' "s|url \".*v#{version}/.*-ARM64.dmg\"|url \"https://github.com/samzong/$(APP_NAME)/releases/download/v#{version}/$(APP_NAME)-arm64.dmg\"|" $(CASK_FILE); \
 			sed -i '' "s|url \".*v#{version}/.*-Intel.dmg\"|url \"https://github.com/samzong/$(APP_NAME)/releases/download/v#{version}/$(APP_NAME)-x86_64.dmg\"|" $(CASK_FILE); \
 		else \
@@ -211,34 +209,8 @@ update-homebrew:
 			exit 1; \
 		fi; \
 	else \
-		echo "    - Creating new cask file..."; \
-		cat > $(CASK_FILE) << EOF \
-cask "$(shell echo $(APP_NAME) | tr '[:upper:]' '[:lower:]')" do\
-  version "$(CLEAN_VERSION)"\
-  \
-  if Hardware::CPU.arm?\
-    url "https://github.com/samzong/$(APP_NAME)/releases/download/v#{version}/$(APP_NAME)-arm64.dmg"\
-    sha256 "$$ARM64_SHA256"\
-  else\
-    url "https://github.com/samzong/$(APP_NAME)/releases/download/v#{version}/$(APP_NAME)-x86_64.dmg"\
-    sha256 "$$X86_64_SHA256"\
-  end\
-  \
-  name "$(APP_NAME)"\
-  desc "Simple music player for macOS"\
-  homepage "https://github.com/samzong/$(APP_NAME)"\
-  \
-  auto_updates false\
-  \
-  app "$(APP_NAME).app"\
-  \
-  zap trash: [\
-    "~/Library/Application Support/$(APP_NAME)",\
-    "~/Library/Caches/$(APP_NAME)",\
-    "~/Library/Preferences/com.seimotech.$(APP_NAME).plist",\
-  ]\
-end\
-EOF \
+		echo "❌ Error: Cask file not found. Please create it manually first."; \
+		exit 1; \
 	fi
 	
 	@echo "==> Checking for changes..."
@@ -250,12 +222,8 @@ EOF \
 		git config user.email "actions@github.com"; \
 		git commit -m "chore: update $(APP_NAME) to v$(CLEAN_VERSION)"; \
 		git push -u origin $(BRANCH_NAME); \
-		pr_data=$$(jq -n \
-			--arg title "chore: update $(APP_NAME) to v$(CLEAN_VERSION)" \
-			--arg body "Auto-generated PR\n- Version: $(CLEAN_VERSION)\n- x86_64 SHA256: $$X86_64_SHA256\n- arm64 SHA256: $$ARM64_SHA256" \
-			--arg head "$(BRANCH_NAME)" \
-			--arg base "main" \
-			'{title: $$title, body: $$body, head: $$head, base: $$base}'); \
+		pr_data=$$(printf '{"title":"chore: update %s to v%s","body":"Auto-generated PR\\n- Version: %s\\n- x86_64 SHA256: %s\\n- arm64 SHA256: %s","head":"%s","base":"main"}' \
+			"$(APP_NAME)" "$(CLEAN_VERSION)" "$(CLEAN_VERSION)" "$$X86_64_SHA256" "$$ARM64_SHA256" "$(BRANCH_NAME)"); \
 		curl -X POST \
 			-H "Authorization: token $(GH_PAT)" \
 			-H "Content-Type: application/json" \
