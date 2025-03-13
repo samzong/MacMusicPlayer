@@ -1,7 +1,6 @@
 # Disabled rules
 disabled_rules:
   - trailing_whitespace
-  - line_length
   - force_cast
   - cyclomatic_complexity
 
@@ -10,6 +9,7 @@ opt_in_rules:
   - empty_count
   - missing_docs
   - file_header
+  - line_length
   - todo
 
 # Included paths

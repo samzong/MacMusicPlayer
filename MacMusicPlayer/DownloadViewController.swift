@@ -30,7 +30,7 @@ class DownloadViewController: NSViewController {
     
     // MARK: - Lifecycle
     override func loadView() {
-        // 设置一个合适的初始大小，与后续使用的compactHeight保持一致
+        // Set an appropriate initial size, consistent with the compact height used later
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 600, height: 140))
     }
     
@@ -43,22 +43,20 @@ class DownloadViewController: NSViewController {
     override func viewDidAppear() {
         super.viewDidAppear()
         
-        // 确保窗口成为焦点窗口
+        // Ensure window becomes the focus window
         if let window = view.window {
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             
-            // 将焦点设置到URL输入框
+            // Set focus to URL input field
             self.view.window?.makeFirstResponder(urlTextField)
         }
     }
     
     // MARK: - UI Setup
     private func setupUI() {
-        // 应用半透明材质效果
         view.wantsLayer = true
         
-        // 设置窗口标题居中
         if let window = view.window {
             window.title = NSLocalizedString("Download Music", comment: "")
             window.titleVisibility = .visible
@@ -80,7 +78,6 @@ class DownloadViewController: NSViewController {
         urlTextField.font = NSFont.systemFont(ofSize: 13)
         urlTextField.bezelStyle = .roundedBezel
         urlTextField.focusRingType = .exterior
-        // 添加回车键支持
         urlTextField.target = self
         urlTextField.action = #selector(detectFormats)
         view.addSubview(urlTextField)
@@ -103,7 +100,6 @@ class DownloadViewController: NSViewController {
         detectButton.contentTintColor = .white
         detectButton.wantsLayer = true
         
-        // 设置为蓝色按钮样式
         if #available(macOS 11.0, *) {
             detectButton.bezelColor = NSColor.controlAccentColor
         } else {
@@ -163,7 +159,7 @@ class DownloadViewController: NSViewController {
         scrollView.borderType = .noBorder
         scrollView.drawsBackground = false
         
-        // 使用半透明材质背景
+        // Use translucent material background
         tableBackgroundView.translatesAutoresizingMaskIntoConstraints = false
         tableBackgroundView.material = .popover
         tableBackgroundView.state = .active
@@ -196,8 +192,8 @@ class DownloadViewController: NSViewController {
         tableView.selectionHighlightStyle = .none
         tableView.backgroundColor = .clear
         tableView.enclosingScrollView?.drawsBackground = false
-        tableView.gridStyleMask = [] // 移除所有网格线
-        tableView.usesAlternatingRowBackgroundColors = false // 禁用交替行背景色
+        tableView.gridStyleMask = [] 
+        tableView.usesAlternatingRowBackgroundColors = false
         
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("FormatColumn"))
         column.width = scrollView.frame.width - 20
@@ -205,7 +201,7 @@ class DownloadViewController: NSViewController {
         
         scrollView.documentView = tableView
         
-        // 初始状态下隐藏背景视图和表格
+        // Hide background view and table in initial state
         tableBackgroundView.isHidden = true
         scrollView.isHidden = true
     }
@@ -237,7 +233,6 @@ class DownloadViewController: NSViewController {
         githubLinkButton.font = NSFont.systemFont(ofSize: 10)
         githubLinkButton.contentTintColor = NSColor.linkColor
         
-        // 添加鼠标悬停时显示下划线效果
         let trackingArea = NSTrackingArea(
             rect: NSRect.zero,
             options: [.inVisibleRect, .activeAlways, .mouseEnteredAndExited],
@@ -278,16 +273,15 @@ class DownloadViewController: NSViewController {
     
     // MARK: - Dependencies Check
     private func checkDependencies() {
-        // 立即设置默认值，避免UI显示"Not installed"
         isYtDlpInstalled = false
         isFfmpegInstalled = false
         
-        // 使用shell脚本直接检测工具
+        // Shell script direct detection tool
         let script = """
         #!/bin/bash
         export PATH=$PATH:/usr/local/bin:/opt/homebrew/bin:/opt/local/bin:/usr/bin
         
-        # 检查yt-dlp
+        # Check yt-dlp
         if command -v yt-dlp &> /dev/null; then
             echo "YT_DLP_INSTALLED=true"
             echo "YT_DLP_VERSION=$(yt-dlp --version 2>/dev/null)"
@@ -295,7 +289,7 @@ class DownloadViewController: NSViewController {
             echo "YT_DLP_INSTALLED=false"
         fi
         
-        # 检查ffmpeg
+        # Check ffmpeg
         if command -v ffmpeg &> /dev/null; then
             echo "FFMPEG_INSTALLED=true"
             FFMPEG_VERSION=$(ffmpeg -version 2>/dev/null | head -n1 | awk '{print $3}')
@@ -317,7 +311,7 @@ class DownloadViewController: NSViewController {
             
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             if let output = String(data: data, encoding: .utf8) {
-                // 解析输出
+                // Parse output
                 let lines = output.components(separatedBy: "\n")
                 for line in lines {
                     if line.starts(with: "YT_DLP_INSTALLED=") {
@@ -335,7 +329,6 @@ class DownloadViewController: NSViewController {
                     }
                 }
                 
-                // 更新UI
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     self.updateVersionInfo()
@@ -343,16 +336,13 @@ class DownloadViewController: NSViewController {
             }
         } catch {
             print("Error checking dependencies: \(error)")
-            // 如果脚本执行失败，尝试备用方法
+            // If script execution fails, try alternative method
             checkDependenciesWithDirectCommands()
         }
     }
     
     private func checkDependenciesWithDirectCommands() {
-        // 直接检查yt-dlp
         checkYtDlp()
-        
-        // 直接检查ffmpeg
         checkFfmpeg()
     }
     
@@ -371,7 +361,7 @@ class DownloadViewController: NSViewController {
             if task.terminationStatus == 0 {
                 isYtDlpInstalled = true
                 
-                // 获取版本
+                // Get version
                 let versionTask = Process()
                 versionTask.launchPath = "/usr/bin/env"
                 versionTask.arguments = ["yt-dlp", "--version"]
@@ -394,7 +384,6 @@ class DownloadViewController: NSViewController {
                 }
             }
             
-            // 更新UI
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.updateVersionInfo()
@@ -423,7 +412,6 @@ class DownloadViewController: NSViewController {
             if task.terminationStatus == 0 {
                 isFfmpegInstalled = true
                 
-                // 获取版本
                 let versionTask = Process()
                 versionTask.launchPath = "/usr/bin/env"
                 versionTask.arguments = ["ffmpeg", "-version"]
@@ -451,7 +439,6 @@ class DownloadViewController: NSViewController {
                 }
             }
             
-            // 更新UI
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.updateVersionInfo()
@@ -484,12 +471,11 @@ class DownloadViewController: NSViewController {
         
         versionInfoLabel.stringValue = infoText
         
-        // 如果有依赖未安装，显示提示
+        // If dependencies are missing, show a prompt
         if !isYtDlpInstalled || !isFfmpegInstalled {
             statusLabel.stringValue = NSLocalizedString("Please install missing dependencies", comment: "")
             statusLabel.textColor = NSColor.systemRed
         } else {
-            // 依赖工具正常安装时，清空状态信息
             statusLabel.stringValue = ""
         }
     }
@@ -504,26 +490,24 @@ class DownloadViewController: NSViewController {
             return
         }
         
-        // 添加平滑的UI状态过渡
+        // Add smooth UI state transition
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.3
-            // 显示进度指示器
+            // Show progress indicator
             progressIndicator.isHidden = false
             progressIndicator.startAnimation(nil)
             
-            // 更新状态标签
+            // Update status label
             statusLabel.stringValue = NSLocalizedString("Detecting available formats...", comment: "")
             statusLabel.textColor = NSColor.secondaryLabelColor
         })
         
-        // 清空现有格式
         formats = []
         tableView.reloadData()
         
-        // 使用Task执行异步操作
+        // Use Task to execute asynchronous operations
         Task {
             do {
-                // 检查是否安装了依赖
                 if !self.isYtDlpInstalled {
                     DispatchQueue.main.async {
                         self.hideProgressIndicator()
@@ -542,19 +526,16 @@ class DownloadViewController: NSViewController {
                     return
                 }
                 
-                // 检测可用格式
                 let newFormats = try await DownloadManager.shared.fetchAvailableFormats(from: urlString)
                 
                 DispatchQueue.main.async {
                     self.formats = newFormats
                     
-                    // 平滑展示结果
                     if !self.formats.isEmpty {
                         NSAnimationContext.runAnimationGroup({ context in
                             context.duration = 0.3
                             self.hideProgressIndicator()
                             
-                            // 展示表格并调整窗口大小
                             self.tableBackgroundView.isHidden = false
                             self.scrollView.isHidden = false
                             
@@ -563,7 +544,6 @@ class DownloadViewController: NSViewController {
                         }, completionHandler: {
                             self.tableView.reloadData()
                             
-                            // 平滑调整窗口大小
                             if let window = self.view.window {
                                 let expandedHeight: CGFloat = min(540, 140 + CGFloat(min(8, self.formats.count)) * 40 + 60)
                                 
@@ -611,7 +591,6 @@ class DownloadViewController: NSViewController {
         let format = formats[row]
         let videoUrl = urlTextField.stringValue
         
-        // 更新UI状态
         sender.isEnabled = false
         
         NSAnimationContext.runAnimationGroup({ context in
@@ -623,7 +602,6 @@ class DownloadViewController: NSViewController {
         progressIndicator.startAnimation(nil)
         statusLabel.stringValue = NSLocalizedString("Starting download...", comment: "")
         
-        // 使用Task执行异步操作
         Task {
             do {
                 try await DownloadManager.shared.downloadAudio(from: videoUrl, formatId: format.formatId)
@@ -633,7 +611,6 @@ class DownloadViewController: NSViewController {
                     self.statusLabel.stringValue = NSLocalizedString("Download completed successfully", comment: "")
                     self.statusLabel.textColor = NSColor.systemGreen
                     
-                    // 恢复按钮状态
                     NSAnimationContext.runAnimationGroup({ context in
                         context.duration = 0.2
                         sender.animator().alphaValue = 1.0
@@ -641,7 +618,7 @@ class DownloadViewController: NSViewController {
                         sender.isEnabled = true
                     })
                     
-                    // 通知播放器刷新音乐库
+                    // Notify player to refresh music library
                     NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
                 }
             } catch {
@@ -650,7 +627,6 @@ class DownloadViewController: NSViewController {
                     self.statusLabel.stringValue = String(format: NSLocalizedString("Download failed: %@", comment: ""), error.localizedDescription)
                     self.statusLabel.textColor = NSColor.systemRed
                     
-                    // 恢复按钮状态
                     NSAnimationContext.runAnimationGroup({ context in
                         context.duration = 0.2
                         sender.animator().alphaValue = 1.0
@@ -694,7 +670,6 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             cell = NSTableCellView()
             cell?.identifier = cellIdentifier
             
-            // 创建容器视图，用于布局
             let containerView = NSView()
             containerView.translatesAutoresizingMaskIntoConstraints = false
             cell?.addSubview(containerView)
@@ -706,7 +681,6 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 containerView.bottomAnchor.constraint(equalTo: cell!.bottomAnchor)
             ])
             
-            // 格式信息
             let text = NSTextField()
             text.identifier = NSUserInterfaceItemIdentifier("FormatText")
             text.translatesAutoresizingMaskIntoConstraints = false
@@ -716,11 +690,10 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             text.drawsBackground = false
             text.font = NSFont.systemFont(ofSize: 12)
             text.lineBreakMode = .byTruncatingTail
-            // 添加辅助功能标签
             text.setAccessibilityLabel("Audio format")
             containerView.addSubview(text)
             
-            // 下载按钮 - 使用更现代的样式
+            // Download button - use a more modern style
             let downloadButton = NSButton()
             downloadButton.identifier = NSUserInterfaceItemIdentifier("DownloadButton")
             downloadButton.translatesAutoresizingMaskIntoConstraints = false
@@ -729,9 +702,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             downloadButton.font = NSFont.systemFont(ofSize: 12, weight: .medium)
             downloadButton.target = self
             downloadButton.action = #selector(downloadAudio(sender:))
-            downloadButton.setAccessibilityLabel("Download this audio format")
-            
-            // 设置按钮样式
+            downloadButton.setAccessibilityLabel("Download this audio format")            
             downloadButton.wantsLayer = true
             downloadButton.contentTintColor = NSColor.white
             
@@ -741,7 +712,6 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 downloadButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
             }
             
-            // 添加鼠标悬停效果
             let trackingArea = NSTrackingArea(
                 rect: NSRect.zero,
                 options: [.inVisibleRect, .activeAlways, .mouseEnteredAndExited],
@@ -750,7 +720,6 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             )
             downloadButton.addTrackingArea(trackingArea)
             
-            // 确保按钮宽度足够显示文本
             let minButtonWidth: CGFloat = 90
             let buttonWidth = downloadButton.title.size(withAttributes: [.font: downloadButton.font!]).width + 20
             let actualButtonWidth = max(minButtonWidth, buttonWidth)
@@ -770,7 +739,6 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             
             cell?.textField = text
             
-            // 为按钮添加悬停和点击动画效果
             class ButtonAnimationDelegate: NSObject {
                 @objc func mouseEntered(_ sender: NSEvent) {
                     guard let button = sender.trackingArea?.owner as? NSButton else { return }
@@ -805,7 +773,6 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 }
             }
             
-            // 附加动画委托对象到按钮
             let animationDelegate = ButtonAnimationDelegate()
             objc_setAssociatedObject(downloadButton, "animationDelegate", animationDelegate, .OBJC_ASSOCIATION_RETAIN)
             
@@ -819,10 +786,8 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             }
         }
         
-        // 更新内容
         cell?.textField?.stringValue = format.description
         
-        // 更新下载按钮的tag，用于标识行
         if let downloadButton = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "DownloadButton" }) as? NSButton {
             downloadButton.tag = row
         }

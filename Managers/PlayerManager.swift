@@ -54,7 +54,7 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
         super.init()
         
-        // 监听刷新音乐库通知
+        // Listen for music library refresh notification
         NotificationCenter.default.addObserver(self,
                                             selector: #selector(refreshMusicLibrary),
                                             name: NSNotification.Name("RefreshMusicLibrary"),
@@ -207,7 +207,7 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         updateNowPlayingInfo()
     }
 
-    // AVAudioPlayerDelegate 方法
+    // AVAudioPlayerDelegate methods
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         if flag {
             switch playMode {

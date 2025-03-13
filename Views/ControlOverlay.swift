@@ -39,12 +39,11 @@ struct ControlOverlay: View {
 
             Spacer()
 
-            // 这里可以添加其他控件，如进度条、音量控制等
+            // Additional controls can be added here, such as progress bar, volume control, etc.
         }
     }
 }
 
-// 预览提供者
 struct ControlOverlay_Previews: PreviewProvider {
     static var previews: some View {
         ControlOverlay(playerManager: PlayerManager())
