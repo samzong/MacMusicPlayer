@@ -9,6 +9,7 @@
 "Single Loop" = "1曲リピート";
 "Random" = "シャッフル";
 "Set Music Source" = "音楽フォルダを選択";
+"Download Music" = "音楽をダウンロードする";
 "Prevent Mac Sleep" = "システムのスリープを防止";
 "Launch at Login" = "ログイン時に起動";
 "Quit" = "終了";
