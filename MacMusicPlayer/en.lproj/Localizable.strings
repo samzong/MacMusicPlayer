@@ -72,3 +72,19 @@
 "Enter video URL" = "Enter video URL";
 "Detect" = "Detect";
 "Download" = "Download"; 
+
+// Equalizer
+"Equalizer" = "Equalizer";
+"Enable Equalizer" = "Enable Equalizer";
+"Bass" = "Bass";
+"Mid" = "Mid";
+"Treble" = "Treble";
+"Reset Equalizer" = "Reset Equalizer";
+"Presets" = "Presets";
+"Flat" = "Flat";
+"Classical" = "Classical";
+"Rock" = "Rock";
+"Pop" = "Pop";
+"Jazz" = "Jazz";
+"Electronic" = "Electronic";
+"Hip-Hop" = "Hip-Hop";

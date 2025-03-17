@@ -72,3 +72,19 @@
 "Enter video URL" = "비디오 URL 입력";
 "Detect" = "감지";
 "Download" = "다운로드"; 
+
+// Equalizer
+"Equalizer" = "음향 조정기";
+"Enable Equalizer" = "음향 조정기 활성화";
+"Bass" = "베이스";
+"Mid" = "미드";
+"Treble" = "트렐라";
+"Reset Equalizer" = "음향 조정기 초기화";
+"Presets" = "프리셋";
+"Flat" = "플랫";
+"Classical" = "클래식";
+"Rock" = "록";
+"Pop" = "팝";
+"Jazz" = "재즈";
+"Electronic" = "전자";
+"Hip-Hop" = "힙합";

@@ -71,4 +71,20 @@
 "Please select a format to download" = "请选择要下载的格式";
 "Enter video URL" = "输入视频URL";
 "Detect" = "检测";
-"Download" = "下载"; 
+"Download" = "下载";
+
+// Equalizer
+"Equalizer" = "均衡器";
+"Enable Equalizer" = "启用均衡器";
+"Bass" = "低音";
+"Mid" = "中音";
+"Treble" = "高音";
+"Reset Equalizer" = "重置均衡器";
+"Presets" = "预设";
+"Flat" = "平衡";
+"Classical" = "古典";
+"Rock" = "摇滚";
+"Pop" = "流行";
+"Jazz" = "爵士";
+"Electronic" = "电子";
+"Hip-Hop" = "嘻哈";
