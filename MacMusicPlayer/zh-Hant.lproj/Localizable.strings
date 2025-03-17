@@ -72,3 +72,19 @@
 "Enter video URL" = "輸入視頻URL";
 "Detect" = "檢測";
 "Download" = "下載"; 
+
+// Equalizer
+"Equalizer" = "均衡器";
+"Enable Equalizer" = "啟用均衡器";
+"Bass" = "低音";
+"Mid" = "中音";
+"Treble" = "高音";
+"Reset Equalizer" = "重置均衡器";
+"Presets" = "預設";
+"Flat" = "平衡";
+"Classical" = "古典";
+"Rock" = "搖滾";
+"Pop" = "流行";
+"Jazz" = "爵士";
+"Electronic" = "電子";
+"Hip-Hop" = "嘻哈";

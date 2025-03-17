@@ -72,3 +72,19 @@
 "Enter video URL" = "動画URLを入力";
 "Detect" = "検出";
 "Download" = "ダウンロード"; 
+
+// Equalizer
+"Equalizer" = "均衡器";
+"Enable Equalizer" = "均衡器を有効にする";
+"Bass" = "低音";
+"Mid" = "中音";
+"Treble" = "高音";
+"Reset Equalizer" = "均衡器をリセット";
+"Presets" = "プリセット";
+"Flat" = "フラット";
+"Classical" = "古典";
+"Rock" = "ロック";
+"Pop" = "ポップ";
+"Jazz" = "ジャズ";
+"Electronic" = "エレクトロニック";
+"Hip-Hop" = "ヒップホップ";
