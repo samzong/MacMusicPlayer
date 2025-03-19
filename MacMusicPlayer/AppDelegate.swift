@@ -16,6 +16,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var playerManager: PlayerManager!
     var sleepManager: SleepManager!
     var launchManager: LaunchManager!
+    var libraryManager: LibraryManager!
     var menu: NSMenu!
     
     // Strong reference to the window
@@ -25,6 +26,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         playerManager = PlayerManager()
         sleepManager = SleepManager()
         launchManager = LaunchManager()
+        libraryManager = LibraryManager()
+        
+        if let currentLibrary = libraryManager.currentLibrary {
+            playerManager.loadLibrary(currentLibrary)
+        } else {
+            playerManager.requestMusicFolderAccess()
+        }
         
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
@@ -37,9 +45,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         setupMenu()
         setupRemoteCommandCenter()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAddNewLibrary(_:)),
+            name: NSNotification.Name("AddNewLibrary"),
+            object: nil
+        )
     }
     
     func setupMenu() {
+        // 保存旧菜单的引用，以便在更新时只更新必要的部分
+        let oldMenu = menu
+        
         menu = NSMenu()
         menu.minimumWidth = 200
         
@@ -53,10 +71,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         trackLabel.lineBreakMode = .byTruncatingTail
         trackInfoItem.view?.addSubview(trackLabel)
         
+        // 如果我们是从updateMenuItems调用的，保留当前播放轨道名称
+        if let oldMenu = oldMenu,
+           let oldTrackItem = oldMenu.item(at: 0),
+           let oldTrackLabel = oldTrackItem.view?.subviews.first as? NSTextField {
+            trackLabel.stringValue = oldTrackLabel.stringValue
+        } else if let currentTrack = playerManager.currentTrack {
+            trackLabel.stringValue = currentTrack.title
+        }
+        
         menu.addItem(trackInfoItem)
         menu.addItem(NSMenuItem.separator())
         
-        let playPauseItem = NSMenuItem(title: NSLocalizedString("Play", comment: ""), action: #selector(togglePlayPause), keyEquivalent: "")
+        // 播放/暂停按钮，根据当前状态设置文本
+        let playPauseTitle = playerManager.isPlaying ? NSLocalizedString("Pause", comment: "") : NSLocalizedString("Play", comment: "")
+        let playPauseItem = NSMenuItem(title: playPauseTitle, action: #selector(togglePlayPause), keyEquivalent: "")
         menu.addItem(playPauseItem)
         
         menu.addItem(NSMenuItem(title: NSLocalizedString("Previous", comment: ""), action: #selector(playPrevious), keyEquivalent: ""))        
@@ -125,7 +154,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         equalizerItem.submenu = equalizerMenu
         menu.addItem(equalizerItem)
         
-        menu.addItem(NSMenuItem(title: NSLocalizedString("Set Music Source", comment: ""), action: #selector(reconfigureFolder), keyEquivalent: "s"))        
+        // 在选择音乐源菜单项之前添加音乐库菜单
+        let libraryMenu = NSMenu()
+        let libraryMenuItem = NSMenuItem(title: NSLocalizedString("Music Libraries", comment: "Menu item for music libraries"), action: nil, keyEquivalent: "")
+        
+        // 添加现有音乐库列表
+        for library in libraryManager.libraries {
+            let item = NSMenuItem(title: library.name, action: #selector(switchLibrary(_:)), keyEquivalent: "")
+            item.representedObject = library.id
+            item.state = libraryManager.currentLibrary?.id == library.id ? .on : .off
+            libraryMenu.addItem(item)
+        }
+        
+        libraryMenu.addItem(NSMenuItem.separator())
+        libraryMenu.addItem(NSMenuItem(title: NSLocalizedString("Add New Library", comment: "Menu item for adding a new music library"), action: #selector(addNewLibrary), keyEquivalent: ""))
+        
+        // 只有当存在多个音乐库时才显示删除选项
+        if libraryManager.libraries.count > 1 {
+            libraryMenu.addItem(NSMenuItem(title: NSLocalizedString("Delete Current Library", comment: "Menu item for deleting current music library"), action: #selector(removeCurrentLibrary), keyEquivalent: ""))
+        }
+        
+        libraryMenu.addItem(NSMenuItem(title: NSLocalizedString("Rename Current Library", comment: "Menu item for renaming current music library"), action: #selector(renameCurrentLibrary), keyEquivalent: ""))
+        
+        libraryMenuItem.submenu = libraryMenu
+        menu.addItem(libraryMenuItem)
+        
         menu.addItem(NSMenuItem(title: NSLocalizedString("Download Music", comment: ""), action: #selector(showDownloadWindow), keyEquivalent: "d"))
         
         let preventSleepItem = NSMenuItem(title: NSLocalizedString("Prevent Mac Sleep", comment: ""), action: #selector(togglePreventSleep), keyEquivalent: "")
@@ -146,9 +199,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         menu.addItem(NSMenuItem(title: NSLocalizedString("Quit", comment: ""), action: #selector(quit), keyEquivalent: ""))
         
-        // Set up observers for player state changes
-        NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("TrackChanged"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("PlaybackStateChanged"), object: nil)
+        // 只在首次调用时设置观察者，避免重复添加
+        if oldMenu == nil {
+            NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("TrackChanged"), object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("PlaybackStateChanged"), object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
+        }
+        
+        // 更新状态栏菜单
+        statusItem?.menu = menu
     }
     
     // Create slider view
@@ -218,13 +277,67 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func updateMenuItems() {
+        // 更新轨道信息
         if let trackInfoItem = menu.item(at: 0),
            let trackLabel = trackInfoItem.view?.subviews.first as? NSTextField {
             trackLabel.stringValue = playerManager.currentTrack?.title ?? NSLocalizedString("No Music Source", comment: "")
         }
         
+        // 更新播放/暂停按钮状态
         if let playPauseItem = menu.item(at: 2) {
             playPauseItem.title = playerManager.isPlaying ? NSLocalizedString("Pause", comment: "") : NSLocalizedString("Play", comment: "")
+        }
+        
+        // 更新音乐库菜单
+        for i in 0..<menu.items.count {
+            let item = menu.item(at: i)
+            if let itemTitle = item?.title, itemTitle == NSLocalizedString("Music Libraries", comment: "Menu item for music libraries") {
+                if let submenu = item?.submenu {
+                    // 清除音乐库列表项
+                    while !submenu.items.isEmpty && submenu.items[0].action != nil && 
+                          submenu.items[0].title != NSLocalizedString("Add New Library", comment: "Menu item for adding a new music library") {
+                        submenu.removeItem(at: 0)
+                    }
+                    
+                    // 找到分隔线位置
+                    var separatorIndex = -1
+                    for j in 0..<submenu.items.count {
+                        if submenu.items[j].isSeparatorItem {
+                            separatorIndex = j
+                            break
+                        }
+                    }
+                    
+                    // 重新添加音乐库列表
+                    for (_, library) in libraryManager.libraries.enumerated().reversed() {
+                        let newItem = NSMenuItem(title: library.name, action: #selector(switchLibrary(_:)), keyEquivalent: "")
+                        newItem.representedObject = library.id
+                        newItem.state = libraryManager.currentLibrary?.id == library.id ? .on : .off
+                        if separatorIndex >= 0 {
+                            submenu.insertItem(newItem, at: 0)
+                        } else {
+                            submenu.addItem(newItem)
+                        }
+                    }
+                    
+                    // 更新删除菜单项可见性
+                    let deleteItemIndex = submenu.items.firstIndex { $0.title == NSLocalizedString("Delete Current Library", comment: "Menu item for deleting current music library") }
+                    if libraryManager.libraries.count > 1 {
+                        if deleteItemIndex == nil {
+                            // 需要添加删除选项
+                            let renameItemIndex = submenu.items.firstIndex { $0.title == NSLocalizedString("Rename Current Library", comment: "Menu item for renaming current music library") }
+                            if let index = renameItemIndex {
+                                let deleteItem = NSMenuItem(title: NSLocalizedString("Delete Current Library", comment: "Menu item for deleting current music library"), action: #selector(removeCurrentLibrary), keyEquivalent: "")
+                                submenu.insertItem(deleteItem, at: index)
+                            }
+                        }
+                    } else if let index = deleteItemIndex {
+                        // 需要移除删除选项
+                        submenu.removeItem(at: index)
+                    }
+                }
+                break
+            }
         }
         
         updateStatusBarIcon()
@@ -257,7 +370,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func reconfigureFolder() {
-        playerManager.requestMusicFolderAccess()
+        addNewLibrary()
     }
     
     @objc func quit() {
@@ -265,7 +378,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     @objc func togglePreventSleep() {
         sleepManager.preventSleep.toggle()
-        if let preventSleepItem = menu.item(withTitle: NSLocalizedString("Prevent Mac Sleep", comment: "")) {
+        if let preventSleepItem = menu.items.first(where: { $0.title == NSLocalizedString("Prevent Mac Sleep", comment: "") }) {
             preventSleepItem.state = sleepManager.preventSleep ? .on : .off
         }
     }
@@ -287,7 +400,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func updatePlayModeMenuItems() {
-        if let playModeItem = menu.item(withTitle: NSLocalizedString("Playback Mode", comment: "")),
+        if let playModeItem = menu.items.first(where: { $0.title == NSLocalizedString("Playback Mode", comment: "") }),
            let playModeMenu = playModeItem.submenu {
             for item in playModeMenu.items {
                 item.state = item.tag == playerManager.playMode.tag ? .on : .off
@@ -297,15 +410,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @objc func toggleLaunchAtLogin() {
         launchManager.launchAtLogin.toggle()
-        if let launchAtLoginItem = menu.item(withTitle: NSLocalizedString("Launch at Login", comment: "")) {
+        if let launchAtLoginItem = menu.items.first(where: { $0.title == NSLocalizedString("Launch at Login", comment: "") }) {
             launchAtLoginItem.state = launchManager.launchAtLogin ? .on : .off
         }
     }
     
     @objc func toggleEqualizer() {
         playerManager.equalizerEnabled.toggle()
-        if let equalizerItem = menu.item(withTitle: NSLocalizedString("Equalizer", comment: ""))?.submenu?.item(withTitle: NSLocalizedString("Enable Equalizer", comment: "")) {
-            equalizerItem.state = playerManager.equalizerEnabled ? .on : .off
+        if let equalizerItem = menu.items.first(where: { $0.title == NSLocalizedString("Equalizer", comment: "") }),
+           let submenu = equalizerItem.submenu,
+           let enableItem = submenu.items.first(where: { $0.title == NSLocalizedString("Enable Equalizer", comment: "") }) {
+            enableItem.state = playerManager.equalizerEnabled ? .on : .off
         }
     }
     
@@ -327,8 +442,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             playerManager.currentPreset = preset
             
             // Update the selected state of the preset menu item
-            if let equalizerMenu = menu.item(withTitle: NSLocalizedString("Equalizer", comment: ""))?.submenu,
-               let presetsItem = equalizerMenu.item(withTitle: NSLocalizedString("Presets", comment: "")),
+            if let equalizerItem = menu.items.first(where: { $0.title == NSLocalizedString("Equalizer", comment: "") }),
+               let equalizerMenu = equalizerItem.submenu,
+               let presetsItem = equalizerMenu.items.first(where: { $0.title == NSLocalizedString("Presets", comment: "") }),
                let presetsMenu = presetsItem.submenu {
                 for item in presetsMenu.items {
                     if let itemPresetString = item.representedObject as? String {
@@ -342,18 +458,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     private func updateEqualizerSliders() {
-        if let equalizerMenu = menu.item(withTitle: NSLocalizedString("Equalizer", comment: ""))?.submenu {
-            if let bassItem = equalizerMenu.item(withTitle: NSLocalizedString("Bass", comment: "")),
+        if let equalizerItem = menu.items.first(where: { $0.title == NSLocalizedString("Equalizer", comment: "") }),
+           let equalizerMenu = equalizerItem.submenu {
+            
+            if let bassItem = equalizerMenu.items.first(where: { $0.title == NSLocalizedString("Bass", comment: "") }),
                let bassSlider = bassItem.view?.subviews.last as? NSSlider {
                 bassSlider.doubleValue = Double(playerManager.bassGain)
             }
             
-            if let midItem = equalizerMenu.item(withTitle: NSLocalizedString("Mid", comment: "")),
+            if let midItem = equalizerMenu.items.first(where: { $0.title == NSLocalizedString("Mid", comment: "") }),
                let midSlider = midItem.view?.subviews.last as? NSSlider {
                 midSlider.doubleValue = Double(playerManager.midGain)
             }
             
-            if let trebleItem = equalizerMenu.item(withTitle: NSLocalizedString("Treble", comment: "")),
+            if let trebleItem = equalizerMenu.items.first(where: { $0.title == NSLocalizedString("Treble", comment: "") }),
                let trebleSlider = trebleItem.view?.subviews.last as? NSSlider {
                 trebleSlider.doubleValue = Double(playerManager.trebleGain)
             }
@@ -363,8 +481,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func resetEqualizer() {
         playerManager.currentPreset = .flat
         
-        if let equalizerMenu = menu.item(withTitle: NSLocalizedString("Equalizer", comment: ""))?.submenu,
-           let presetsItem = equalizerMenu.item(withTitle: NSLocalizedString("Presets", comment: "")),
+        if let equalizerItem = menu.items.first(where: { $0.title == NSLocalizedString("Equalizer", comment: "") }),
+           let equalizerMenu = equalizerItem.submenu,
+           let presetsItem = equalizerMenu.items.first(where: { $0.title == NSLocalizedString("Presets", comment: "") }),
            let presetsMenu = presetsItem.submenu {
             for item in presetsMenu.items {
                 if let itemPresetString = item.representedObject as? String {
@@ -422,6 +541,91 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Show window and ensure it becomes the focus window
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    // 处理添加新音乐库的通知
+    @objc func handleAddNewLibrary(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let name = userInfo["name"] as? String,
+              let path = userInfo["path"] as? String else {
+            return
+        }
+        
+        libraryManager.addLibrary(name: name, path: path)
+        
+        // 使用updateMenuItems而不是setupMenu来避免重建整个菜单
+        updateMenuItems()
+    }
+    
+    // 切换音乐库
+    @objc func switchLibrary(_ sender: NSMenuItem) {
+        guard let libraryId = sender.representedObject as? UUID else { return }
+        
+        libraryManager.switchLibrary(id: libraryId)
+        
+        if let currentLibrary = libraryManager.currentLibrary {
+            playerManager.loadLibrary(currentLibrary)
+        }
+        
+        // 使用updateMenuItems而不是setupMenu来避免重建整个菜单
+        updateMenuItems()
+    }
+    
+    // 添加新音乐库
+    @objc func addNewLibrary() {
+        playerManager.requestMusicFolderAccess()
+    }
+    
+    // 删除当前音乐库
+    @objc func removeCurrentLibrary() {
+        guard libraryManager.libraries.count > 1,
+              let currentId = libraryManager.currentLibrary?.id else {
+            return
+        }
+        
+        let alert = NSAlert()
+        alert.messageText = NSLocalizedString("Confirm Deletion", comment: "Alert title when deleting a music library")
+        alert.informativeText = NSLocalizedString("This operation will not delete music files on disk, it only removes this library from the app.", comment: "Alert description when deleting a music library")
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: NSLocalizedString("Delete", comment: "Button title for confirming deletion"))
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button title for cancelling deletion"))
+        
+        if alert.runModal() == .alertFirstButtonReturn {
+            libraryManager.removeLibrary(id: currentId)
+            
+            if let newCurrent = libraryManager.currentLibrary {
+                playerManager.loadLibrary(newCurrent)
+            }
+            
+            // 使用updateMenuItems而不是setupMenu来避免重建整个菜单
+            updateMenuItems()
+        }
+    }
+    
+    // 重命名当前音乐库
+    @objc func renameCurrentLibrary() {
+        guard let currentLibrary = libraryManager.currentLibrary else { return }
+        
+        let alert = NSAlert()
+        alert.messageText = NSLocalizedString("Rename Library", comment: "Alert title when renaming a music library")
+        alert.informativeText = NSLocalizedString("Please enter a new name for the library:", comment: "Alert description when renaming a music library")
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button title for confirming rename"))
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button title for cancelling rename"))
+        
+        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 250, height: 24))
+        textField.stringValue = currentLibrary.name
+        alert.accessoryView = textField
+        
+        if alert.runModal() == .alertFirstButtonReturn {
+            let newName = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !newName.isEmpty {
+                libraryManager.renameLibrary(id: currentLibrary.id, newName: newName)
+                
+                // 使用updateMenuItems而不是setupMenu来避免重建整个菜单
+                updateMenuItems()
+            }
+        }
     }
 }
 

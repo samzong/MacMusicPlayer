@@ -14,6 +14,20 @@
 "Launch at Login" = "Start at Login";
 "Quit" = "Quit";
 
+// Music Library
+"Music Libraries" = "Music Libraries";
+"Add New Library" = "Add New Library";
+"Delete Current Library" = "Delete Current Library";
+"Rename Current Library" = "Rename Current Library";
+"My Music" = "My Music";
+"Confirm Deletion" = "Confirm Deletion";
+"This operation will not delete music files on disk, it only removes this library from the app." = "This operation will not delete music files on disk, it only removes this library from the app.";
+"Delete" = "Delete";
+"Cancel" = "Cancel";
+"Rename Library" = "Rename Library";
+"Please enter a new name for the library:" = "Please enter a new name for the library:";
+"OK" = "OK";
+
 // Dialog
 "Select Music Folder" = "Choose Music Folder";
 "Unknown Artist" = "Unknown Artist";

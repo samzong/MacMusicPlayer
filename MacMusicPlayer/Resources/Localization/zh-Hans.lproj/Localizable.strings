@@ -14,6 +14,20 @@
 "Launch at Login" = "开机启动";
 "Quit" = "退出";
 
+// Music Library
+"Music Libraries" = "音乐库";
+"Add New Library" = "添加新音乐库";
+"Delete Current Library" = "删除当前音乐库";
+"Rename Current Library" = "重命名当前音乐库";
+"My Music" = "我的音乐";
+"Confirm Deletion" = "确认删除";
+"This operation will not delete music files on disk, it only removes this library from the app." = "此操作不会删除磁盘上的音乐文件，仅从应用中移除此音乐库。";
+"Delete" = "删除";
+"Cancel" = "取消";
+"Rename Library" = "重命名音乐库";
+"Please enter a new name for the library:" = "请输入新的音乐库名称：";
+"OK" = "确定";
+
 // Dialog
 "Select Music Folder" = "选择音乐文件夹";
 "Unknown Artist" = "未知艺术家";

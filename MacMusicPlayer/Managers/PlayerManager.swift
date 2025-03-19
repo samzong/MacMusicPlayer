@@ -164,11 +164,7 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
 
     private func loadSavedMusicFolder() {
-        if let savedPath = UserDefaults.standard.string(forKey: "MusicFolderPath") {
-            loadTracksFromMusicFolder(URL(fileURLWithPath: savedPath))
-        } else {
-            requestMusicFolderAccess()
-        }
+        // 什么都不做，现在由LibraryManager控制
     }
 
     func requestMusicFolderAccess() {
@@ -177,12 +173,18 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
             openPanel.canChooseDirectories = true
             openPanel.canChooseFiles = false
             openPanel.allowsMultipleSelection = false
-            openPanel.prompt = NSLocalizedString("Select Music Folder", comment: "")
+            openPanel.prompt = NSLocalizedString("Select Music Folder", comment: "Open panel prompt for selecting music folder")
             
             if openPanel.runModal() == .OK {
                 if let url = openPanel.url {
-                    UserDefaults.standard.set(url.path, forKey: "MusicFolderPath")
-                    self.loadTracksFromMusicFolder(url)
+                    let name = url.lastPathComponent
+                    
+                    // 创建新的音乐库
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("AddNewLibrary"),
+                        object: nil,
+                        userInfo: ["name": name, "path": url.path]
+                    )
                 }
             }
         }
@@ -294,28 +296,65 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
 
-    private func loadTracksFromMusicFolder(_ folderURL: URL) {
-        do {
-            let fileURLs = try FileManager.default.contentsOfDirectory(at: folderURL, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
-            let mp3Files = fileURLs.filter { $0.pathExtension.lowercased() == "mp3" }
-            
-            playlist = mp3Files.compactMap { url in
-                let asset = AVAsset(url: url)
-                let title = asset.metadata.first(where: { $0.commonKey == .commonKeyTitle })?.stringValue ?? url.lastPathComponent
-                let artist = asset.metadata.first(where: { $0.commonKey == .commonKeyArtist })?.stringValue ?? NSLocalizedString("Unknown Artist", comment: "")
-                
-                return Track(id: UUID(), title: title, artist: artist, url: url)
-            }
-            
-            print("Loaded \(playlist.count) tracks")
-            
-            if !playlist.isEmpty {
-                currentTrack = playlist[0]
-                print("Set current track: \(currentTrack?.title ?? "Unknown")")
-            }
-        } catch {
-            print(NSLocalizedString("Error accessing Music folder", comment: ""))
+    func loadLibrary(_ library: MusicLibrary) {
+        // 清空当前播放列表
+        playlist = []
+        currentTrack = nil
+        isPlaying = false
+        currentIndex = 0
+        
+        // 加载新音乐库的音乐文件
+        loadTracksFromMusicFolder(URL(fileURLWithPath: library.path))
+    }
+    
+    func loadTracksFromMusicFolder(_ folderURL: URL) {
+        let fileManager = FileManager.default
+        
+        // 获取文件夹的所有内容
+        guard let enumerator = fileManager.enumerator(at: folderURL,
+                                                    includingPropertiesForKeys: [.isRegularFileKey],
+                                                    options: [.skipsHiddenFiles, .skipsPackageDescendants]) else {
+            print("Failed to enumerate folder contents")
+            return
         }
+        
+        var newPlaylist: [Track] = []
+        
+        for case let fileURL as URL in enumerator {
+            // 检查文件类型是否为音频文件
+            if isAudioFile(fileURL) {
+                let fileName = fileURL.deletingPathExtension().lastPathComponent
+                
+                // 简单处理：使用文件名作为标题，如果有 " - " 则分为艺术家和标题
+                var title = fileName
+                var artist = NSLocalizedString("Unknown Artist", comment: "Default artist name when parsing filenames")
+                
+                if let range = fileName.range(of: " - ") {
+                    artist = String(fileName[..<range.lowerBound]).trimmingCharacters(in: .whitespaces)
+                    title = String(fileName[range.upperBound...]).trimmingCharacters(in: .whitespaces)
+                }
+                
+                let track = Track(id: UUID(), title: title, artist: artist, url: fileURL)
+                newPlaylist.append(track)
+            }
+        }
+        
+        // 更新播放列表
+        DispatchQueue.main.async {
+            // 排序播放列表（按标题）
+            self.playlist = newPlaylist.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+            
+            // 如果有歌曲则设置第一首为当前歌曲
+            if !self.playlist.isEmpty {
+                self.currentIndex = 0
+                self.currentTrack = self.playlist[self.currentIndex]
+            }
+        }
+    }
+    
+    private func isAudioFile(_ url: URL) -> Bool {
+        let audioExtensions = ["mp3", "m4a", "wav", "aac", "flac", "ogg", "aiff"]
+        return audioExtensions.contains(url.pathExtension.lowercased())
     }
 
     func play() {
@@ -397,8 +436,13 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
 
-    @objc private func refreshMusicLibrary() {
-        loadSavedMusicFolder()
+    @objc func refreshMusicLibrary() {
+        // 判断是否有当前库
+        if let library = (NSApplication.shared.delegate as? AppDelegate)?.libraryManager.currentLibrary {
+            loadLibrary(library)
+        } else {
+            loadSavedMusicFolder()
+        }
     }
 
     func applyPreset(_ preset: EqualizerPreset) {
