@@ -11,6 +11,8 @@ import AppKit
 public class DownloadManager {
     public static let shared = DownloadManager()
     
+    private var libraryManager = LibraryManager()
+    
     public struct DownloadFormat {
         public let formatId: String
         public let fileExtension: String
@@ -430,7 +432,11 @@ public class DownloadManager {
         let videoTitle = try await getVideoTitle(from: url, ytDlpPath: ytDlpPath)
         print(NSLocalizedString("Video title: %@", comment: "Log message showing video title"), videoTitle)
         
-        let musicPath = FileManager.default.urls(for: .musicDirectory, in: .userDomainMask)[0].path
+        guard let currentLibrary = libraryManager.currentLibrary else {
+            throw DownloadError.downloadFailed("No music library selected")
+        }
+        
+        let musicPath = currentLibrary.path
         let outputFile = "\(musicPath)/\(videoTitle).%(ext)s"
         print(NSLocalizedString("Downloading to file: %@", comment: "Log message showing output file"), outputFile)
         

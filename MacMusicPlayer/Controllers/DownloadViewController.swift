@@ -19,6 +19,8 @@ class DownloadViewController: NSViewController {
     private let githubLinkButton = NSButton()
     private let backgroundView = NSVisualEffectView()
     private let tableBackgroundView = NSVisualEffectView()
+    private let libraryPopup = NSPopUpButton()
+    private let libraryLabel = NSTextField()
     
     // MARK: - Properties
     private var formats: [DownloadManager.DownloadFormat] = []
@@ -27,6 +29,7 @@ class DownloadViewController: NSViewController {
     private var ffmpegVersion: String = ""
     private var isYtDlpInstalled: Bool = false
     private var isFfmpegInstalled: Bool = false
+    private var libraryManager = LibraryManager()
     
     // MARK: - Lifecycle
     override func loadView() {
@@ -51,6 +54,8 @@ class DownloadViewController: NSViewController {
             // Set focus to URL input field
             self.view.window?.makeFirstResponder(urlTextField)
         }
+        
+        updateLibraryPopup()
     }
     
     // MARK: - UI Setup
@@ -63,6 +68,7 @@ class DownloadViewController: NSViewController {
             window.titlebarAppearsTransparent = false
         }
         
+        setupLibrarySelector()
         setupURLField()
         setupDetectButton()
         setupStatusLabel()
@@ -84,7 +90,7 @@ class DownloadViewController: NSViewController {
         
         NSLayoutConstraint.activate([
             urlTextField.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
-            urlTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            urlTextField.leadingAnchor.constraint(equalTo: libraryPopup.trailingAnchor, constant: 8),
             urlTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -110),
             urlTextField.heightAnchor.constraint(equalToConstant: 28)
         ])
@@ -114,6 +120,58 @@ class DownloadViewController: NSViewController {
             detectButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             detectButton.heightAnchor.constraint(equalToConstant: 28)
         ])
+    }
+    
+    private func setupLibrarySelector() {
+        libraryLabel.translatesAutoresizingMaskIntoConstraints = false
+        libraryLabel.isEditable = false
+        libraryLabel.isBordered = false
+        libraryLabel.backgroundColor = .clear
+        libraryLabel.alignment = .right
+        libraryLabel.font = NSFont.systemFont(ofSize: 13)
+        libraryLabel.textColor = NSColor.labelColor
+        libraryLabel.stringValue = ""
+        libraryLabel.isHidden = true
+        view.addSubview(libraryLabel)
+        
+        libraryPopup.translatesAutoresizingMaskIntoConstraints = false
+        libraryPopup.target = self
+        libraryPopup.action = #selector(handleLibrarySelection(_:))
+        view.addSubview(libraryPopup)
+        
+        NSLayoutConstraint.activate([
+            libraryLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
+            libraryLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            libraryLabel.heightAnchor.constraint(equalToConstant: 28),
+            
+            libraryPopup.centerYAnchor.constraint(equalTo: libraryLabel.centerYAnchor),
+            libraryPopup.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            libraryPopup.widthAnchor.constraint(equalToConstant: 120),
+            libraryPopup.heightAnchor.constraint(equalToConstant: 28)
+        ])
+        
+        updateLibraryPopup()
+    }
+    
+    private func updateLibraryPopup() {
+        libraryPopup.removeAllItems()
+        
+        for library in libraryManager.libraries {
+            libraryPopup.addItem(withTitle: library.name)
+        }
+        
+        if let currentLibrary = libraryManager.currentLibrary,
+           let index = libraryManager.libraries.firstIndex(where: { $0.id == currentLibrary.id }) {
+            libraryPopup.selectItem(at: index)
+        }
+    }
+    
+    @objc private func handleLibrarySelection(_ sender: NSPopUpButton) {
+        let selectedIndex = sender.indexOfSelectedItem
+        guard selectedIndex >= 0 && selectedIndex < libraryManager.libraries.count else { return }
+        
+        let selectedLibrary = libraryManager.libraries[selectedIndex]
+        libraryManager.switchLibrary(id: selectedLibrary.id)
     }
     
     private func setupStatusLabel() {
