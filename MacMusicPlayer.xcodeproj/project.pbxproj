@@ -6,27 +6,8 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		991C443B2C9A9C6E00F2BB76 /* MacMusicPlayerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C443A2C9A9C6E00F2BB76 /* MacMusicPlayerApp.swift */; };
-		991C444E2C9A9DEE00F2BB76 /* PlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C444D2C9A9DEE00F2BB76 /* PlayerManager.swift */; };
-		991C44502C9A9E0400F2BB76 /* Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C444F2C9A9E0400F2BB76 /* Track.swift */; };
-		991C44522C9A9E1600F2BB76 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C44512C9A9E1600F2BB76 /* ContentView.swift */; };
-		991C44542C9A9E2A00F2BB76 /* ControlOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C44532C9A9E2A00F2BB76 /* ControlOverlay.swift */; };
-		991C445D2C9AB7FA00F2BB76 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991C445C2C9AB7FA00F2BB76 /* AppDelegate.swift */; };
-		99C304BA2CABDEAB00D7B495 /* SleepManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99C304B92CABDEAB00D7B495 /* SleepManager.swift */; };
-		99C304BB2CABDEAC00D7B496 /* LaunchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99C304B82CABDEAA00D7B494 /* LaunchManager.swift */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
 		991C44372C9A9C6E00F2BB76 /* MacMusicPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacMusicPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		991C443A2C9A9C6E00F2BB76 /* MacMusicPlayerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMusicPlayerApp.swift; sourceTree = "<group>"; };
-		991C444D2C9A9DEE00F2BB76 /* PlayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManager.swift; sourceTree = "<group>"; };
-		991C444F2C9A9E0400F2BB76 /* Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Track.swift; sourceTree = "<group>"; };
-		991C44512C9A9E1600F2BB76 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		991C44532C9A9E2A00F2BB76 /* ControlOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlOverlay.swift; sourceTree = "<group>"; };
-		991C445C2C9AB7FA00F2BB76 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		99C304B82CABDEAA00D7B494 /* LaunchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchManager.swift; sourceTree = "<group>"; };
-		99C304B92CABDEAB00D7B495 /* SleepManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -64,14 +45,8 @@
 		991C442E2C9A9C6E00F2BB76 = {
 			isa = PBXGroup;
 			children = (
-				991C445C2C9AB7FA00F2BB76 /* AppDelegate.swift */,
-				991C444C2C9A9DD000F2BB76 /* Helpers */,
-				991C444B2C9A9DC700F2BB76 /* Views */,
-				991C444A2C9A9DBF00F2BB76 /* Models */,
-				991C44492C9A9DB300F2BB76 /* Managers */,
 				991C44392C9A9C6E00F2BB76 /* MacMusicPlayer */,
 				991C44382C9A9C6E00F2BB76 /* Products */,
-				991C443A2C9A9C6E00F2BB76 /* MacMusicPlayerApp.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -81,40 +56,6 @@
 				991C44372C9A9C6E00F2BB76 /* MacMusicPlayer.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		991C44492C9A9DB300F2BB76 /* Managers */ = {
-			isa = PBXGroup;
-			children = (
-				991C444D2C9A9DEE00F2BB76 /* PlayerManager.swift */,
-				99C304B92CABDEAB00D7B495 /* SleepManager.swift */,
-				99C304B82CABDEAA00D7B494 /* LaunchManager.swift */,
-			);
-			path = Managers;
-			sourceTree = "<group>";
-		};
-		991C444A2C9A9DBF00F2BB76 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				991C444F2C9A9E0400F2BB76 /* Track.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		991C444B2C9A9DC700F2BB76 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				991C44512C9A9E1600F2BB76 /* ContentView.swift */,
-				991C44532C9A9E2A00F2BB76 /* ControlOverlay.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		991C444C2C9A9DD000F2BB76 /* Helpers */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Helpers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -150,7 +91,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					991C44362C9A9C6E00F2BB76 = {
 						CreatedOnToolsVersion = 16.0;
@@ -197,14 +138,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				991C445D2C9AB7FA00F2BB76 /* AppDelegate.swift in Sources */,
-				991C44522C9A9E1600F2BB76 /* ContentView.swift in Sources */,
-				991C44542C9A9E2A00F2BB76 /* ControlOverlay.swift in Sources */,
-				991C443B2C9A9C6E00F2BB76 /* MacMusicPlayerApp.swift in Sources */,
-				99C304BA2CABDEAB00D7B495 /* SleepManager.swift in Sources */,
-				991C444E2C9A9DEE00F2BB76 /* PlayerManager.swift in Sources */,
-				991C44502C9A9E0400F2BB76 /* Track.swift in Sources */,
-				99C304BB2CABDEAC00D7B496 /* LaunchManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,6 +149,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -245,6 +179,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -267,7 +202,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -279,6 +214,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -308,6 +244,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -332,6 +269,7 @@
 		991C44472C9A9C6F00F2BB76 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MacMusicPlayer/MacMusicPlayer.entitlements;
@@ -340,6 +278,7 @@
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"MacMusicPlayer/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -365,6 +304,7 @@
 		991C44482C9A9C6F00F2BB76 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MacMusicPlayer/MacMusicPlayer.entitlements;
@@ -373,6 +313,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"MacMusicPlayer/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
