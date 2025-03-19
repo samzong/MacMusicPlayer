@@ -14,6 +14,18 @@
 "Launch at Login" = "開機啟動";
 "Quit" = "結束";
 
+// Music Library
+"Music Libraries" = "音樂庫";
+"Add New Library" = "添加新音樂庫";
+"Delete Current Library" = "刪除當前音樂庫";
+"Rename Current Library" = "重命名當前音樂庫";
+"My Music" = "我的音樂";
+"Confirm Deletion" = "確認刪除";
+"Are you sure you want to delete the current music library?" = "您確定要刪除當前音樂庫嗎？";
+"Enter new name" = "輸入新名稱";
+"Please enter a new name for the library" = "請為庫輸入新名稱";
+"Refresh Library" = "刷新音樂庫";
+
 // Dialog
 "Select Music Folder" = "選擇音樂資料夾";
 "Unknown Artist" = "未知藝術家";

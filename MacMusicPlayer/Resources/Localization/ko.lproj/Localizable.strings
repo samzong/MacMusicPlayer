@@ -14,6 +14,18 @@
 "Launch at Login" = "로그인 시 실행";
 "Quit" = "종료";
 
+// Music Library
+"Music Libraries" = "음악 라이브러리";
+"Add New Library" = "새 라이브러리 추가";
+"Delete Current Library" = "현재 라이브러리 삭제";
+"Rename Current Library" = "현재 라이브러리 이름 변경";
+"My Music" = "내 음악";
+"Confirm Deletion" = "삭제 확인";
+"Are you sure you want to delete the current music library?" = "현재 음악 라이브러리를 삭제하시겠습니까?";
+"Enter new name" = "새 이름 입력";
+"Please enter a new name for the library" = "라이브러리의 새 이름을 입력하세요";
+"Refresh Library" = "라이브러리 새로고침";
+
 // Dialog
 "Select Music Folder" = "음악 폴더 선택";
 "Unknown Artist" = "알 수 없는 아티스트";

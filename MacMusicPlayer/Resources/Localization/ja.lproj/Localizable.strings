@@ -14,6 +14,18 @@
 "Launch at Login" = "ログイン時に起動";
 "Quit" = "終了";
 
+// Music Library
+"Music Libraries" = "音楽ライブラリ";
+"Add New Library" = "新しいライブラリを追加";
+"Delete Current Library" = "現在のライブラリを削除";
+"Rename Current Library" = "現在のライブラリの名前を変更";
+"My Music" = "マイミュージック";
+"Confirm Deletion" = "削除の確認";
+"Are you sure you want to delete the current music library?" = "現在の音楽ライブラリを削除してもよろしいですか？";
+"Enter new name" = "新しい名前を入力";
+"Please enter a new name for the library" = "ライブラリの新しい名前を入力してください";
+"Refresh Library" = "ライブラリを更新";
+
 // Dialog
 "Select Music Folder" = "音楽フォルダを選択";
 "Unknown Artist" = "不明なアーティスト";
