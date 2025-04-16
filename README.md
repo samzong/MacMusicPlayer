@@ -1,6 +1,6 @@
 # MacMusicPlayer
 
-[English](README.md) | [简体中问](README_zh.md)
+[English](README.md) | [简体中文](README_zh.md)
 
 MacMusicPlayer is an elegant and minimalist music player for macOS, designed as a menu bar application to provide a seamless music playback experience. Built with SwiftUI, it perfectly integrates into the macOS ecosystem, delivering an exceptional user experience.
 
