@@ -1,10 +1,14 @@
 # MacMusicPlayer
 
-[English](README.md) | [简体中文](README_zh.md)
-
-MacMusicPlayer is an elegant and minimalist music player for macOS, designed as a menu bar application to provide a seamless music playback experience. Built with SwiftUI, it perfectly integrates into the macOS ecosystem, delivering an exceptional user experience.
-
-![Application Screenshot](image.png)
+<div align="center">
+  <img src="./MacMusicPlayer/Assets.xcassets/AppIcon.appiconset/icon_256x256_2x.png" alt="mac-music-player logo" width="200" />
+  <br />
+  <p>MacMusicPlayer is an elegant and minimalist music player for macOS, designed as a menu bar application to provide a seamless music playback experience. Built with SwiftUI, it perfectly integrates into the macOS ecosystem, delivering an exceptional user experience.</p>
+  <p>
+    <a href="https://github.com/samzong/MacMusicPlayer/releases"><img src="https://img.shields.io/github/v/release/samzong/MacMusicPlayer" alt="Release Version" /></a>
+    <a href="https://github.com/samzong/MacMusicPlayer/blob/main/LICENSE"><img src="https://img.shields.io/github/license/samzong/MacMusicPlayer" alt="MIT License" /></a>
+  </p>
+</div>
 
 ## 📦 Installation
 
@@ -139,17 +143,6 @@ The project supports multiple languages with localization files located at:
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
-
-## 📝 Development Roadmap
-
-- [x] Support for downloading music from online sources
-- [ ] Support for more audio formats (FLAC, WAV, AAC, etc.)
-- [ ] Add audio visualization effects
-- [ ] Playlist management support
-- [ ] Add audio equalizer
-- [ ] Online music service integration
-- [ ] Add keyboard shortcut support
-- [ ] Audio format conversion support
 
 ## 📄 License
 
