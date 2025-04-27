@@ -21,6 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     // Strong reference to the window
     private var downloadWindow: NSWindow?
+    private var configWindow: NSWindow?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         playerManager = PlayerManager()
@@ -189,6 +190,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let launchAtLoginItem = NSMenuItem(title: NSLocalizedString("Launch at Login", comment: ""), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         launchAtLoginItem.state = launchManager.launchAtLogin ? .on : .off
         menu.addItem(launchAtLoginItem)
+        
+        // Add Settings Menu Item
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Settings", comment: ""), action: #selector(showConfigWindow), keyEquivalent: "s"))
         
         menu.addItem(NSMenuItem.separator())
         
@@ -627,14 +631,56 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
     }
+    
+    @objc func showConfigWindow() {
+        // 如果窗口已存在，激活它
+        if let existingWindow = self.configWindow {
+            existingWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        
+        // 创建设置视图控制器
+        let configVC = ConfigViewController { [weak self] in
+            // 保存回调，可以在这里执行一些操作，比如刷新下载窗口
+            NotificationCenter.default.post(name: NSNotification.Name("ConfigUpdated"), object: nil)
+        }
+        
+        // 创建窗口
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 280),
+            styleMask: [.titled, .closable, .miniaturizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.contentViewController = configVC
+        window.title = NSLocalizedString("Settings", comment: "")
+        window.center()
+        
+        // 设置窗口关闭委托
+        window.isReleasedWhenClosed = false
+        window.delegate = self
+        
+        // 保存窗口引用
+        self.configWindow = window
+        
+        // 显示窗口并激活
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
 }
 
 // MARK: - NSWindowDelegate
 extension AppDelegate: NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
-        if let window = notification.object as? NSWindow, window == downloadWindow {
-            // Release window reference
-            downloadWindow = nil
+        if let window = notification.object as? NSWindow {
+            if window == downloadWindow {
+                // 释放下载窗口引用
+                downloadWindow = nil
+            } else if window == configWindow {
+                // 释放配置窗口引用
+                configWindow = nil
+            }
         }
     }
 }
