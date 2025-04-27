@@ -12,6 +12,7 @@
 "Download Music" = "下載音樂";
 "Prevent Mac Sleep" = "保持系統喚醒";
 "Launch at Login" = "開機啟動";
+"Settings" = "設置";
 "Quit" = "結束";
 
 // Music Library
@@ -84,6 +85,39 @@
 "Enter video URL" = "輸入視頻URL";
 "Detect" = "檢測";
 "Download" = "下載"; 
+
+// Search UI Strings
+"Enter video URL or search keyword" = "輸入視頻網址或搜索關鍵詞";
+"Search" = "搜索";
+"Please enter a URL or search keyword" = "請輸入URL或搜索關鍵詞";
+"Searching..." = "正在搜索...";
+"Load more results..." = "加載更多結果...";
+"No results found" = "未找到結果";
+"Search Error: %@" = "搜索錯誤: %@";
+"Search error: API configuration not completed, please set API URL and API Key" = "搜索錯誤: API配置未完成，請設置API URL和API Key";
+"Search error: Invalid API URL, please check the configuration" = "搜索錯誤: API URL無效，請檢查配置";
+"Search error: API authentication failed, please check the API Key" = "搜索錯誤: API認證失敗，請檢查API Key是否正確";
+"Search error: Server error, please try again later" = "搜索錯誤: 伺服器錯誤，請稍後重試";
+"Copy error" = "複製錯誤";
+"Copied to clipboard" = "已複製到剪貼板";
+"Please configure the search service API (API URL and API Key)" = "請先配置搜索服務API (API URL 和 API Key)";
+"Go to settings" = "前往設置";
+"View more" = "查看更多";
+"Found %d results" = "找到 %d 條結果";
+"Details" = "詳細";
+
+// Download Format UI Strings
+"Please enter a valid URL" = "請輸入有效的URL";
+"Detecting available formats..." = "正在檢測可用格式...";
+"Found %d available formats" = "找到 %d 個可用格式";
+"No formats found" = "未找到格式";
+"Error: %@" = "錯誤: %@";
+"Starting download..." = "開始下載...";
+"Download completed successfully" = "下載成功完成";
+"Information" = "信息";
+"Loading formats..." = "正在加載格式...";
+"Downloading %@..." = "正在下載 %@...";
+"Download completed" = "下載完成";
 
 // Equalizer
 "Equalizer" = "均衡器";

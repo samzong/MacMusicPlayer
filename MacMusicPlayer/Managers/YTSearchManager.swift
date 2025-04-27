@@ -33,13 +33,21 @@ class YTSearchManager {
     func search(keyword: String, pageToken: String? = nil, completion: @escaping (Result<SearchResult, Error>) -> Void) {
         // 检查配置是否有效
         guard configManager.isConfigValid else {
-            let error = NSError(domain: "YTSearchManager", code: 1001, userInfo: [NSLocalizedString("message", comment: ""): NSLocalizedString("API配置未完成", comment: "")])
+            let error = NSError(domain: "YTSearchManager", code: 1001, userInfo: [NSLocalizedString("message", comment: ""): NSLocalizedString("API configuration not completed", comment: "")])
+            completion(.failure(error))
+            return
+        }
+        
+        // 确保API URL不为空并处理末尾斜杠
+        let apiUrl = configManager.apiUrl.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        guard !apiUrl.isEmpty else {
+            let error = NSError(domain: "YTSearchManager", code: 1002, userInfo: [NSLocalizedString("message", comment: ""): NSLocalizedString("API URL not configured", comment: "")])
             completion(.failure(error))
             return
         }
         
         // 构建URL
-        var urlComponents = URLComponents(string: "\(configManager.apiUrl)/search")
+        var urlComponents = URLComponents(string: "\(apiUrl)/search")
         let queryItems = [
             URLQueryItem(name: "platform", value: "youtube"),
             URLQueryItem(name: "q", value: keyword),
@@ -49,10 +57,13 @@ class YTSearchManager {
         urlComponents?.queryItems = queryItems
         
         guard let url = urlComponents?.url else {
-            let error = NSError(domain: "YTSearchManager", code: 1002, userInfo: [NSLocalizedString("message", comment: ""): NSLocalizedString("无效的URL", comment: "")])
+            let error = NSError(domain: "YTSearchManager", code: 1002, userInfo: [NSLocalizedString("message", comment: ""): NSLocalizedString("Invalid URL", comment: "")])
             completion(.failure(error))
             return
         }
+        
+        // 日志输出完整请求信息
+        print("YTSearchManager - Send request: URL: \(url.absoluteString), PageToken: \(pageToken ?? "nil")")
         
         // 创建请求
         var request = URLRequest(url: url)
@@ -78,7 +89,7 @@ class YTSearchManager {
             
             // 检查HTTP状态码
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-                let error = NSError(domain: "YTSearchManager", code: httpResponse.statusCode, userInfo: [NSLocalizedString("message", comment: ""): NSLocalizedString("服务器错误: \(httpResponse.statusCode)", comment: "")])
+                let error = NSError(domain: "YTSearchManager", code: httpResponse.statusCode, userInfo: [NSLocalizedString("message", comment: ""): NSLocalizedString("Server Error: \(httpResponse.statusCode)", comment: "")])
                 DispatchQueue.main.async {
                     completion(.failure(error))
                 }
@@ -89,10 +100,20 @@ class YTSearchManager {
             do {
                 let decoder = JSONDecoder()
                 let result = try decoder.decode(SearchResult.self, from: data)
+                
+                // 日志输出响应信息
+                print("YTSearchManager -Response received: Number of items: \(result.items.count), NextPageToken: \(result.nextPageToken ?? "nil"), Total results: \(result.totalResults)")
+                
                 DispatchQueue.main.async {
                     completion(.success(result))
                 }
             } catch {
+                print("YTSearchManager - JSON parsing error: \(error)")
+                // 打印原始数据内容，帮助调试
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("YTSearchManager - Original JSON: \(jsonString)")
+                }
+                
                 DispatchQueue.main.async {
                     completion(.failure(error))
                 }

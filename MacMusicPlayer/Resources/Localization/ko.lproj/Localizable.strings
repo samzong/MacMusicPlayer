@@ -12,6 +12,7 @@
 "Download Music" = "음악 다운로드";
 "Prevent Mac Sleep" = "시스템 절전 방지";
 "Launch at Login" = "로그인 시 실행";
+"Settings" = "설정";
 "Quit" = "종료";
 
 // Music Library
@@ -84,6 +85,39 @@
 "Enter video URL" = "비디오 URL 입력";
 "Detect" = "감지";
 "Download" = "다운로드"; 
+
+// Search UI Strings
+"Enter video URL or search keyword" = "비디오 URL 또는 검색 키워드 입력";
+"Search" = "검색";
+"Please enter a URL or search keyword" = "URL 또는 검색 키워드 입력";
+"Searching..." = "검색 중...";
+"Load more results..." = "더 많은 결과 로드...";
+"No results found" = "결과가 없습니다";
+"Search Error: %@" = "검색 오류: %@";
+"Search error: API configuration not completed, please set API URL and API Key" = "검색 오류: API 구성이 완료되지 않았습니다. API URL과 API 키를 설정하세요";
+"Search error: Invalid API URL, please check the configuration" = "검색 오류: API URL이 유효하지 않습니다. 구성을 확인하세요";
+"Search error: API authentication failed, please check the API Key" = "검색 오류: API 인증 실패, API 키를 확인하세요";
+"Search error: Server error, please try again later" = "검색 오류: 서버 오류, 잠시 후 다시 시도하세요";
+"Copy error" = "복사 오류";
+"Copied to clipboard" = "클립보드에 복사됨";
+"Please configure the search service API (API URL and API Key)" = "검색 서비스 API를 구성하세요 (API URL 및 API 키)";
+"Go to settings" = "설정으로 이동";
+"View more" = "더 보기";
+"Found %d results" = "결과 %d개 찾음";
+"Details" = "상세 정보";
+
+// Download Format UI Strings
+"Please enter a valid URL" = "유효한 URL 입력";
+"Detecting available formats..." = "사용 가능한 형식 감지 중...";
+"Found %d available formats" = "사용 가능한 형식 %d개 찾음";
+"No formats found" = "형식이 없습니다";
+"Error: %@" = "오류: %@";
+"Starting download..." = "다운로드 시작 중...";
+"Download completed successfully" = "다운로드 성공";
+"Information" = "정보";
+"Loading formats..." = "형식 로드 중...";
+"Downloading %@..." = "다운로드 중: %@...";
+"Download completed" = "다운로드 완료";
 
 // Equalizer
 "Equalizer" = "음향 조정기";
