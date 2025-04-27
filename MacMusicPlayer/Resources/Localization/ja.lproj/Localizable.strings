@@ -12,6 +12,7 @@
 "Download Music" = "音楽をダウンロードする";
 "Prevent Mac Sleep" = "システムのスリープを防止";
 "Launch at Login" = "ログイン時に起動";
+"Settings" = "設定";
 "Quit" = "終了";
 
 // Music Library
@@ -84,6 +85,39 @@
 "Enter video URL" = "動画URLを入力";
 "Detect" = "検出";
 "Download" = "ダウンロード"; 
+
+// Search UI Strings
+"Enter video URL or search keyword" = "動画URLまたは検索キーワードを入力";
+"Search" = "検索";
+"Please enter a URL or search keyword" = "URLまたは検索キーワードを入力";
+"Searching..." = "検索中...";
+"Load more results..." = "結果をもっと読み込む...";
+"No results found" = "結果が見つかりません";
+"Search Error: %@" = "検索エラー: %@";
+"Search error: API configuration not completed, please set API URL and API Key" = "検索エラー: API配置未完成，API URLとAPI Keyを設定してください";
+"Search error: Invalid API URL, please check the configuration" = "検索エラー: API URLが無効です，設定を確認してください";
+"Search error: API authentication failed, please check the API Key" = "検索エラー: API認証に失敗しました，API Keyを確認してください";
+"Search error: Server error, please try again later" = "検索エラー: サーバーエラー，少し待ってから再試行してください";
+"Copy error" = "コピーエラー";
+"Copied to clipboard" = "クリップボードにコピーされました";
+"Please configure the search service API (API URL and API Key)" = "検索サービスAPIを設定してください (API URL と API Key)";
+"Go to settings" = "設定に移動";
+"View more" = "もっと見る";
+"Found %d results" = "結果が %d 件見つかりました";
+"Details" = "詳細";
+
+// Download Format UI Strings
+"Please enter a valid URL" = "有効なURLを入力してください";
+"Detecting available formats..." = "利用可能なフォーマットを検出中...";
+"Found %d available formats" = "利用可能なフォーマットが %d 件見つかりました";
+"No formats found" = "フォーマットが見つかりません";
+"Error: %@" = "エラー: %@";
+"Starting download..." = "ダウンロードを開始中...";
+"Download completed successfully" = "ダウンロードが正常に完了しました";
+"Information" = "情報";
+"Loading formats..." = "フォーマットを読み込んでいます...";
+"Downloading %@..." = "ダウンロード中: %@...";
+"Download completed" = "ダウンロードが完了しました";
 
 // Equalizer
 "Equalizer" = "均衡器";

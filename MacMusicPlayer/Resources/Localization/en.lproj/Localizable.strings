@@ -12,6 +12,7 @@
 "Download Music" = "Download Music";
 "Prevent Mac Sleep" = "Keep Mac Awake";
 "Launch at Login" = "Start at Login";
+"Settings" = "Settings";
 "Quit" = "Quit";
 
 // Music Library
@@ -86,6 +87,39 @@
 "Enter video URL" = "Enter video URL";
 "Detect" = "Detect";
 "Download" = "Download"; 
+
+// Search UI Strings
+"Enter video URL or search keyword" = "Enter video URL or search keyword";
+"Search" = "Search";
+"Please enter a URL or search keyword" = "Please enter a URL or search keyword";
+"Searching..." = "Searching...";
+"Load more results..." = "Load more results...";
+"No results found" = "No results found";
+"Search Error: %@" = "Search Error: %@";
+"Search error: API configuration not completed, please set API URL and API Key" = "Search error: API configuration not completed, please set API URL and API Key";
+"Search error: Invalid API URL, please check the configuration" = "Search error: Invalid API URL, please check the configuration";
+"Search error: API authentication failed, please check the API Key" = "Search error: API authentication failed, please check the API Key";
+"Search error: Server error, please try again later" = "Search error: Server error, please try again later";
+"Copy error" = "Copy error";
+"Copied to clipboard" = "Copied to clipboard";
+"Please configure the search service API (API URL and API Key)" = "Please configure the search service API (API URL and API Key)";
+"Go to settings" = "Go to settings";
+"View more" = "View more";
+"Found %d results" = "Found %d results";
+"Details" = "Details";
+
+// Download Format UI Strings
+"Please enter a valid URL" = "Please enter a valid URL";
+"Detecting available formats..." = "Detecting available formats...";
+"Found %d available formats" = "Found %d available formats";
+"No formats found" = "No formats found";
+"Error: %@" = "Error: %@";
+"Starting download..." = "Starting download...";
+"Download completed successfully" = "Download completed successfully";
+"Information" = "Information";
+"Loading formats..." = "Loading formats...";
+"Downloading %@..." = "Downloading %@...";
+"Download completed" = "Download completed";
 
 // Equalizer
 "Equalizer" = "Equalizer";
