@@ -28,6 +28,7 @@
 "Rename Library" = "重命名音乐库";
 "Please enter a new name for the library:" = "请输入新的音乐库名称：";
 "OK" = "确定";
+"Refresh Current Library" = "刷新当前音乐库";
 
 // Dialog
 "Select Music Folder" = "选择音乐文件夹";

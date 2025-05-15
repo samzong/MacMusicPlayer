@@ -26,6 +26,7 @@
 "Enter new name" = "輸入新名稱";
 "Please enter a new name for the library" = "請為庫輸入新名稱";
 "Refresh Library" = "刷新音樂庫";
+"Refresh Current Library" = "刷新當前音樂庫";
 
 // Dialog
 "Select Music Folder" = "選擇音樂資料夾";

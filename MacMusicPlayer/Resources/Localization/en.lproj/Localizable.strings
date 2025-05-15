@@ -28,6 +28,7 @@
 "Rename Library" = "Rename Library";
 "Please enter a new name for the library:" = "Please enter a new name for the library:";
 "OK" = "OK";
+"Refresh Current Library" = "Refresh Current Library";
 
 // Dialog
 "Select Music Folder" = "Choose Music Folder";

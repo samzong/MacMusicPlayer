@@ -26,6 +26,7 @@
 "Enter new name" = "新しい名前を入力";
 "Please enter a new name for the library" = "ライブラリの新しい名前を入力してください";
 "Refresh Library" = "ライブラリを更新";
+"Refresh Current Library" = "現在のライブラリを更新";
 
 // Dialog
 "Select Music Folder" = "音楽フォルダを選択";

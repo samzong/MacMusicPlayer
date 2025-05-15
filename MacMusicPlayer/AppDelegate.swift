@@ -56,7 +56,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func setupMenu() {
-        // 保存旧菜单的引用，以便在更新时只更新必要的部分
         let oldMenu = menu
         
         menu = NSMenu()
@@ -72,7 +71,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         trackLabel.lineBreakMode = .byTruncatingTail
         trackInfoItem.view?.addSubview(trackLabel)
         
-        // 如果我们是从updateMenuItems调用的，保留当前播放轨道名称
         if let oldMenu = oldMenu,
            let oldTrackItem = oldMenu.item(at: 0),
            let oldTrackLabel = oldTrackItem.view?.subviews.first as? NSTextField {
@@ -84,7 +82,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(trackInfoItem)
         menu.addItem(NSMenuItem.separator())
         
-        // 播放/暂停按钮，根据当前状态设置文本
         let playPauseTitle = playerManager.isPlaying ? NSLocalizedString("Pause", comment: "") : NSLocalizedString("Play", comment: "")
         let playPauseItem = NSMenuItem(title: playPauseTitle, action: #selector(togglePlayPause), keyEquivalent: "")
         menu.addItem(playPauseItem)
@@ -93,7 +90,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: NSLocalizedString("Next", comment: ""), action: #selector(playNext), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         
-        // Playback mode submenu
         let playModeMenu = NSMenu()
         let playModeItem = NSMenuItem(title: NSLocalizedString("Playback Mode", comment: ""), action: nil, keyEquivalent: "")
         
@@ -111,7 +107,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         playModeItem.submenu = playModeMenu
         menu.addItem(playModeItem)
         
-        // Equalizer
         let equalizerMenu = NSMenu()
         let equalizerItem = NSMenuItem(title: NSLocalizedString("Equalizer", comment: ""), action: nil, keyEquivalent: "")
         
@@ -148,18 +143,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         trebleItem.view = createSliderView(title: NSLocalizedString("Treble", comment: ""), value: playerManager.trebleGain, action: #selector(trebleSliderChanged(_:)))
         equalizerMenu.addItem(trebleItem)
         
-        // Reset Equalizer
         equalizerMenu.addItem(NSMenuItem.separator())
         equalizerMenu.addItem(NSMenuItem(title: NSLocalizedString("Reset Equalizer", comment: ""), action: #selector(resetEqualizer), keyEquivalent: ""))
         
         equalizerItem.submenu = equalizerMenu
         menu.addItem(equalizerItem)
         
-        // 在选择音乐源菜单项之前添加音乐库菜单
         let libraryMenu = NSMenu()
         let libraryMenuItem = NSMenuItem(title: NSLocalizedString("Music Libraries", comment: "Menu item for music libraries"), action: nil, keyEquivalent: "")
         
-        // 添加现有音乐库列表
         for library in libraryManager.libraries {
             let item = NSMenuItem(title: library.name, action: #selector(switchLibrary(_:)), keyEquivalent: "")
             item.representedObject = library.id
@@ -168,9 +160,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         libraryMenu.addItem(NSMenuItem.separator())
+        libraryMenu.addItem(NSMenuItem(title: NSLocalizedString("Refresh Current Library", comment: "Menu item for refreshing current music library"), action: #selector(refreshCurrentLibrary), keyEquivalent: "r"))
         libraryMenu.addItem(NSMenuItem(title: NSLocalizedString("Add New Library", comment: "Menu item for adding a new music library"), action: #selector(addNewLibrary), keyEquivalent: ""))
         
-        // 只有当存在多个音乐库时才显示删除选项
         if libraryManager.libraries.count > 1 {
             libraryMenu.addItem(NSMenuItem(title: NSLocalizedString("Delete Current Library", comment: "Menu item for deleting current music library"), action: #selector(removeCurrentLibrary), keyEquivalent: ""))
         }
@@ -186,12 +178,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         preventSleepItem.state = sleepManager.preventSleep ? .on : .off
         menu.addItem(preventSleepItem)
         
-        // Launch at login toggle
         let launchAtLoginItem = NSMenuItem(title: NSLocalizedString("Launch at Login", comment: ""), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         launchAtLoginItem.state = launchManager.launchAtLogin ? .on : .off
         menu.addItem(launchAtLoginItem)
         
-        // Add Settings Menu Item
         menu.addItem(NSMenuItem(title: NSLocalizedString("Settings", comment: ""), action: #selector(showConfigWindow), keyEquivalent: "s"))
         
         menu.addItem(NSMenuItem.separator())
@@ -203,18 +193,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         menu.addItem(NSMenuItem(title: NSLocalizedString("Quit", comment: ""), action: #selector(quit), keyEquivalent: ""))
         
-        // 只在首次调用时设置观察者，避免重复添加
         if oldMenu == nil {
             NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("TrackChanged"), object: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("PlaybackStateChanged"), object: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
         }
         
-        // 更新状态栏菜单
         statusItem?.menu = menu
     }
     
-    // Create slider view
     private func createSliderView(title: String, value: Float, action: Selector) -> NSView {
         let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 180, height: 40))
         
@@ -281,29 +268,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func updateMenuItems() {
-        // 更新轨道信息
         if let trackInfoItem = menu.item(at: 0),
            let trackLabel = trackInfoItem.view?.subviews.first as? NSTextField {
             trackLabel.stringValue = playerManager.currentTrack?.title ?? NSLocalizedString("No Music Source", comment: "")
         }
         
-        // 更新播放/暂停按钮状态
         if let playPauseItem = menu.item(at: 2) {
             playPauseItem.title = playerManager.isPlaying ? NSLocalizedString("Pause", comment: "") : NSLocalizedString("Play", comment: "")
         }
         
-        // 更新音乐库菜单
         for i in 0..<menu.items.count {
             let item = menu.item(at: i)
             if let itemTitle = item?.title, itemTitle == NSLocalizedString("Music Libraries", comment: "Menu item for music libraries") {
                 if let submenu = item?.submenu {
-                    // 清除音乐库列表项
                     while !submenu.items.isEmpty && submenu.items[0].action != nil && 
                           submenu.items[0].title != NSLocalizedString("Add New Library", comment: "Menu item for adding a new music library") {
                         submenu.removeItem(at: 0)
                     }
                     
-                    // 找到分隔线位置
                     var separatorIndex = -1
                     for j in 0..<submenu.items.count {
                         if submenu.items[j].isSeparatorItem {
@@ -312,7 +294,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         }
                     }
                     
-                    // 重新添加音乐库列表
                     for (_, library) in libraryManager.libraries.enumerated().reversed() {
                         let newItem = NSMenuItem(title: library.name, action: #selector(switchLibrary(_:)), keyEquivalent: "")
                         newItem.representedObject = library.id
@@ -324,11 +305,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         }
                     }
                     
-                    // 更新删除菜单项可见性
+                    let refreshItemIndex = submenu.items.firstIndex { $0.title == NSLocalizedString("Refresh Current Library", comment: "Menu item for refreshing current music library") }
+                    if refreshItemIndex == nil && separatorIndex >= 0 {
+                        let refreshItem = NSMenuItem(title: NSLocalizedString("Refresh Current Library", comment: "Menu item for refreshing current music library"), action: #selector(refreshCurrentLibrary), keyEquivalent: "")
+                        submenu.insertItem(refreshItem, at: separatorIndex + 1)
+                    }
+                    
                     let deleteItemIndex = submenu.items.firstIndex { $0.title == NSLocalizedString("Delete Current Library", comment: "Menu item for deleting current music library") }
                     if libraryManager.libraries.count > 1 {
                         if deleteItemIndex == nil {
-                            // 需要添加删除选项
                             let renameItemIndex = submenu.items.firstIndex { $0.title == NSLocalizedString("Rename Current Library", comment: "Menu item for renaming current music library") }
                             if let index = renameItemIndex {
                                 let deleteItem = NSMenuItem(title: NSLocalizedString("Delete Current Library", comment: "Menu item for deleting current music library"), action: #selector(removeCurrentLibrary), keyEquivalent: "")
@@ -336,7 +321,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                             }
                         }
                     } else if let index = deleteItemIndex {
-                        // 需要移除删除选项
                         submenu.removeItem(at: index)
                     }
                 }
@@ -499,25 +483,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         updateEqualizerSliders()
     }
     
-    // Method to ensure the application stays active
     func applicationWillTerminate(_ aNotification: Notification) {
         sleepManager.preventSleep = false
     }
     
     private func getVersionString() -> String {
         #if DEBUG
-            // Display Git info in Debug mode
             let gitCommit = Bundle.main.object(forInfoDictionaryKey: "GitCommit") as? String ?? "unknown"
             return String(format: NSLocalizedString("Dev: %@", comment: ""), gitCommit)
         #else
-            // Display official version number in Release mode
             let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
             return String(format: NSLocalizedString("Version %@", comment: ""), appVersion)
         #endif
     }
     
     @objc func showDownloadWindow() {
-        // If window already exists, just activate it
         if let existingWindow = self.downloadWindow {
             existingWindow.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
@@ -535,19 +515,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.title = NSLocalizedString("Download Music", comment: "")
         window.center()
         
-        // Set callback for window close
         window.isReleasedWhenClosed = false
         window.delegate = self
         
-        // Save reference to window
         self.downloadWindow = window
         
-        // Show window and ensure it becomes the focus window
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
     
-    // 处理添加新音乐库的通知
     @objc func handleAddNewLibrary(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let name = userInfo["name"] as? String,
@@ -557,11 +533,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         libraryManager.addLibrary(name: name, path: path)
         
-        // 使用updateMenuItems而不是setupMenu来避免重建整个菜单
         updateMenuItems()
     }
     
-    // 切换音乐库
     @objc func switchLibrary(_ sender: NSMenuItem) {
         guard let libraryId = sender.representedObject as? UUID else { return }
         
@@ -571,16 +545,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             playerManager.loadLibrary(currentLibrary)
         }
         
-        // 使用updateMenuItems而不是setupMenu来避免重建整个菜单
         updateMenuItems()
     }
     
-    // 添加新音乐库
     @objc func addNewLibrary() {
         playerManager.requestMusicFolderAccess()
     }
     
-    // 删除当前音乐库
     @objc func removeCurrentLibrary() {
         guard libraryManager.libraries.count > 1,
               let currentId = libraryManager.currentLibrary?.id else {
@@ -601,12 +572,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 playerManager.loadLibrary(newCurrent)
             }
             
-            // 使用updateMenuItems而不是setupMenu来避免重建整个菜单
             updateMenuItems()
         }
     }
     
-    // 重命名当前音乐库
+    @objc func refreshCurrentLibrary() {
+        guard let currentLibrary = libraryManager.currentLibrary else { return }
+        
+        NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
+        
+        if let button = statusItem?.button {
+            let oldImage = button.image
+            button.image = NSImage(systemSymbolName: "arrow.clockwise", accessibilityDescription: "Refreshing")
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.updateStatusBarIcon()
+            }
+        }
+    }
+    
     @objc func renameCurrentLibrary() {
         guard let currentLibrary = libraryManager.currentLibrary else { return }
         
@@ -626,27 +610,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             if !newName.isEmpty {
                 libraryManager.renameLibrary(id: currentLibrary.id, newName: newName)
                 
-                // 使用updateMenuItems而不是setupMenu来避免重建整个菜单
                 updateMenuItems()
             }
         }
     }
     
     @objc func showConfigWindow() {
-        // 如果窗口已存在，激活它
         if let existingWindow = self.configWindow {
             existingWindow.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
         }
         
-        // 创建设置视图控制器
         let configVC = ConfigViewController { [weak self] in
-            // 保存回调，可以在这里执行一些操作，比如刷新下载窗口
             NotificationCenter.default.post(name: NSNotification.Name("ConfigUpdated"), object: nil)
         }
         
-        // 创建窗口
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 400, height: 280),
             styleMask: [.titled, .closable, .miniaturizable],
@@ -657,28 +636,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.title = NSLocalizedString("Settings", comment: "")
         window.center()
         
-        // 设置窗口关闭委托
         window.isReleasedWhenClosed = false
         window.delegate = self
         
-        // 保存窗口引用
         self.configWindow = window
         
-        // 显示窗口并激活
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
 }
 
-// MARK: - NSWindowDelegate
 extension AppDelegate: NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         if let window = notification.object as? NSWindow {
             if window == downloadWindow {
-                // 释放下载窗口引用
                 downloadWindow = nil
             } else if window == configWindow {
-                // 释放配置窗口引用
                 configWindow = nil
             }
         }

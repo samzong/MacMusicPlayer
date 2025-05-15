@@ -26,6 +26,7 @@
 "Enter new name" = "새 이름 입력";
 "Please enter a new name for the library" = "라이브러리의 새 이름을 입력하세요";
 "Refresh Library" = "라이브러리 새로고침";
+"Refresh Current Library" = "현재 라이브러리 새로고침";
 
 // Dialog
 "Select Music Folder" = "음악 폴더 선택";
