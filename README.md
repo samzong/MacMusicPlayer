@@ -47,7 +47,7 @@ xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app
 [![VIDEO](https://img.youtube.com/vi/fzz35W4FNkw/0.jpg)](https://www.youtube.com/watch?v=fzz35W4FNkw)
 
 1. On first launch, click the menu bar icon and select "Set Music Source"
-2. Choose a folder containing MP3 files
+2. Choose a folder containing Audio files
 3. Access the following features through the menu bar icon:
    - Play/Pause
    - Previous/Next Track
@@ -62,7 +62,7 @@ xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app
 - 🎵 Lightweight menu bar player for instant music control
 - 🎨 Native macOS interface with perfect light/dark theme support
 - 🌍 Multi-language support (English, Simplified Chinese, Traditional Chinese, Japanese, Korean)
-- 🎧 MP3 audio format playback
+- 🎧 Audio format support (mp3, m4a, wav, flac, acc, aiff, etc.)
 - 🔄 Multiple playback modes (Sequential, Single Loop, Random)
 - 📥 Download music from online sources (YouTube, SoundCloud, etc.)
 - 💾 Smart memory of last music folder location
