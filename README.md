@@ -53,7 +53,7 @@ xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app
    - Play/Pause
    - Previous/Next Track
    - Switch Playback Mode
-   - Download Music from Online Sources
+   - Download Music from Online Sources (Single tracks or entire playlists)
    - Enable/Disable System Sleep Prevention
    - Configure Launch at Login
    - Reconfigure Music Folder
@@ -66,6 +66,7 @@ xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app
 - 🎧 Audio format support (mp3, m4a, wav, flac, acc, aiff, etc.)
 - 🔄 Multiple playback modes (Sequential, Single Loop, Random)
 - 📥 Download music from online sources (YouTube, SoundCloud, etc.)
+- 🎵 Batch playlist download with intelligent URL detection
 - 💾 Smart memory of last music folder location
 - 🚀 Launch at login support
 - 😴 Prevent system sleep for uninterrupted music

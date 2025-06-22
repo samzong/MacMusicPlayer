@@ -46,6 +46,7 @@ xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app
 - 🎧 支持 MP3 音频格式播放
 - 🔄 多种播放模式（顺序播放、单曲循环、随机播放）
 - 📥 支持从在线源下载音乐（YouTube、SoundCloud 等）
+- 🎵 智能URL检测，支持批量播放列表下载
 - 💾 智能记忆上次音乐文件夹位置
 - 🚀 支持开机自启动
 - 😴 防止系统休眠功能，确保音乐不间断
@@ -77,7 +78,7 @@ xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app
    - 播放/暂停
    - 上一曲/下一曲
    - 切换播放模式
-   - 从在线源下载音乐
+   - 从在线源下载音乐（支持单曲和播放列表）
    - 开启/关闭防止系统休眠
    - 设置开机启动
    - 重新选择音乐文件夹
