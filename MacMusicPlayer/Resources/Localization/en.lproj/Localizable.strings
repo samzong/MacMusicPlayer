@@ -54,6 +54,8 @@
 "yt-dlp not found, please make sure it's installed (brew install yt-dlp)" = "yt-dlp not found, please make sure it's installed (brew install yt-dlp)";
 "ffmpeg not found, please make sure it's installed (brew install ffmpeg)" = "ffmpeg not found, please make sure it's installed (brew install ffmpeg)";
 "Failed to get video title" = "Failed to get video title";
+"Failed to get playlist information" = "Failed to get playlist information";
+"Playlist download failed: %@" = "Playlist download failed: %@";
 "Found ffmpeg path: %@" = "Found ffmpeg path: %@";
 "Error checking ffmpeg: %@" = "Error checking ffmpeg: %@";
 "Found yt-dlp path: %@" = "Found yt-dlp path: %@";
@@ -71,6 +73,13 @@
 "Failed to get formats: %@" = "Failed to get formats: %@";
 "Error getting formats: %@" = "Error getting formats: %@";
 "Starting audio download, URL: %@, Format ID: %@" = "Starting audio download, URL: %@, Format ID: %@";
+"Getting playlist information, URL: %@" = "Getting playlist information, URL: %@";
+"Starting playlist download, URL: %@" = "Starting playlist download, URL: %@";
+"Successfully downloaded: %@" = "Successfully downloaded: %@";
+"Failed to download: %@ - Error: %@" = "Failed to download: %@ - Error: %@";
+"Completed" = "Completed";
+"All downloads failed" = "All downloads failed";
+"Playlist download completed: %d successful, %d failed" = "Playlist download completed: %d successful, %d failed";
 "Video title: %@" = "Video title: %@";
 "Downloading to file: %@" = "Downloading to file: %@";
 "Executing download command..." = "Executing download command...";
@@ -108,6 +117,10 @@
 "View more" = "View more";
 "Found %d results" = "Found %d results";
 "Details" = "Details";
+"Load Playlist" = "Load Playlist";
+"Download All" = "Download All";
+"Stop" = "Stop";
+"Download stopped" = "Download stopped";
 
 // Download Format UI Strings
 "Please enter a valid URL" = "Please enter a valid URL";
@@ -121,6 +134,15 @@
 "Loading formats..." = "Loading formats...";
 "Downloading %@..." = "Downloading %@...";
 "Download completed" = "Download completed";
+"Please enter a valid playlist URL" = "Please enter a valid playlist URL";
+"Loading playlist information..." = "Loading playlist information...";
+"Playlist: %@ (%d items)" = "Playlist: %@ (%d items)";
+"Playlist is empty" = "Playlist is empty";
+"Failed to load playlist: %@" = "Failed to load playlist: %@";
+"Starting playlist download..." = "Starting playlist download...";
+"Downloading (%d/%d) - %@" = "Downloading (%d/%d) - %@";
+"Playlist download completed" = "Playlist download completed";
+"Playlist download failed: %@" = "Playlist download failed: %@";
 
 // Equalizer
 "Equalizer" = "Equalizer";

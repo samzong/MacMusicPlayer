@@ -52,6 +52,8 @@
 "yt-dlp not found, please make sure it's installed (brew install yt-dlp)" = "yt-dlpが見つかりません。インストールされていることを確認してください (brew install yt-dlp)";
 "ffmpeg not found, please make sure it's installed (brew install ffmpeg)" = "ffmpegが見つかりません。インストールされていることを確認してください (brew install ffmpeg)";
 "Failed to get video title" = "動画タイトルを取得できませんでした";
+"Failed to get playlist information" = "プレイリスト情報の取得に失敗しました";
+"Playlist download failed: %@" = "プレイリストダウンロードに失敗しました：%@";
 "Found ffmpeg path: %@" = "ffmpegのパスを見つけました: %@";
 "Error checking ffmpeg: %@" = "ffmpegの確認中にエラーが発生しました: %@";
 "Found yt-dlp path: %@" = "yt-dlpのパスを見つけました: %@";
@@ -69,6 +71,13 @@
 "Failed to get formats: %@" = "フォーマットの取得に失敗しました: %@";
 "Error getting formats: %@" = "フォーマットの取得中にエラーが発生しました: %@";
 "Starting audio download, URL: %@, Format ID: %@" = "オーディオのダウンロードを開始、URL: %@, フォーマットID: %@";
+"Getting playlist information, URL: %@" = "プレイリスト情報を取得中、URL: %@";
+"Starting playlist download, URL: %@" = "プレイリストダウンロードを開始、URL: %@";
+"Successfully downloaded: %@" = "ダウンロード成功：%@";
+"Failed to download: %@ - Error: %@" = "ダウンロード失敗：%@ - エラー：%@";
+"Completed" = "完了";
+"All downloads failed" = "すべてのダウンロードが失敗しました";
+"Playlist download completed: %d successful, %d failed" = "プレイリストダウンロード完了：%d 成功、%d 失敗";
 "Video title: %@" = "動画タイトル: %@";
 "Downloading to file: %@" = "ファイルにダウンロード中: %@";
 "Executing download command..." = "ダウンロードコマンドを実行中...";
@@ -106,6 +115,10 @@
 "View more" = "もっと見る";
 "Found %d results" = "結果が %d 件見つかりました";
 "Details" = "詳細";
+"Load Playlist" = "プレイリスト読み込み";
+"Download All" = "すべてダウンロード";
+"Stop" = "停止";
+"Download stopped" = "ダウンロード停止";
 
 // Download Format UI Strings
 "Please enter a valid URL" = "有効なURLを入力してください";
@@ -119,6 +132,15 @@
 "Loading formats..." = "フォーマットを読み込んでいます...";
 "Downloading %@..." = "ダウンロード中: %@...";
 "Download completed" = "ダウンロードが完了しました";
+"Please enter a valid playlist URL" = "有効なプレイリストURLを入力してください";
+"Loading playlist information..." = "プレイリスト情報を読み込み中...";
+"Playlist: %@ (%d items)" = "プレイリスト：%@ (%d 項目)";
+"Playlist is empty" = "プレイリストが空です";
+"Failed to load playlist: %@" = "プレイリストの読み込みに失敗しました：%@";
+"Starting playlist download..." = "プレイリストダウンロードを開始...";
+"Downloading (%d/%d) - %@" = "ダウンロード中 (%d/%d) - %@";
+"Playlist download completed" = "プレイリストダウンロード完了";
+"Playlist download failed: %@" = "プレイリストダウンロードに失敗しました：%@";
 
 // Equalizer
 "Equalizer" = "均衡器";

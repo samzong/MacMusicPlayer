@@ -33,6 +33,56 @@ public class DownloadManager {
         }
     }
     
+    public struct PlaylistInfo {
+        public let id: String
+        public let title: String
+        public let description: String
+        public let uploader: String
+        public let videoCount: Int
+        public let items: [PlaylistItem]
+        
+        public init(id: String, title: String, description: String, uploader: String, videoCount: Int, items: [PlaylistItem]) {
+            self.id = id
+            self.title = title
+            self.description = description
+            self.uploader = uploader
+            self.videoCount = videoCount
+            self.items = items
+        }
+    }
+    
+    public struct PlaylistItem {
+        public let videoId: String
+        public let title: String
+        public let url: String
+        public let duration: String
+        public let thumbnailUrl: String
+        
+        public init(videoId: String, title: String, url: String, duration: String, thumbnailUrl: String) {
+            self.videoId = videoId
+            self.title = title
+            self.url = url
+            self.duration = duration
+            self.thumbnailUrl = thumbnailUrl
+        }
+    }
+    
+    public struct PlaylistDownloadProgress {
+        public let currentIndex: Int
+        public let totalCount: Int
+        public let currentTitle: String
+        public let completed: Int
+        public let failed: Int
+        
+        public init(currentIndex: Int, totalCount: Int, currentTitle: String, completed: Int, failed: Int) {
+            self.currentIndex = currentIndex
+            self.totalCount = totalCount
+            self.currentTitle = currentTitle
+            self.completed = completed
+            self.failed = failed
+        }
+    }
+    
     public enum DownloadError: Error {
         case formatFetchFailed
         case downloadFailed(String)
@@ -40,6 +90,8 @@ public class DownloadManager {
         case ytDlpNotFound
         case ffmpegNotFound
         case titleFetchFailed
+        case playlistFetchFailed
+        case playlistDownloadFailed(String)
         
         var localizedDescription: String {
             switch self {
@@ -55,6 +107,10 @@ public class DownloadManager {
                 return NSLocalizedString("ffmpeg not found, please make sure it's installed (brew install ffmpeg)", comment: "Error message when ffmpeg is not found")
             case .titleFetchFailed:
                 return NSLocalizedString("Failed to get video title", comment: "Error message when title fetching fails")
+            case .playlistFetchFailed:
+                return NSLocalizedString("Failed to get playlist information", comment: "Error message when playlist fetching fails")
+            case .playlistDownloadFailed(let message):
+                return String(format: NSLocalizedString("Playlist download failed: %@", comment: "Error message when playlist download fails with reason"), message)
             }
         }
     }
@@ -496,5 +552,198 @@ public class DownloadManager {
             print(NSLocalizedString("Error during download: %@", comment: "Log message when download error occurs"), error)
             throw DownloadError.downloadFailed(error.localizedDescription)
         }
+    }
+    
+    // MARK: - Playlist Methods
+    
+    public func isPlaylistURL(_ url: String) -> Bool {
+        let playlistPatterns = [
+            "list=",
+            "/playlist",
+            "/sets/",
+            "soundcloud.com/.*/.*/sets/",
+            "youtube.com/playlist",
+            "youtu.be/.*list="
+        ]
+        
+        return playlistPatterns.contains { pattern in
+            url.range(of: pattern, options: .regularExpression) != nil
+        }
+    }
+    
+    public func fetchPlaylistInfo(from url: String) async throws -> PlaylistInfo {
+        print(NSLocalizedString("Getting playlist information, URL: %@", comment: "Log message when fetching playlist info"), url)
+        
+        guard URL(string: url) != nil else {
+            throw DownloadError.invalidURL
+        }
+        
+        let ytDlpPath = try checkYtDlpAvailability()
+        let ffmpegPath = try checkFFmpegAvailability()
+        
+        let task = Process()
+        task.launchPath = ytDlpPath
+        task.arguments = [
+            "--ffmpeg-location", ffmpegPath,
+            "--flat-playlist",
+            "--dump-json",
+            url
+        ]
+        
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        let errorPipe = Pipe()
+        task.standardError = errorPipe
+        
+        do {
+            task.launch()
+            task.waitUntilExit()
+            
+            if task.terminationStatus == 0 {
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                let output = String(data: data, encoding: .utf8) ?? ""
+                
+                return try parsePlaylistFromOutput(output, originalURL: url)
+            } else {
+                let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
+                print(NSLocalizedString("Failed to get playlist info: %@", comment: "Log message when playlist fetching fails"), errorOutput)
+                throw DownloadError.playlistFetchFailed
+            }
+        } catch let error as DownloadError {
+            throw error
+        } catch {
+            print(NSLocalizedString("Error getting playlist info: %@", comment: "Log message when getting playlist info fails"), error)
+            throw DownloadError.playlistFetchFailed
+        }
+    }
+    
+    private func parsePlaylistFromOutput(_ output: String, originalURL: String) throws -> PlaylistInfo {
+        let lines = output.components(separatedBy: .newlines).filter { !$0.isEmpty }
+        var items: [PlaylistItem] = []
+        var playlistTitle = "Unknown Playlist"
+        var playlistDescription = ""
+        var uploader = "Unknown"
+        
+        for line in lines {
+            guard let data = line.data(using: .utf8) else { continue }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    // 检查是否是playlist条目
+                    if let entryType = json["_type"] as? String, entryType == "url" {
+                        let videoId = json["id"] as? String ?? ""
+                        let title = json["title"] as? String ?? "Unknown Title"
+                        let videoUrl = json["url"] as? String ?? ""
+                        let duration = json["duration_string"] as? String ?? ""
+                        
+                        // 构建缩略图URL
+                        let thumbnailUrl = "https://img.youtube.com/vi/\(videoId)/default.jpg"
+                        
+                        let item = PlaylistItem(
+                            videoId: videoId,
+                            title: title,
+                            url: videoUrl,
+                            duration: duration,
+                            thumbnailUrl: thumbnailUrl
+                        )
+                        items.append(item)
+                    }
+                    // 检查是否包含playlist信息
+                    else if json["_type"] == nil || json["_type"] as? String == "playlist" {
+                        if let title = json["title"] as? String {
+                            playlistTitle = title
+                        }
+                        if let desc = json["description"] as? String {
+                            playlistDescription = desc
+                        }
+                        if let uploaderName = json["uploader"] as? String {
+                            uploader = uploaderName
+                        } else if let channelName = json["channel"] as? String {
+                            uploader = channelName
+                        }
+                    }
+                }
+            } catch {
+                continue
+            }
+        }
+        
+        if items.isEmpty {
+            throw DownloadError.playlistFetchFailed
+        }
+        
+        return PlaylistInfo(
+            id: extractPlaylistId(from: originalURL),
+            title: playlistTitle,
+            description: playlistDescription,
+            uploader: uploader,
+            videoCount: items.count,
+            items: items
+        )
+    }
+    
+    private func extractPlaylistId(from url: String) -> String {
+        // 提取playlist ID
+        if let range = url.range(of: "list=([^&]+)", options: .regularExpression) {
+            let listPart = String(url[range])
+            return String(listPart.dropFirst(5)) // 去掉 "list="
+        }
+        return "unknown"
+    }
+    
+    public func downloadPlaylist(
+        from url: String, 
+        progressCallback: @escaping (PlaylistDownloadProgress) -> Void
+    ) async throws {
+        print(NSLocalizedString("Starting playlist download, URL: %@", comment: "Log message when starting playlist download"), url)
+        
+        let playlistInfo = try await fetchPlaylistInfo(from: url)
+        var completed = 0
+        var failed = 0
+        
+        for (index, item) in playlistInfo.items.enumerated() {
+            let progress = PlaylistDownloadProgress(
+                currentIndex: index + 1,
+                totalCount: playlistInfo.videoCount,
+                currentTitle: item.title,
+                completed: completed,
+                failed: failed
+            )
+            
+            // 更新进度
+            await MainActor.run {
+                progressCallback(progress)
+            }
+            
+            do {
+                // 使用 bestaudio 格式下载
+                try await downloadAudio(from: item.url, formatId: "bestaudio")
+                completed += 1
+                print(NSLocalizedString("Successfully downloaded: %@", comment: "Log message when item downloaded successfully"), item.title)
+            } catch {
+                failed += 1
+                print(NSLocalizedString("Failed to download: %@ - Error: %@", comment: "Log message when item download fails"), item.title, error.localizedDescription)
+            }
+        }
+        
+        // 最终进度
+        let finalProgress = PlaylistDownloadProgress(
+            currentIndex: playlistInfo.videoCount,
+            totalCount: playlistInfo.videoCount,
+            currentTitle: NSLocalizedString("Completed", comment: "Download completion status"),
+            completed: completed,
+            failed: failed
+        )
+        
+        await MainActor.run {
+            progressCallback(finalProgress)
+        }
+        
+        if failed > 0 && completed == 0 {
+            throw DownloadError.playlistDownloadFailed(NSLocalizedString("All downloads failed", comment: "Error when all playlist downloads fail"))
+        }
+        
+        print(NSLocalizedString("Playlist download completed: %d successful, %d failed", comment: "Log message when playlist download completes"), completed, failed)
     }
 } 

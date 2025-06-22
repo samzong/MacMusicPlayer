@@ -52,6 +52,8 @@
 "yt-dlp not found, please make sure it's installed (brew install yt-dlp)" = "yt-dlp를 찾을 수 없습니다. 설치되어 있는지 확인하세요 (brew install yt-dlp)";
 "ffmpeg not found, please make sure it's installed (brew install ffmpeg)" = "ffmpeg를 찾을 수 없습니다. 설치되어 있는지 확인하세요 (brew install ffmpeg)";
 "Failed to get video title" = "비디오 제목을 가져오지 못했습니다";
+"Failed to get playlist information" = "재생목록 정보를 가져오지 못했습니다";
+"Playlist download failed: %@" = "재생목록 다운로드 실패: %@";
 "Found ffmpeg path: %@" = "ffmpeg 경로를 찾았습니다: %@";
 "Error checking ffmpeg: %@" = "ffmpeg 확인 중 오류 발생: %@";
 "Found yt-dlp path: %@" = "yt-dlp 경로를 찾았습니다: %@";
@@ -69,6 +71,13 @@
 "Failed to get formats: %@" = "형식을 가져오지 못했습니다: %@";
 "Error getting formats: %@" = "형식을 가져오는 중 오류 발생: %@";
 "Starting audio download, URL: %@, Format ID: %@" = "오디오 다운로드 시작, URL: %@, 형식 ID: %@";
+"Getting playlist information, URL: %@" = "재생목록 정보 가져오는 중, URL: %@";
+"Starting playlist download, URL: %@" = "재생목록 다운로드 시작, URL: %@";
+"Successfully downloaded: %@" = "다운로드 성공: %@";
+"Failed to download: %@ - Error: %@" = "다운로드 실패: %@ - 오류: %@";
+"Completed" = "완료";
+"All downloads failed" = "모든 다운로드가 실패했습니다";
+"Playlist download completed: %d successful, %d failed" = "재생목록 다운로드 완료: %d 성공, %d 실패";
 "Video title: %@" = "비디오 제목: %@";
 "Downloading to file: %@" = "파일로 다운로드 중: %@";
 "Executing download command..." = "다운로드 명령 실행 중...";
@@ -106,6 +115,10 @@
 "View more" = "더 보기";
 "Found %d results" = "결과 %d개 찾음";
 "Details" = "상세 정보";
+"Load Playlist" = "재생목록 로드";
+"Download All" = "모두 다운로드";
+"Stop" = "중지";
+"Download stopped" = "다운로드 중지됨";
 
 // Download Format UI Strings
 "Please enter a valid URL" = "유효한 URL 입력";
@@ -119,6 +132,15 @@
 "Loading formats..." = "형식 로드 중...";
 "Downloading %@..." = "다운로드 중: %@...";
 "Download completed" = "다운로드 완료";
+"Please enter a valid playlist URL" = "유효한 재생목록 URL을 입력하세요";
+"Loading playlist information..." = "재생목록 정보 로드 중...";
+"Playlist: %@ (%d items)" = "재생목록: %@ (%d개 항목)";
+"Playlist is empty" = "재생목록이 비어있습니다";
+"Failed to load playlist: %@" = "재생목록 로드 실패: %@";
+"Starting playlist download..." = "재생목록 다운로드 시작...";
+"Downloading (%d/%d) - %@" = "다운로드 중 (%d/%d) - %@";
+"Playlist download completed" = "재생목록 다운로드 완료";
+"Playlist download failed: %@" = "재생목록 다운로드 실패: %@";
 
 // Equalizer
 "Equalizer" = "음향 조정기";

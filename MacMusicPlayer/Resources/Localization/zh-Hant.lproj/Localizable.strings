@@ -52,6 +52,8 @@
 "yt-dlp not found, please make sure it's installed (brew install yt-dlp)" = "找不到 yt-dlp，請確保已安裝 (brew install yt-dlp)";
 "ffmpeg not found, please make sure it's installed (brew install ffmpeg)" = "找不到 ffmpeg，請確保已安裝 (brew install ffmpeg)";
 "Failed to get video title" = "無法獲取視頻標題";
+"Failed to get playlist information" = "獲取播放列表信息失敗";
+"Playlist download failed: %@" = "播放列表下載失敗：%@";
 "Found ffmpeg path: %@" = "找到 ffmpeg 路徑: %@";
 "Error checking ffmpeg: %@" = "檢查 ffmpeg 時出錯: %@";
 "Found yt-dlp path: %@" = "找到 yt-dlp 路徑: %@";
@@ -69,6 +71,13 @@
 "Failed to get formats: %@" = "獲取格式失敗: %@";
 "Error getting formats: %@" = "獲取格式時出錯: %@";
 "Starting audio download, URL: %@, Format ID: %@" = "開始下載音頻，URL: %@, 格式ID: %@";
+"Getting playlist information, URL: %@" = "獲取播放列表信息，URL: %@";
+"Starting playlist download, URL: %@" = "開始下載播放列表，URL: %@";
+"Successfully downloaded: %@" = "下載成功：%@";
+"Failed to download: %@ - Error: %@" = "下載失敗：%@ - 錯誤：%@";
+"Completed" = "已完成";
+"All downloads failed" = "所有下載都失敗";
+"Playlist download completed: %d successful, %d failed" = "播放列表下載完成：%d 成功，%d 失敗";
 "Video title: %@" = "視頻標題: %@";
 "Downloading to file: %@" = "下載到文件: %@";
 "Executing download command..." = "執行下載命令...";
@@ -106,6 +115,10 @@
 "View more" = "查看更多";
 "Found %d results" = "找到 %d 條結果";
 "Details" = "詳細";
+"Load Playlist" = "載入播放列表";
+"Download All" = "全部下載";
+"Stop" = "停止";
+"Download stopped" = "下載已停止";
 
 // Download Format UI Strings
 "Please enter a valid URL" = "請輸入有效的URL";
@@ -119,6 +132,15 @@
 "Loading formats..." = "正在加載格式...";
 "Downloading %@..." = "正在下載 %@...";
 "Download completed" = "下載完成";
+"Please enter a valid playlist URL" = "請輸入有效的播放列表URL";
+"Loading playlist information..." = "正在載入播放列表信息...";
+"Playlist: %@ (%d items)" = "播放列表：%@ (%d 項)";
+"Playlist is empty" = "播放列表為空";
+"Failed to load playlist: %@" = "載入播放列表失敗：%@";
+"Starting playlist download..." = "開始下載播放列表...";
+"Downloading (%d/%d) - %@" = "正在下載 (%d/%d) - %@";
+"Playlist download completed" = "播放列表下載完成";
+"Playlist download failed: %@" = "播放列表下載失敗：%@";
 
 // Equalizer
 "Equalizer" = "均衡器";

@@ -24,6 +24,7 @@ class DownloadViewController: NSViewController {
     
     // 添加分页按钮
     private let nextPageButton = NSButton()
+    private let downloadAllButton = NSButton()
     
     // MARK: - Properties
     private var formats: [DownloadManager.DownloadFormat] = []
@@ -33,6 +34,12 @@ class DownloadViewController: NSViewController {
     private var isYtDlpInstalled: Bool = false
     private var isFfmpegInstalled: Bool = false
     private var libraryManager = LibraryManager()
+    
+    // Playlist相关属性
+    private var currentPlaylist: DownloadManager.PlaylistInfo?
+    private var isPlaylistMode: Bool = false
+    private var isDownloading: Bool = false
+    private var downloadTask: Task<Void, Never>?
     
     // 搜索相关属性
     private var searchResults: [YTSearchManager.SearchResult.VideoItem] = []
@@ -118,6 +125,7 @@ class DownloadViewController: NSViewController {
         setupVersionInfo()
         setupGithubLink()
         setupNextPageButton()
+        setupDownloadAllButton()
     }
     
     private func setupURLField() {
@@ -193,6 +201,32 @@ class DownloadViewController: NSViewController {
             nextPageButton.centerYAnchor.constraint(equalTo: statusLabel.centerYAnchor),
             nextPageButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             nextPageButton.heightAnchor.constraint(equalToConstant: 16)
+        ])
+    }
+    
+    private func setupDownloadAllButton() {
+        downloadAllButton.translatesAutoresizingMaskIntoConstraints = false
+        downloadAllButton.title = NSLocalizedString("Download All", comment: "")
+        downloadAllButton.bezelStyle = .rounded
+        downloadAllButton.font = NSFont.systemFont(ofSize: 12, weight: .medium)
+        downloadAllButton.target = self
+        downloadAllButton.action = #selector(downloadAllButtonTapped)
+        downloadAllButton.contentTintColor = NSColor.white
+        downloadAllButton.isHidden = true // 初始状态隐藏
+        
+        if #available(macOS 11.0, *) {
+            downloadAllButton.bezelColor = NSColor.controlAccentColor
+        } else {
+            downloadAllButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+        }
+        
+        view.addSubview(downloadAllButton)
+        
+        NSLayoutConstraint.activate([
+            downloadAllButton.centerYAnchor.constraint(equalTo: statusLabel.centerYAnchor),
+            downloadAllButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            downloadAllButton.heightAnchor.constraint(equalToConstant: 26),
+            downloadAllButton.widthAnchor.constraint(equalToConstant: 100)
         ])
     }
     
@@ -632,13 +666,22 @@ class DownloadViewController: NSViewController {
     private func updateButtonBasedOnInput() {
         let text = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // 简单的URL验证
+        // 检查URL类型
         if text.hasPrefix("http://") || text.hasPrefix("https://") {
-            detectButton.title = NSLocalizedString("Detect", comment: "")
-            isSearchMode = false
+            // 检查是否是playlist URL
+            if DownloadManager.shared.isPlaylistURL(text) {
+                detectButton.title = NSLocalizedString("Load Playlist", comment: "")
+                isSearchMode = false
+                isPlaylistMode = true
+            } else {
+                detectButton.title = NSLocalizedString("Detect", comment: "")
+                isSearchMode = false
+                isPlaylistMode = false
+            }
         } else {
             detectButton.title = NSLocalizedString("Search", comment: "")
             isSearchMode = true
+            isPlaylistMode = false
         }
     }
     
@@ -663,6 +706,8 @@ class DownloadViewController: NSViewController {
         
         if isSearchMode {
             performSearch(keyword: input)
+        } else if isPlaylistMode {
+            loadPlaylist()
         } else {
             detectFormats()
         }
@@ -694,6 +739,7 @@ class DownloadViewController: NSViewController {
             searchResults = []
             currentNextPageToken = nil  // 重置token
             nextPageButton.isHidden = true  // 隐藏下一页按钮直到确认有更多结果
+            downloadAllButton.isHidden = true  // 隐藏下载全部按钮
             tableView.reloadData()
         }
         
@@ -874,6 +920,104 @@ class DownloadViewController: NSViewController {
         }
     }
     
+    private func loadPlaylist() {
+        let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if urlString.isEmpty {
+            statusLabel.stringValue = NSLocalizedString("Please enter a valid playlist URL", comment: "")
+            statusLabel.textColor = NSColor.systemRed
+            return
+        }
+        
+        // 开始加载状态
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.3
+            progressIndicator.isHidden = false
+            progressIndicator.startAnimation(nil)
+            statusLabel.stringValue = NSLocalizedString("Loading playlist information...", comment: "")
+            statusLabel.textColor = NSColor.secondaryLabelColor
+        })
+        
+        // 清空之前的数据
+        formats = []
+        searchResults = []
+        currentPlaylist = nil
+        tableView.reloadData()
+        nextPageButton.isHidden = true
+        downloadAllButton.isHidden = true
+        
+        // 执行playlist加载
+        Task {
+            do {
+                if !self.isYtDlpInstalled {
+                    DispatchQueue.main.async {
+                        self.hideProgressIndicator()
+                        self.statusLabel.stringValue = NSLocalizedString("yt-dlp not found, please make sure it's installed (brew install yt-dlp)", comment: "")
+                        self.statusLabel.textColor = NSColor.systemRed
+                    }
+                    return
+                }
+                
+                if !self.isFfmpegInstalled {
+                    DispatchQueue.main.async {
+                        self.hideProgressIndicator()
+                        self.statusLabel.stringValue = NSLocalizedString("ffmpeg not found, please make sure it's installed (brew install ffmpeg)", comment: "")
+                        self.statusLabel.textColor = NSColor.systemRed
+                    }
+                    return
+                }
+                
+                let playlistInfo = try await DownloadManager.shared.fetchPlaylistInfo(from: urlString)
+                
+                DispatchQueue.main.async {
+                    self.currentPlaylist = playlistInfo
+                    self.hideProgressIndicator()
+                    
+                    if !playlistInfo.items.isEmpty {
+                        NSAnimationContext.runAnimationGroup({ context in
+                            context.duration = 0.3
+                            self.tableBackgroundView.isHidden = false
+                            self.scrollView.isHidden = false
+                            self.downloadAllButton.isHidden = false
+                            
+                            // 限制状态文本长度，避免覆盖按钮
+                            let maxLength = 40
+                            let truncatedTitle = playlistInfo.title.count > maxLength ? 
+                                String(playlistInfo.title.prefix(maxLength)) + "..." : 
+                                playlistInfo.title
+                            
+                            self.statusLabel.stringValue = String(format: NSLocalizedString("Playlist: %@ (%d items)", comment: ""), truncatedTitle, playlistInfo.videoCount)
+                            self.statusLabel.textColor = NSColor.secondaryLabelColor
+                        }, completionHandler: {
+                            self.tableView.reloadData()
+                            
+                            // 调整窗口大小
+                            if let window = self.view.window {
+                                let expandedHeight: CGFloat = min(540, 140 + CGFloat(min(8, playlistInfo.items.count)) * 40 + 60)
+                                let newFrame = NSRect(
+                                    x: window.frame.origin.x,
+                                    y: window.frame.origin.y + window.frame.height - expandedHeight,
+                                    width: window.frame.width,
+                                    height: expandedHeight
+                                )
+                                window.animator().setFrame(newFrame, display: true)
+                            }
+                        })
+                    } else {
+                        self.statusLabel.stringValue = NSLocalizedString("Playlist is empty", comment: "")
+                        self.statusLabel.textColor = NSColor.secondaryLabelColor
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.hideProgressIndicator()
+                    self.statusLabel.stringValue = String(format: NSLocalizedString("Failed to load playlist: %@", comment: ""), error.localizedDescription)
+                    self.statusLabel.textColor = NSColor.systemRed
+                }
+            }
+        }
+    }
+    
     @objc private func detectFormats() {
         let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         
@@ -898,8 +1042,9 @@ class DownloadViewController: NSViewController {
         formats = []
         tableView.reloadData()
         
-        // Hide next page button in detect mode
+        // Hide buttons in detect mode
         nextPageButton.isHidden = true
+        downloadAllButton.isHidden = true
         
         // Use Task to execute asynchronous operations
         Task {
@@ -1063,6 +1208,8 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 return searchResults.count + formatOptions.count
             }
             return searchResults.count
+        } else if isPlaylistMode, let playlist = currentPlaylist {
+            return playlist.items.count
         } else {
             return formats.count
         }
@@ -1078,6 +1225,8 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             // 正常搜索结果行
             let actualRow = row > expandedVideoRow ?? -1 ? row - formatOptions.count : row
             return getSearchResultCellView(for: actualRow)
+        } else if isPlaylistMode {
+            return getPlaylistItemCellView(for: row)
         } else {
             return getFormatCellView(for: row)
         }
@@ -1536,6 +1685,223 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
         }
         
         return cell
+    }
+    
+    private func getPlaylistItemCellView(for row: Int) -> NSView? {
+        guard let playlist = currentPlaylist, row >= 0 && row < playlist.items.count else { return nil }
+        
+        let item = playlist.items[row]
+        
+        let cellIdentifier = NSUserInterfaceItemIdentifier("PlaylistItemCell")
+        var cell = tableView.makeView(withIdentifier: cellIdentifier, owner: self) as? NSTableCellView
+        
+        if cell == nil {
+            cell = NSTableCellView()
+            cell?.identifier = cellIdentifier
+            
+            let containerView = NSView()
+            containerView.translatesAutoresizingMaskIntoConstraints = false
+            cell?.addSubview(containerView)
+            
+            NSLayoutConstraint.activate([
+                containerView.leadingAnchor.constraint(equalTo: cell!.leadingAnchor, constant: 5),
+                containerView.trailingAnchor.constraint(equalTo: cell!.trailingAnchor, constant: -5),
+                containerView.topAnchor.constraint(equalTo: cell!.topAnchor),
+                containerView.bottomAnchor.constraint(equalTo: cell!.bottomAnchor)
+            ])
+            
+            // 序号标签
+            let numberLabel = NSTextField()
+            numberLabel.identifier = NSUserInterfaceItemIdentifier("NumberLabel")
+            numberLabel.translatesAutoresizingMaskIntoConstraints = false
+            numberLabel.isEditable = false
+            numberLabel.isBordered = false
+            numberLabel.backgroundColor = .clear
+            numberLabel.drawsBackground = false
+            numberLabel.font = NSFont.systemFont(ofSize: 11)
+            numberLabel.textColor = NSColor.secondaryLabelColor
+            numberLabel.alignment = .center
+            containerView.addSubview(numberLabel)
+            
+            // 标题文本
+            let titleField = NSTextField()
+            titleField.identifier = NSUserInterfaceItemIdentifier("PlaylistTitleField")
+            titleField.translatesAutoresizingMaskIntoConstraints = false
+            titleField.isEditable = false
+            titleField.isBordered = false
+            titleField.backgroundColor = .clear
+            titleField.drawsBackground = false
+            titleField.font = NSFont.systemFont(ofSize: 12)
+            titleField.lineBreakMode = .byTruncatingTail
+            containerView.addSubview(titleField)
+            
+            // 时长标签
+            let durationLabel = NSTextField()
+            durationLabel.identifier = NSUserInterfaceItemIdentifier("DurationLabel")
+            durationLabel.translatesAutoresizingMaskIntoConstraints = false
+            durationLabel.isEditable = false
+            durationLabel.isBordered = false
+            durationLabel.backgroundColor = .clear
+            durationLabel.drawsBackground = false
+            durationLabel.font = NSFont.systemFont(ofSize: 11)
+            durationLabel.textColor = NSColor.secondaryLabelColor
+            durationLabel.alignment = .right
+            containerView.addSubview(durationLabel)
+            
+            NSLayoutConstraint.activate([
+                numberLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 5),
+                numberLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+                numberLabel.widthAnchor.constraint(equalToConstant: 30),
+                
+                titleField.leadingAnchor.constraint(equalTo: numberLabel.trailingAnchor, constant: 10),
+                titleField.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+                titleField.trailingAnchor.constraint(equalTo: durationLabel.leadingAnchor, constant: -10),
+                
+                durationLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -5),
+                durationLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+                durationLabel.widthAnchor.constraint(equalToConstant: 60)
+            ])
+        }
+        
+        // 更新内容
+        if let numberLabel = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "NumberLabel" }) as? NSTextField {
+            numberLabel.stringValue = "\(row + 1)"
+        }
+        
+        if let titleField = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "PlaylistTitleField" }) as? NSTextField {
+            titleField.stringValue = item.title
+        }
+        
+        if let durationLabel = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "DurationLabel" }) as? NSTextField {
+            durationLabel.stringValue = item.duration.isEmpty ? "Unknown" : item.duration
+        }
+        
+        return cell
+    }
+    
+    @objc private func downloadAllButtonTapped() {
+        if isDownloading {
+            stopDownload()
+        } else {
+            startDownload()
+        }
+    }
+    
+    private func stopDownload() {
+        // 取消下载任务
+        downloadTask?.cancel()
+        downloadTask = nil
+        isDownloading = false
+        
+        // 恢复UI状态
+        hideProgressIndicator()
+        downloadAllButton.title = NSLocalizedString("Download All", comment: "")
+        downloadAllButton.contentTintColor = NSColor.white
+        
+        if #available(macOS 11.0, *) {
+            downloadAllButton.bezelColor = NSColor.controlAccentColor
+        } else {
+            downloadAllButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+        }
+        
+        statusLabel.stringValue = NSLocalizedString("Download stopped", comment: "")
+        statusLabel.textColor = NSColor.systemOrange
+    }
+    
+    private func startDownload() {
+        guard let playlist = currentPlaylist else { return }
+        
+        let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // 更新下载状态
+        isDownloading = true
+        
+        // 更改按钮为停止按钮
+        downloadAllButton.title = NSLocalizedString("Stop", comment: "")
+        downloadAllButton.contentTintColor = NSColor.white
+        
+        if #available(macOS 11.0, *) {
+            downloadAllButton.bezelColor = NSColor.systemRed
+        } else {
+            downloadAllButton.layer?.backgroundColor = NSColor.systemRed.cgColor
+        }
+        
+        progressIndicator.isHidden = false
+        progressIndicator.startAnimation(nil)
+        statusLabel.stringValue = NSLocalizedString("Starting playlist download...", comment: "")
+        statusLabel.textColor = NSColor.secondaryLabelColor
+        
+        downloadTask = Task {
+            do {
+                try await DownloadManager.shared.downloadPlaylist(from: urlString) { [weak self] progress in
+                    DispatchQueue.main.async {
+                        guard let self = self else { return }
+                        
+                        // 限制当前歌曲名长度，避免覆盖按钮
+                        let maxTitleLength = 25
+                        let truncatedCurrentTitle = progress.currentTitle.count > maxTitleLength ? 
+                            String(progress.currentTitle.prefix(maxTitleLength)) + "..." : 
+                            progress.currentTitle
+                        
+                        let statusText = String(format: NSLocalizedString("Downloading (%d/%d) - %@", comment: ""), 
+                                              progress.currentIndex, 
+                                              progress.totalCount, 
+                                              truncatedCurrentTitle)
+                        self.statusLabel.stringValue = statusText
+                        self.statusLabel.textColor = NSColor.secondaryLabelColor
+                    }
+                }
+                
+                DispatchQueue.main.async {
+                    // 检查任务是否被取消
+                    guard !Task.isCancelled else { return }
+                    
+                    self.isDownloading = false
+                    self.downloadTask = nil
+                    
+                    self.hideProgressIndicator()
+                    self.statusLabel.stringValue = NSLocalizedString("Playlist download completed", comment: "")
+                    self.statusLabel.textColor = NSColor.systemGreen
+                    
+                    // 恢复下载按钮
+                    self.downloadAllButton.title = NSLocalizedString("Download All", comment: "")
+                    self.downloadAllButton.contentTintColor = NSColor.white
+                    
+                    if #available(macOS 11.0, *) {
+                        self.downloadAllButton.bezelColor = NSColor.controlAccentColor
+                    } else {
+                        self.downloadAllButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+                    }
+                    
+                    // 通知播放器刷新音乐库
+                    NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    // 检查是否为取消错误
+                    if error is CancellationError {
+                        return // 取消时不显示错误，由stopDownload处理
+                    }
+                    
+                    self.isDownloading = false
+                    self.downloadTask = nil
+                    
+                    self.hideProgressIndicator()
+                    self.statusLabel.stringValue = String(format: NSLocalizedString("Playlist download failed: %@", comment: ""), error.localizedDescription)
+                    self.statusLabel.textColor = NSColor.systemRed
+                    
+                    // 恢复下载按钮
+                    self.downloadAllButton.title = NSLocalizedString("Download All", comment: "")
+                    self.downloadAllButton.contentTintColor = NSColor.white
+                    
+                    if #available(macOS 11.0, *) {
+                        self.downloadAllButton.bezelColor = NSColor.controlAccentColor
+                    } else {
+                        self.downloadAllButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+                    }
+                }
+            }
+        }
     }
     
     private func downloadSpecificFormat(video: YTSearchManager.SearchResult.VideoItem, formatId: String, formatName: String) {
