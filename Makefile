@@ -238,12 +238,13 @@ update-homebrew:
 	ARM64_SHA256=$$(shasum -a 256 ../$(APP_NAME)-arm64.dmg | cut -d ' ' -f 1) && \
 	if [ -f $(CASK_FILE) ]; then \
 		echo "    - Updating existing cask file with sed..."; \
-		sed -i '' "s/version \".*\"/version \"$(CLEAN_VERSION)\"/" $(CASK_FILE); \
-		if grep -q "Hardware::CPU.arm" $(CASK_FILE); then \
-			sed -i '' "/if Hardware::CPU.arm/,/else/ s/sha256 \".*\"/sha256 \"$$ARM64_SHA256\"/" $(CASK_FILE); \
-			sed -i '' "/else/,/end/ s/sha256 \".*\"/sha256 \"$$X86_64_SHA256\"/" $(CASK_FILE); \
-			sed -i '' "s|url \".*v#{version}/.*-ARM64.dmg\"|url \"https://github.com/samzong/$(APP_NAME)/releases/download/v#{version}/$(APP_NAME)-arm64.dmg\"|" $(CASK_FILE); \
-			sed -i '' "s|url \".*v#{version}/.*-Intel.dmg\"|url \"https://github.com/samzong/$(APP_NAME)/releases/download/v#{version}/$(APP_NAME)-x86_64.dmg\"|" $(CASK_FILE); \
+		echo "    - Updating version to $(CLEAN_VERSION)"; \
+		sed -i '' 's/version "[^"]*"/version "$(CLEAN_VERSION)"/' $(CASK_FILE); \
+		if grep -q "on_arm" $(CASK_FILE); then \
+			echo "    - Updating arm64 SHA256 to $$ARM64_SHA256"; \
+			sed -i '' '/on_arm/,/end/{s/sha256 "[^"]*"/sha256 "'"$$ARM64_SHA256"'"/;}' $(CASK_FILE); \
+			echo "    - Updating x86_64 SHA256 to $$X86_64_SHA256"; \
+			sed -i '' '/on_intel/,/end/{s/sha256 "[^"]*"/sha256 "'"$$X86_64_SHA256"'"/;}' $(CASK_FILE); \
 		else \
 			echo "❌ Unknown cask format, cannot update SHA256 values"; \
 			exit 1; \
