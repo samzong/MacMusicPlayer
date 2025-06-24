@@ -33,7 +33,7 @@ class DownloadViewController: NSViewController {
     private var ffmpegVersion: String = ""
     private var isYtDlpInstalled: Bool = false
     private var isFfmpegInstalled: Bool = false
-    private var libraryManager = LibraryManager()
+    private var libraryManager: LibraryManager!
     
     // Playlist相关属性
     private var currentPlaylist: DownloadManager.PlaylistInfo?
@@ -71,6 +71,14 @@ class DownloadViewController: NSViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // 使用共享的LibraryManager实例
+        if let appDelegate = NSApp.delegate as? AppDelegate {
+            libraryManager = appDelegate.libraryManager
+        } else {
+            libraryManager = LibraryManager()
+        }
+        
         setupUI()
         checkDependencies()
         

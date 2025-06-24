@@ -11,7 +11,17 @@ import AppKit
 public class DownloadManager {
     public static let shared = DownloadManager()
     
-    private var libraryManager = LibraryManager()
+    private var libraryManager: LibraryManager
+    
+    private init() {
+        // 使用共享的LibraryManager实例，确保与UI保持同步
+        if let appDelegate = NSApp.delegate as? AppDelegate {
+            self.libraryManager = appDelegate.libraryManager
+        } else {
+            // 备用方案：创建新实例
+            self.libraryManager = LibraryManager()
+        }
+    }
     
     public struct DownloadFormat {
         public let formatId: String
