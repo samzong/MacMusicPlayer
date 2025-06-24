@@ -1,4 +1,4 @@
-.PHONY: clean dmg update-homebrew check-arch
+.PHONY: clean build install-app dmg update-homebrew check-arch build-x86_64 build-arm64
 
 # Variables
 APP_NAME = MacMusicPlayer
@@ -8,6 +8,11 @@ ARM64_ARCHIVE_PATH = $(BUILD_DIR)/$(APP_NAME)-arm64.xcarchive
 X86_64_DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-x86_64.dmg
 ARM64_DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-arm64.dmg
 DMG_VOLUME_NAME = "$(APP_NAME)"
+
+# Install variables
+CONFIGURATION = Release
+BUILT_APP_PATH = $(BUILD_DIR)/$(CONFIGURATION)/$(APP_NAME).app
+INSTALL_PATH = /Applications/$(APP_NAME).app
 
 # 签名相关变量 - 使用自签名选项
 SELF_SIGN = true
@@ -31,6 +36,41 @@ BRANCH_NAME = update-mac-music-player-$(CLEAN_VERSION)
 clean:
 	rm -rf $(BUILD_DIR)
 	xcodebuild clean -scheme $(APP_NAME)
+
+# Build for local development (current architecture)
+build:
+	@echo "🔨 构建 $(APP_NAME) 应用 (本地开发版本)..."
+	@mkdir -p $(BUILD_DIR)
+	xcodebuild \
+		-scheme $(APP_NAME) \
+		-configuration $(CONFIGURATION) \
+		-destination 'platform=macOS' \
+		build \
+		SYMROOT=$(BUILD_DIR) \
+		CODE_SIGN_STYLE=Manual \
+		CODE_SIGN_IDENTITY="-" \
+		DEVELOPMENT_TEAM="" \
+		CURRENT_PROJECT_VERSION=$(VERSION) \
+		MARKETING_VERSION=$(VERSION)
+	@echo "✅ 构建完成！"
+	@echo "📍 应用位置: $(BUILT_APP_PATH)"
+
+# Install app to /Applications
+install-app: build
+	@echo "📦 安装 $(APP_NAME) 到 /Applications..."
+	@if [ -d "$(INSTALL_PATH)" ]; then \
+		echo "⚠️  发现已安装的版本，正在删除..."; \
+		sudo rm -rf "$(INSTALL_PATH)"; \
+	fi
+	@if [ -d "$(BUILT_APP_PATH)" ]; then \
+		sudo cp -R "$(BUILT_APP_PATH)" /Applications/; \
+		echo "✅ $(APP_NAME) 已成功安装到 /Applications!"; \
+		echo "🚀 您可以从 Launchpad 或 Applications 文件夹启动应用"; \
+	else \
+		echo "❌ 错误: 找不到构建的应用文件 $(BUILT_APP_PATH)"; \
+		echo "💡 请先运行 'make build' 构建应用"; \
+		exit 1; \
+	fi
 
 # Build for x86_64 (Intel)
 build-x86_64:
@@ -241,11 +281,27 @@ update-homebrew:
 
 # Help command
 help:
-	@echo "Available commands:"
-	@echo "  make clean           - Clean build artifacts"
-	@echo "  make dmg             - Create DMG installers (Intel and Apple Silicon)"
-	@echo "  make version         - Show version information"
+	@echo "MacMusicPlayer 构建工具使用说明："
+	@echo ""
+	@echo "可用命令："
+	@echo "  make build           - 构建应用 (本地开发，当前架构)"
+	@echo "  make install-app     - 构建并安装应用到 /Applications"
+	@echo "  make build-x86_64    - 构建 x86_64 架构版本"
+	@echo "  make build-arm64     - 构建 arm64 架构版本"
+	@echo "  make clean           - 清理构建文件"
+	@echo "  make dmg             - 创建 DMG 安装包 (Intel 和 Apple Silicon)"
+	@echo "  make version         - 显示版本信息"
 	@echo "  make check-arch      - 检查应用架构兼容性"
-	@echo "  make update-homebrew - Update Homebrew cask (requires GH_PAT)"
+	@echo "  make update-homebrew - 更新 Homebrew cask (需要 GH_PAT)"
+	@echo ""
+	@echo "📝 注意事项："
+	@echo "  • install-app 需要管理员权限 (sudo)"
+	@echo "  • 安装前会自动删除已存在的旧版本"
+	@echo "  • build 命令用于快速本地开发构建"
+	@echo "  • dmg 命令用于发布分发，支持双架构"
+	@echo ""
+	@echo "🚀 快速开始："
+	@echo "  make install-app          # 一键构建并安装 (本地开发)"
+	@echo "  make dmg                  # 创建发布版 DMG"
 
 .DEFAULT_GOAL := help
