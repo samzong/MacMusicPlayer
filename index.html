@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MacMusicPlayer MacMusicPlayer</title>
-    <meta name="description" content="Need to install Homebrew first, Follow the Homebrew Installation Guide to install Homebrew.">
+    <meta name="description" content="English | 简体中文">
     <meta name="keywords" content="macOS, music player, menu bar, SwiftUI, seamless,macOS Integration, exceptional, user experience, Minimalist Design,Audio Player">
     <link rel="stylesheet" type="text/css" href="css/main.css?v=1.34.1">
     <link rel="stylesheet" type="text/css" href="css/tocbot.css?v=1.34.1">
@@ -34,9 +34,10 @@
     <div style="max-width:720px;" class="warpper-content warpper notocs">
       <markdown-style theme-auto-switch-disabled="">
         <h1 id="macmusicplayer"><a aria-hidden="true" tabindex="-1" href="#macmusicplayer" class="anchor"><span class="icon icon-link"></span></a>MacMusicPlayer</h1>
+        <p><a href="index.html">English</a> | <a href="index._zh.html">简体中文</a></p>
         <div align="center">
           <img src="MacMusicPlayer/Assets.xcassets/AppIcon.appiconset/icon_256x256_2x.png" alt="mac-music-player logo" width="200"><br>
-          <p>MacMusicPlayer is an elegant and minimalist music player for macOS, designed as a menu bar application to provide a seamless music playback experience. Built with SwiftUI, it perfectly integrates into the macOS ecosystem, delivering an exceptional user experience.</p>
+          <p>An elegant and minimalist music player for macOS, designed as a menu bar application to provide a seamless music playback experience. Built with SwiftUI, it perfectly integrates into the macOS ecosystem.</p>
           <p>
             <a href="https://github.com/samzong/MacMusicPlayer/releases"><img src="https://img.shields.io/github/v/release/samzong/MacMusicPlayer" alt="Release Version"></a>
             <a href="https://github.com/samzong/MacMusicPlayer/blob/main/LICENSE"><img src="https://img.shields.io/github/license/samzong/MacMusicPlayer" alt="MIT License"></a>
@@ -44,158 +45,36 @@
           </p>
         </div>
         <h2 id="-installation"><a aria-hidden="true" tabindex="-1" href="#-installation" class="anchor"><span class="icon icon-link"></span></a>📦 Installation</h2>
-        <h3 id="method-1-homebrew"><a aria-hidden="true" tabindex="-1" href="#method-1-homebrew" class="anchor"><span class="icon icon-link"></span></a>Method 1: Homebrew</h3>
-        <p>Need to install Homebrew first, Follow the <a href="https://brew.sh/">Homebrew Installation Guide</a> to install Homebrew.</p>
+        <h3 id="homebrew-recommended"><a aria-hidden="true" tabindex="-1" href="#homebrew-recommended" class="anchor"><span class="icon icon-link"></span></a>Homebrew (Recommended)</h3>
         <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1">brew tap samzong/tap
 </span><span class="code-line line-number" line="2">brew <span class="token function">install</span> samzong/tap/mac-music-player
 </span></code><input type="hidden" value="brew tap samzong/tap
 brew install samzong/tap/mac-music-player
 "><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
-        <h3 id="method-2-download-dmg"><a aria-hidden="true" tabindex="-1" href="#method-2-download-dmg" class="anchor"><span class="icon icon-link"></span></a>Method 2: Download DMG</h3>
+        <h3 id="download-dmg"><a aria-hidden="true" tabindex="-1" href="#download-dmg" class="anchor"><span class="icon icon-link"></span></a>Download DMG</h3>
         <p>Download the latest <code>MacMusicPlayer.dmg</code> from the <a href="https://github.com/samzong/MacMusicPlayer/releases">Releases</a> page.</p>
-        <h3 id="️-about-security-warnings"><a aria-hidden="true" tabindex="-1" href="#️-about-security-warnings" class="anchor"><span class="icon icon-link"></span></a>⚠️ About Security Warnings</h3>
-        <p>Since the app is not notarized by Apple, you may encounter a security warning when first launching it. This is a macOS security feature and does not indicate any security issues with the app.</p>
-        <p><strong>Solution:</strong></p>
-        <ol>
-          <li><strong>Right-click on the app</strong> and select "Open" (instead of double-clicking)</li>
-          <li>In the dialog that appears, click "Open"</li>
-          <li>After this, the system will remember your choice and allow normal usage</li>
-        </ol>
-        <p><strong>For Homebrew users</strong>: The installation script automatically handles this issue, no additional steps required.</p>
-        <p><strong>If you still can't open the app</strong>, run this command in Terminal:</p>
-        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1">xattr <span class="token parameter variable">-dr</span> com.apple.quarantine /Applications/MacMusicPlayer.app
-</span></code><input type="hidden" value="xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app
-"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
-        <h2 id="-usage-guide"><a aria-hidden="true" tabindex="-1" href="#-usage-guide" class="anchor"><span class="icon icon-link"></span></a>🚀 Usage Guide</h2>
-        <p><a href="https://www.youtube.com/watch?v=fzz35W4FNkw"><img src="https://img.youtube.com/vi/fzz35W4FNkw/0.jpg" alt="VIDEO"></a></p>
-        <ol>
-          <li>On first launch, click the menu bar icon and select "Set Music Source"</li>
-          <li>Choose a folder containing Audio files</li>
-          <li>Access the following features through the menu bar icon:
-            <ul>
-              <li>Play/Pause</li>
-              <li>Previous/Next Track</li>
-              <li>Switch Playback Mode</li>
-              <li>Download Music from Online Sources (Single tracks or entire playlists)</li>
-              <li>Enable/Disable System Sleep Prevention</li>
-              <li>Configure Launch at Login</li>
-              <li>Reconfigure Music Folder</li>
-            </ul>
-          </li>
-        </ol>
+        <blockquote>
+          <p><strong>Security Note</strong>: If you encounter a security warning on first launch, right-click the app and select "Open", or run: <code>xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app</code></p>
+        </blockquote>
         <h2 id="-key-features"><a aria-hidden="true" tabindex="-1" href="#-key-features" class="anchor"><span class="icon icon-link"></span></a>✨ Key Features</h2>
         <ul>
           <li>🎵 Lightweight menu bar player for instant music control</li>
           <li>🎨 Native macOS interface with perfect light/dark theme support</li>
-          <li>🌍 Multi-language support (English, Simplified Chinese, Traditional Chinese, Japanese, Korean)</li>
-          <li>🎧 Audio format support (mp3, m4a, wav, flac, acc, aiff, etc.)</li>
+          <li>🌍 Multi-language support (English, Chinese, Japanese, Korean)</li>
+          <li>🎧 Audio format support (mp3, m4a, wav, flac, aac, aiff, etc.)</li>
           <li>🔄 Multiple playback modes (Sequential, Single Loop, Random)</li>
           <li>📥 Download music from online sources (YouTube, SoundCloud, etc.)</li>
-          <li>🎵 Batch playlist download with intelligent URL detection</li>
           <li>💾 Smart memory of last music folder location</li>
           <li>🚀 Launch at login support</li>
           <li>😴 Prevent system sleep for uninterrupted music</li>
-          <li>⌨️ Media key control support (Play/Pause/Previous/Next)</li>
+          <li>⌨️ Media key control support</li>
         </ul>
-        <h2 id="-technical-architecture"><a aria-hidden="true" tabindex="-1" href="#-technical-architecture" class="anchor"><span class="icon icon-link"></span></a>🛠 Technical Architecture</h2>
-        <ul>
-          <li><strong>Framework</strong>: SwiftUI + AppKit</li>
-          <li><strong>Audio Engine</strong>: AVFoundation</li>
-          <li><strong>Design Pattern</strong>: MVVM</li>
-          <li><strong>Localization</strong>: Multi-language support</li>
-          <li><strong>State Management</strong>: Native SwiftUI state management</li>
-          <li><strong>Persistence</strong>: UserDefaults</li>
-          <li><strong>System Integration</strong>:
-            <ul>
-              <li>MediaPlayer framework for media control</li>
-              <li>ServiceManagement for launch at login</li>
-              <li>IOKit for sleep management</li>
-            </ul>
-          </li>
-          <li><strong>Download Engine</strong>:
-            <ul>
-              <li>yt-dlp for online media extraction</li>
-              <li>ffmpeg for audio conversion</li>
-            </ul>
-          </li>
-        </ul>
-        <h2 id="-development-guide"><a aria-hidden="true" tabindex="-1" href="#-development-guide" class="anchor"><span class="icon icon-link"></span></a>🔨 Development Guide</h2>
-        <h3 id="requirements"><a aria-hidden="true" tabindex="-1" href="#requirements" class="anchor"><span class="icon icon-link"></span></a>Requirements</h3>
-        <ul>
-          <li>macOS 13.0+</li>
-          <li>Xcode 15.0+</li>
-          <li>Swift 5.9+</li>
-          <li>For music download feature: yt-dlp and ffmpeg (can be installed via Homebrew)</li>
-        </ul>
-        <h3 id="build-steps"><a aria-hidden="true" tabindex="-1" href="#build-steps" class="anchor"><span class="icon icon-link"></span></a>Build Steps</h3>
-        <ol>
-          <li>Clone the repository</li>
-        </ol>
-        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token function">git</span> clone https://github.com/samzong/MacMusicPlayer.git
-</span></code><input type="hidden" value="git clone https://github.com/samzong/MacMusicPlayer.git
-"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
-        <ol start="2">
-          <li>Open the project</li>
-        </ol>
-        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token builtin class-name">cd</span> MacMusicPlayer
-</span><span class="code-line line-number" line="2"><span class="token function">open</span> MacMusicPlayer.xcodeproj
-</span></code><input type="hidden" value="cd MacMusicPlayer
-open MacMusicPlayer.xcodeproj
-"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
-        <ol start="3">
-          <li>Build and Run</li>
-        </ol>
-        <ul>
-          <li>Using Xcode: Command + R</li>
-          <li>Using command line: <code>make build</code></li>
-        </ul>
-        <h3 id="project-structure"><a aria-hidden="true" tabindex="-1" href="#project-structure" class="anchor"><span class="icon icon-link"></span></a>Project Structure</h3>
-        <pre><code class="code-highlight"><span class="code-line line-number" line="1">MacMusicPlayer/
-</span><span class="code-line line-number" line="2">├── Managers/           # Business Managers
-</span><span class="code-line line-number" line="3">│   ├── PlayerManager   # Playback Control
-</span><span class="code-line line-number" line="4">│   ├── LaunchManager   # Launch Management
-</span><span class="code-line line-number" line="5">│   ├── SleepManager    # Sleep Control
-</span><span class="code-line line-number" line="6">│   └── DownloadManager # Music Download
-</span><span class="code-line line-number" line="7">├── Models/             # Data Models
-</span><span class="code-line line-number" line="8">├── Views/              # UI Components
-</span><span class="code-line line-number" line="9">├── Helpers/            # Utility Classes
-</span><span class="code-line line-number" line="10">└── Resources/          # Resource Files
-</span></code><input type="hidden" value="MacMusicPlayer/
-├── Managers/           # Business Managers
-│   ├── PlayerManager   # Playback Control
-│   ├── LaunchManager   # Launch Management
-│   ├── SleepManager    # Sleep Control
-│   └── DownloadManager # Music Download
-├── Models/             # Data Models
-├── Views/              # UI Components
-├── Helpers/            # Utility Classes
-└── Resources/          # Resource Files
-"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
-        <h3 id="localization-support"><a aria-hidden="true" tabindex="-1" href="#localization-support" class="anchor"><span class="icon icon-link"></span></a>Localization Support</h3>
-        <p>The project supports multiple languages with localization files located at:</p>
-        <ul>
-          <li><code>MacMusicPlayer/en.lproj/</code></li>
-          <li><code>MacMusicPlayer/zh-Hans.lproj/</code></li>
-          <li><code>MacMusicPlayer/zh-Hant.lproj/</code></li>
-          <li><code>MacMusicPlayer/ja.lproj/</code></li>
-          <li><code>MacMusicPlayer/ko.lproj/</code></li>
-        </ul>
+        <h2 id="-development"><a aria-hidden="true" tabindex="-1" href="#-development" class="anchor"><span class="icon icon-link"></span></a>🛠 Development</h2>
+        <p>For detailed development guide, see: <a href="developer_guide.html">Developer Documentation</a></p>
         <h2 id="-contributing"><a aria-hidden="true" tabindex="-1" href="#-contributing" class="anchor"><span class="icon icon-link"></span></a>🤝 Contributing</h2>
-        <ol>
-          <li>Fork the repository</li>
-          <li>Create your feature branch (<code>git checkout -b feature/AmazingFeature</code>)</li>
-          <li>Commit your changes (<code>git commit -m 'Add some AmazingFeature'</code>)</li>
-          <li>Push to the branch (<code>git push origin feature/AmazingFeature</code>)</li>
-          <li>Open a Pull Request</li>
-        </ol>
+        <p>Contributions are welcome! Please feel free to submit Issues and Pull Requests.</p>
         <h2 id="-license"><a aria-hidden="true" tabindex="-1" href="#-license" class="anchor"><span class="icon icon-link"></span></a>📄 License</h2>
-        <p>This project is licensed under the MIT License - see the <a href="LICENSE" src="LICENSE">LICENSE</a> file for details</p>
-        <h2 id="-star-history"><a aria-hidden="true" tabindex="-1" href="#-star-history" class="anchor"><span class="icon icon-link"></span></a>🌟 Star History</h2>
-        <p><a href="https://star-history.com/#samzong/macmusicplayer&#x26;Timeline"><img src="https://api.star-history.com/svg?repos=samzong/macmusicplayer&#x26;type=Timeline" alt="Star History Chart"></a></p>
-        <h2 id="-acknowledgments"><a aria-hidden="true" tabindex="-1" href="#-acknowledgments" class="anchor"><span class="icon icon-link"></span></a>🙏 Acknowledgments</h2>
-        <p>Thanks to all the developers who have contributed to this project!</p>
-        <hr>
-        <p>For questions or suggestions, please feel free to open an Issue or Pull Request.</p>
+        <p>This project is licensed under the MIT License - see the <a href="LICENSE" src="LICENSE">LICENSE</a> file for details.</p>
       </markdown-style>
     </div>
     <script src="js/demo-preview.js?v=1.34.1"></script>
