@@ -19,7 +19,7 @@
 
 ```bash
 brew tap samzong/tap
-brew install samzong/tap/mac-music-player
+brew install mac-music-player
 ```
 
 ### 下载 DMG
