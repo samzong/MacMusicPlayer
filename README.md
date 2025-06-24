@@ -41,6 +41,17 @@ Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/
 - 😴 Prevent system sleep for uninterrupted music
 - ⌨️ Media key control support
 
+## 📷 Screenshots
+
+### Menu Items
+
+![](MenuItems.png)
+
+### Download Music
+
+![](DownloadMusic.png)
+
+
 ## 🛠 Development
 
 For detailed development guide, see: [Developer Documentation](docs/developer_guide.md)
