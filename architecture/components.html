@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Component Architecture MacMusicPlayer</title>
+    <meta name="description" content="Detailed breakdown of MacMusicPlayer&#x27;s modular component design and relationships.">
+    <meta name="keywords" content="macOS, music player, menu bar, SwiftUI, seamless,macOS Integration, exceptional, user experience, Minimalist Design,Audio Player">
+    <link rel="stylesheet" type="text/css" href="../css/main.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/tocbot.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/media.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/sidebar.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/copy.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/demo-preview.css?v=1.34.1">
+    <script src="../js/copy.js?v=1.34.1"></script>
+    <script src="../js/dark-mode.js?v=1.34.1"></script>
+    <script src="../js/markdown-style.js?v=1.34.1"></script>
+  </head>
+  <body id="idoctotop"><a href="#idoctotop" class="gototop">top</a>
+    <header class="header">
+      <article class="inner warpper" style="max-width:720px;"><a class="logo" href="../index.html"><span class="title">MacMusicPlayer</span></a>
+        <div class="content">
+          <ul class="menu">
+            <li><a href="../index.html" target="" class="">Home</a></li>
+            <li><a href="https://github.com/samzong" target="__blank" class="">About</a></li>
+          </ul><a href="https://github.com/samzong/MacMusicPlayer" target="_blank" rel="noopener noreferrer" title="Github" name="Github" class="github"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg></a>
+          <dark-mode permanent=""></dark-mode>
+        </div>
+      </article>
+    </header>
+    <div style="max-width:720px;" class="warpper-content warpper notocs">
+      <markdown-style theme-auto-switch-disabled="">
+        <h1 id="component-architecture"><a aria-hidden="true" tabindex="-1" href="#component-architecture" class="anchor"><span class="icon icon-link"></span></a>Component Architecture</h1>
+        <p>Detailed breakdown of MacMusicPlayer's modular component design and relationships.</p>
+        <h2 id="️-component-overview"><a aria-hidden="true" tabindex="-1" href="#️-component-overview" class="anchor"><span class="icon icon-link"></span></a>🏗️ Component Overview</h2>
+        <p>MacMusicPlayer uses a <strong>Manager-based architecture</strong> where each manager handles a specific domain of functionality. This promotes loose coupling, testability, and maintainability.</p>
+        <pre class="language-mermaid"><code class="language-mermaid code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">graph</span> TD
+</span><span class="code-line line-number" line="2">    AD<span class="token text string">[AppDelegate]</span> <span class="token arrow operator">--></span> PM<span class="token text string">[PlayerManager]</span>
+</span><span class="code-line line-number" line="3">    AD <span class="token arrow operator">--></span> LM<span class="token text string">[LibraryManager]</span>
+</span><span class="code-line line-number" line="4">    AD <span class="token arrow operator">--></span> DM<span class="token text string">[DownloadManager]</span>
+</span><span class="code-line line-number" line="5">    AD <span class="token arrow operator">--></span> CM<span class="token text string">[ConfigManager]</span>
+</span><span class="code-line line-number" line="6">    AD <span class="token arrow operator">--></span> SM<span class="token text string">[SleepManager]</span>
+</span><span class="code-line line-number" line="7">    AD <span class="token arrow operator">--></span> LAM<span class="token text string">[LaunchManager]</span>
+</span><span class="code-line line-number" line="8">    AD <span class="token arrow operator">--></span> YSM<span class="token text string">[YTSearchManager]</span>
+</span><span class="code-line line-number" line="9">    
+</span><span class="code-line line-number" line="10">    PM <span class="token arrow operator">--></span> Track<span class="token text string">[Track Model]</span>
+</span><span class="code-line line-number" line="11">    LM <span class="token arrow operator">--></span> ML<span class="token text string">[MusicLibrary Model]</span>
+</span><span class="code-line line-number" line="12">    
+</span><span class="code-line line-number" line="13">    AD <span class="token arrow operator">--></span> CV<span class="token text string">[ContentView]</span>
+</span><span class="code-line line-number" line="14">    AD <span class="token arrow operator">--></span> CO<span class="token text string">[ControlOverlay]</span>
+</span><span class="code-line line-number" line="15">    AD <span class="token arrow operator">--></span> CVC<span class="token text string">[ConfigViewController]</span>
+</span><span class="code-line line-number" line="16">    AD <span class="token arrow operator">--></span> DVC<span class="token text string">[DownloadViewController]</span>
+</span><span class="code-line line-number" line="17">    
+</span><span class="code-line line-number" line="18">    PM <span class="token arrow operator">-.-></span> NC<span class="token text string">[NotificationCenter]</span>
+</span><span class="code-line line-number" line="19">    LM <span class="token arrow operator">-.-></span> NC
+</span><span class="code-line line-number" line="20">    NC <span class="token arrow operator">-.-></span> AD
+</span></code><input type="hidden" value="graph TD
+    AD[AppDelegate] --> PM[PlayerManager]
+    AD --> LM[LibraryManager]
+    AD --> DM[DownloadManager]
+    AD --> CM[ConfigManager]
+    AD --> SM[SleepManager]
+    AD --> LAM[LaunchManager]
+    AD --> YSM[YTSearchManager]
+    
+    PM --> Track[Track Model]
+    LM --> ML[MusicLibrary Model]
+    
+    AD --> CV[ContentView]
+    AD --> CO[ControlOverlay]
+    AD --> CVC[ConfigViewController]
+    AD --> DVC[DownloadViewController]
+    
+    PM -.-> NC[NotificationCenter]
+    LM -.-> NC
+    NC -.-> AD
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h2 id="️-manager-components"><a aria-hidden="true" tabindex="-1" href="#️-manager-components" class="anchor"><span class="icon icon-link"></span></a>🎛️ Manager Components</h2>
+        <h3 id="playermanager"><a aria-hidden="true" tabindex="-1" href="#playermanager" class="anchor"><span class="icon icon-link"></span></a>PlayerManager</h3>
+        <p><strong>File</strong>: <code>Managers/PlayerManager.swift</code><br><strong>Responsibility</strong>: Audio playback, equalizer, and playback state management</p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">class</span> <span class="token class-name">PlayerManager</span><span class="token punctuation">:</span> <span class="token class-name">NSObject</span><span class="token punctuation">,</span> <span class="token class-name">ObservableObject</span><span class="token punctuation">,</span> <span class="token class-name">AVAudioPlayerDelegate</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token comment">// Core playback state</span>
+</span><span class="code-line line-number" line="3">    <span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> playlist<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token class-name">Track</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+</span><span class="code-line line-number" line="4">    <span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> currentTrack<span class="token punctuation">:</span> <span class="token class-name">Track</span><span class="token operator">?</span>
+</span><span class="code-line line-number" line="5">    <span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> isPlaying <span class="token operator">=</span> <span class="token boolean">false</span>
+</span><span class="code-line line-number" line="6">    
+</span><span class="code-line line-number" line="7">    <span class="token comment">// Audio engine components</span>
+</span><span class="code-line line-number" line="8">    <span class="token keyword">private</span> <span class="token keyword">var</span> player<span class="token punctuation">:</span> <span class="token class-name">AVAudioPlayer</span><span class="token operator">?</span>
+</span><span class="code-line line-number" line="9">    <span class="token keyword">var</span> audioEngine<span class="token punctuation">:</span> <span class="token class-name">AVAudioEngine</span><span class="token operator">!</span>
+</span><span class="code-line line-number" line="10">    <span class="token keyword">var</span> playerNode<span class="token punctuation">:</span> <span class="token class-name">AVAudioPlayerNode</span><span class="token operator">!</span>
+</span><span class="code-line line-number" line="11">    
+</span><span class="code-line line-number" line="12">    <span class="token comment">// Equalizer system</span>
+</span><span class="code-line line-number" line="13">    <span class="token keyword">private</span> <span class="token keyword">var</span> bassEQ<span class="token punctuation">:</span> <span class="token class-name">AVAudioUnitEQ</span><span class="token operator">!</span>
+</span><span class="code-line line-number" line="14">    <span class="token keyword">private</span> <span class="token keyword">var</span> midEQ<span class="token punctuation">:</span> <span class="token class-name">AVAudioUnitEQ</span><span class="token operator">!</span>
+</span><span class="code-line line-number" line="15">    <span class="token keyword">private</span> <span class="token keyword">var</span> trebleEQ<span class="token punctuation">:</span> <span class="token class-name">AVAudioUnitEQ</span><span class="token operator">!</span>
+</span><span class="code-line line-number" line="16"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
+    // Core playback state
+    @Published var playlist: [Track] = []
+    @Published var currentTrack: Track?
+    @Published var isPlaying = false
+    
+    // Audio engine components
+    private var player: AVAudioPlayer?
+    var audioEngine: AVAudioEngine!
+    var playerNode: AVAudioPlayerNode!
+    
+    // Equalizer system
+    private var bassEQ: AVAudioUnitEQ!
+    private var midEQ: AVAudioUnitEQ!
+    private var trebleEQ: AVAudioUnitEQ!
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p><strong>Key Features</strong>:</p>
+        <ul>
+          <li>Dual audio system: <code>AVAudioPlayer</code> for simple playback + <code>AVAudioEngine</code> for EQ</li>
+          <li>Reactive UI updates via <code>@Published</code> properties</li>
+          <li>Persistent EQ settings in UserDefaults</li>
+          <li>Media key integration via MediaPlayer framework</li>
+        </ul>
+        <p><strong>Dependencies</strong>:</p>
+        <ul>
+          <li><strong>Models</strong>: Track</li>
+          <li><strong>Frameworks</strong>: AVFoundation, MediaPlayer</li>
+          <li><strong>Storage</strong>: UserDefaults for EQ settings</li>
+        </ul>
+        <hr>
+        <h3 id="librarymanager"><a aria-hidden="true" tabindex="-1" href="#librarymanager" class="anchor"><span class="icon icon-link"></span></a>LibraryManager</h3>
+        <p><strong>File</strong>: <code>Managers/LibraryManager.swift</code><br><strong>Responsibility</strong>: Music library CRUD operations and multi-library support</p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">class</span> <span class="token class-name">LibraryManager</span><span class="token punctuation">:</span> <span class="token class-name">ObservableObject</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> libraries<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token class-name">MusicLibrary</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+</span><span class="code-line line-number" line="3">    <span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> currentLibrary<span class="token punctuation">:</span> <span class="token class-name">MusicLibrary</span><span class="token operator">?</span>
+</span><span class="code-line line-number" line="4">    
+</span><span class="code-line line-number" line="5">    <span class="token comment">// Core operations</span>
+</span><span class="code-line line-number" line="6">    <span class="token keyword">func</span> <span class="token function-definition function">addLibrary</span><span class="token punctuation">(</span>name<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">,</span> path<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="7">    <span class="token keyword">func</span> <span class="token function-definition function">removeLibrary</span><span class="token punctuation">(</span>id<span class="token punctuation">:</span> <span class="token constant">UUID</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="8">    <span class="token keyword">func</span> <span class="token function-definition function">switchLibrary</span><span class="token punctuation">(</span>id<span class="token punctuation">:</span> <span class="token constant">UUID</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="9">    <span class="token keyword">func</span> <span class="token function-definition function">renameLibrary</span><span class="token punctuation">(</span>id<span class="token punctuation">:</span> <span class="token constant">UUID</span><span class="token punctuation">,</span> newName<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="10"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="class LibraryManager: ObservableObject {
+    @Published var libraries: [MusicLibrary] = []
+    @Published var currentLibrary: MusicLibrary?
+    
+    // Core operations
+    func addLibrary(name: String, path: String)
+    func removeLibrary(id: UUID)
+    func switchLibrary(id: UUID)
+    func renameLibrary(id: UUID, newName: String)
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p><strong>Key Features</strong>:</p>
+        <ul>
+          <li>Multiple library support with metadata tracking</li>
+          <li>Automatic library persistence via UserDefaults</li>
+          <li>Legacy single-library migration support</li>
+          <li>Last-used library restoration</li>
+        </ul>
+        <p><strong>Data Flow</strong>:</p>
+        <pre><code class="code-highlight"><span class="code-line line-number" line="1">User selects folder → LibraryManager.addLibrary() → 
+</span><span class="code-line line-number" line="2">Save to UserDefaults → Notify PlayerManager → UI updates
+</span></code><input type="hidden" value="User selects folder → LibraryManager.addLibrary() → 
+Save to UserDefaults → Notify PlayerManager → UI updates
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <hr>
+        <h3 id="downloadmanager"><a aria-hidden="true" tabindex="-1" href="#downloadmanager" class="anchor"><span class="icon icon-link"></span></a>DownloadManager</h3>
+        <p><strong>File</strong>: <code>Managers/DownloadManager.swift</code><br><strong>Responsibility</strong>: External tool integration for online music downloads</p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">DownloadManager</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">let</span> shared <span class="token operator">=</span> <span class="token class-name">DownloadManager</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="3">    
+</span><span class="code-line line-number" line="4">    <span class="token comment">// External tool verification</span>
+</span><span class="code-line line-number" line="5">    <span class="token keyword">func</span> <span class="token function-definition function">checkYTDlpAvailability</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token operator">-></span> <span class="token class-name">String</span>
+</span><span class="code-line line-number" line="6">    <span class="token keyword">func</span> <span class="token function-definition function">checkFFmpegAvailability</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token operator">-></span> <span class="token class-name">String</span>
+</span><span class="code-line line-number" line="7">    
+</span><span class="code-line line-number" line="8">    <span class="token comment">// Download operations</span>
+</span><span class="code-line line-number" line="9">    <span class="token keyword">func</span> <span class="token function-definition function">fetchAvailableFormats</span><span class="token punctuation">(</span><span class="token keyword">for</span> url<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">)</span> <span class="token keyword">async</span> <span class="token keyword">throws</span> <span class="token operator">-></span> <span class="token punctuation">[</span><span class="token class-name">DownloadFormat</span><span class="token punctuation">]</span>
+</span><span class="code-line line-number" line="10">    <span class="token keyword">func</span> <span class="token function-definition function">download</span><span class="token punctuation">(</span>url<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">,</span> format<span class="token punctuation">:</span> <span class="token class-name">DownloadFormat</span><span class="token punctuation">,</span> libraryId<span class="token punctuation">:</span> <span class="token constant">UUID</span><span class="token punctuation">)</span> <span class="token keyword">async</span> <span class="token keyword">throws</span>
+</span><span class="code-line line-number" line="11"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="public class DownloadManager {
+    public static let shared = DownloadManager()
+    
+    // External tool verification
+    func checkYTDlpAvailability() throws -> String
+    func checkFFmpegAvailability() throws -> String
+    
+    // Download operations
+    func fetchAvailableFormats(for url: String) async throws -> [DownloadFormat]
+    func download(url: String, format: DownloadFormat, libraryId: UUID) async throws
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p><strong>Key Features</strong>:</p>
+        <ul>
+          <li>Process-based execution of yt-dlp and ffmpeg</li>
+          <li>Async/await support for modern concurrency</li>
+          <li>Format detection and selection</li>
+          <li>Playlist batch download support</li>
+        </ul>
+        <p><strong>Security Considerations</strong>:</p>
+        <ul>
+          <li>Path validation for external tools</li>
+          <li>Controlled argument passing to prevent injection</li>
+          <li>Error handling for missing dependencies</li>
+        </ul>
+        <hr>
+        <h3 id="configmanager"><a aria-hidden="true" tabindex="-1" href="#configmanager" class="anchor"><span class="icon icon-link"></span></a>ConfigManager</h3>
+        <p><strong>File</strong>: <code>Managers/ConfigManager.swift</code><br><strong>Responsibility</strong>: Application settings and API configuration</p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">class</span> <span class="token class-name">ConfigManager</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token keyword">static</span> <span class="token keyword">let</span> shared <span class="token operator">=</span> <span class="token class-name">ConfigManager</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="3">    
+</span><span class="code-line line-number" line="4">    <span class="token keyword">var</span> apiKey<span class="token punctuation">:</span> <span class="token class-name">String</span> <span class="token punctuation">{</span> <span class="token keyword">get</span> <span class="token keyword">set</span> <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="5">    <span class="token keyword">var</span> apiUrl<span class="token punctuation">:</span> <span class="token class-name">String</span> <span class="token punctuation">{</span> <span class="token keyword">get</span> <span class="token keyword">set</span> <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="6">    <span class="token keyword">var</span> isConfigValid<span class="token punctuation">:</span> <span class="token class-name">Bool</span> <span class="token punctuation">{</span> <span class="token keyword">get</span> <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="7"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="class ConfigManager {
+    static let shared = ConfigManager()
+    
+    var apiKey: String { get set }
+    var apiUrl: String { get set }
+    var isConfigValid: Bool { get }
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p><strong>Key Features</strong>:</p>
+        <ul>
+          <li>Centralized configuration management</li>
+          <li>UserDefaults-based persistence</li>
+          <li>Configuration validation</li>
+        </ul>
+        <p><strong>⚠️ Security Note</strong>: API keys stored in UserDefaults (plaintext). Consider migrating to Keychain Services for production.</p>
+        <hr>
+        <h3 id="system-integration-managers"><a aria-hidden="true" tabindex="-1" href="#system-integration-managers" class="anchor"><span class="icon icon-link"></span></a>System Integration Managers</h3>
+        <h4 id="sleepmanager"><a aria-hidden="true" tabindex="-1" href="#sleepmanager" class="anchor"><span class="icon icon-link"></span></a>SleepManager</h4>
+        <p><strong>Responsibility</strong>: Prevent system sleep during playback</p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">class</span> <span class="token class-name">SleepManager</span><span class="token punctuation">:</span> <span class="token class-name">ObservableObject</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> preventSleep<span class="token punctuation">:</span> <span class="token class-name">Bool</span> <span class="token operator">=</span> <span class="token boolean">false</span>
+</span><span class="code-line line-number" line="3"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="class SleepManager: ObservableObject {
+    @Published var preventSleep: Bool = false
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <ul>
+          <li>Uses IOKit for power assertion management</li>
+          <li>Automatically manages sleep prevention state</li>
+        </ul>
+        <h4 id="launchmanager"><a aria-hidden="true" tabindex="-1" href="#launchmanager" class="anchor"><span class="icon icon-link"></span></a>LaunchManager</h4>
+        <p><strong>Responsibility</strong>: Launch-at-login functionality</p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">class</span> <span class="token class-name">LaunchManager</span><span class="token punctuation">:</span> <span class="token class-name">ObservableObject</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> launchAtLogin<span class="token punctuation">:</span> <span class="token class-name">Bool</span> <span class="token operator">=</span> <span class="token boolean">false</span>
+</span><span class="code-line line-number" line="3"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="class LaunchManager: ObservableObject {
+    @Published var launchAtLogin: Bool = false
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <ul>
+          <li>Uses ServiceManagement framework</li>
+          <li>Registers/unregisters login items</li>
+        </ul>
+        <h4 id="ytsearchmanager"><a aria-hidden="true" tabindex="-1" href="#ytsearchmanager" class="anchor"><span class="icon icon-link"></span></a>YTSearchManager</h4>
+        <p><strong>Responsibility</strong>: Online music search API integration</p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">class</span> <span class="token class-name">YTSearchManager</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token keyword">func</span> <span class="token function-definition function">search</span><span class="token punctuation">(</span>keyword<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">,</span> pageToken<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token operator">?</span> <span class="token operator">=</span> <span class="token nil constant">nil</span><span class="token punctuation">,</span> 
+</span><span class="code-line line-number" line="3">               completion<span class="token punctuation">:</span> <span class="token attribute atrule">@escaping</span> <span class="token punctuation">(</span><span class="token class-name">Result</span><span class="token operator">&#x3C;</span><span class="token class-name">SearchResult</span><span class="token punctuation">,</span> <span class="token class-name">Error</span><span class="token operator">></span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token class-name">Void</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="4"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="class YTSearchManager {
+    func search(keyword: String, pageToken: String? = nil, 
+               completion: @escaping (Result<SearchResult, Error>) -> Void)
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <ul>
+          <li>HTTP API client for music search</li>
+          <li>Pagination support for large result sets</li>
+        </ul>
+        <h2 id="-view-components"><a aria-hidden="true" tabindex="-1" href="#-view-components" class="anchor"><span class="icon icon-link"></span></a>📱 View Components</h2>
+        <h3 id="swiftui-views"><a aria-hidden="true" tabindex="-1" href="#swiftui-views" class="anchor"><span class="icon icon-link"></span></a>SwiftUI Views</h3>
+        <h4 id="contentview"><a aria-hidden="true" tabindex="-1" href="#contentview" class="anchor"><span class="icon icon-link"></span></a>ContentView</h4>
+        <p><strong>File</strong>: <code>Views/ContentView.swift</code><br><strong>Purpose</strong>: Main playback interface for popover/window display</p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">struct</span> <span class="token class-name">ContentView</span><span class="token punctuation">:</span> <span class="token class-name">View</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token attribute atrule">@EnvironmentObject</span> <span class="token keyword">var</span> playerManager<span class="token punctuation">:</span> <span class="token class-name">PlayerManager</span>
+</span><span class="code-line line-number" line="3">    
+</span><span class="code-line line-number" line="4">    <span class="token keyword">var</span> body<span class="token punctuation">:</span> <span class="token keyword">some</span> <span class="token class-name">View</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="5">        <span class="token class-name">VStack</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="6">            <span class="token comment">// Track info display</span>
+</span><span class="code-line line-number" line="7">            <span class="token comment">// Playback controls</span>
+</span><span class="code-line line-number" line="8">        <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="9">    <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="10"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="struct ContentView: View {
+    @EnvironmentObject var playerManager: PlayerManager
+    
+    var body: some View {
+        VStack {
+            // Track info display
+            // Playback controls
+        }
+    }
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p><strong>Design Pattern</strong>: Pure presentation layer, all logic delegated to PlayerManager</p>
+        <h4 id="controloverlay"><a aria-hidden="true" tabindex="-1" href="#controloverlay" class="anchor"><span class="icon icon-link"></span></a>ControlOverlay</h4>
+        <p><strong>File</strong>: <code>Views/ControlOverlay.swift</code><br><strong>Purpose</strong>: Floating playback controls</p>
+        <p><strong>Features</strong>:</p>
+        <ul>
+          <li>Overlay-style interface</li>
+          <li>Minimal footprint</li>
+          <li>Gesture-based interactions</li>
+        </ul>
+        <h3 id="appkit-controllers"><a aria-hidden="true" tabindex="-1" href="#appkit-controllers" class="anchor"><span class="icon icon-link"></span></a>AppKit Controllers</h3>
+        <h4 id="configviewcontroller"><a aria-hidden="true" tabindex="-1" href="#configviewcontroller" class="anchor"><span class="icon icon-link"></span></a>ConfigViewController</h4>
+        <p><strong>File</strong>: <code>Controllers/ConfigViewController.swift</code><br><strong>Purpose</strong>: Settings window for API configuration</p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">class</span> <span class="token class-name">ConfigViewController</span><span class="token punctuation">:</span> <span class="token class-name">NSViewController</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token comment">// Form controls for API settings</span>
+</span><span class="code-line line-number" line="3">    <span class="token comment">// Validation and persistence logic</span>
+</span><span class="code-line line-number" line="4"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="class ConfigViewController: NSViewController {
+    // Form controls for API settings
+    // Validation and persistence logic
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p><strong>Why AppKit</strong>: Complex forms and validation logic better suited to AppKit than SwiftUI</p>
+        <h4 id="downloadviewcontroller"><a aria-hidden="true" tabindex="-1" href="#downloadviewcontroller" class="anchor"><span class="icon icon-link"></span></a>DownloadViewController</h4>
+        <p><strong>File</strong>: <code>Controllers/DownloadViewController.swift</code><br><strong>Purpose</strong>: Download interface with format selection and progress tracking</p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">class</span> <span class="token class-name">DownloadViewController</span><span class="token punctuation">:</span> <span class="token class-name">NSViewController</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token comment">// URL input and validation</span>
+</span><span class="code-line line-number" line="3">    <span class="token comment">// Format detection table</span>
+</span><span class="code-line line-number" line="4">    <span class="token comment">// Progress indicators</span>
+</span><span class="code-line line-number" line="5">    <span class="token comment">// Tool version status</span>
+</span><span class="code-line line-number" line="6"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="class DownloadViewController: NSViewController {
+    // URL input and validation
+    // Format detection table
+    // Progress indicators
+    // Tool version status
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p><strong>Features</strong>:</p>
+        <ul>
+          <li>Real-time format detection</li>
+          <li>Batch download progress tracking</li>
+          <li>External tool status monitoring</li>
+        </ul>
+        <h2 id="-component-communication"><a aria-hidden="true" tabindex="-1" href="#-component-communication" class="anchor"><span class="icon icon-link"></span></a>🔗 Component Communication</h2>
+        <h3 id="notification-based-messaging"><a aria-hidden="true" tabindex="-1" href="#notification-based-messaging" class="anchor"><span class="icon icon-link"></span></a>Notification-Based Messaging</h3>
+        <p>MacMusicPlayer uses <code>NotificationCenter</code> for loose coupling between components:</p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// Standard notifications</span>
+</span><span class="code-line line-number" line="2"><span class="token string-literal"><span class="token string">"TrackChanged"</span></span>           <span class="token comment">// PlayerManager → UI components</span>
+</span><span class="code-line line-number" line="3"><span class="token string-literal"><span class="token string">"PlaybackStateChanged"</span></span>   <span class="token comment">// PlayerManager → AppDelegate (menu updates)</span>
+</span><span class="code-line line-number" line="4"><span class="token string-literal"><span class="token string">"RefreshMusicLibrary"</span></span>    <span class="token comment">// LibraryManager → PlayerManager</span>
+</span><span class="code-line line-number" line="5"><span class="token string-literal"><span class="token string">"AddNewLibrary"</span></span>          <span class="token comment">// UI → LibraryManager</span>
+</span><span class="code-line line-number" line="6"><span class="token string-literal"><span class="token string">"ConfigUpdated"</span></span>          <span class="token comment">// ConfigViewController → other components</span>
+</span></code><input type="hidden" value="// Standard notifications
+&#x22;TrackChanged&#x22;           // PlayerManager → UI components
+&#x22;PlaybackStateChanged&#x22;   // PlayerManager → AppDelegate (menu updates)
+&#x22;RefreshMusicLibrary&#x22;    // LibraryManager → PlayerManager
+&#x22;AddNewLibrary&#x22;          // UI → LibraryManager
+&#x22;ConfigUpdated&#x22;          // ConfigViewController → other components
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="communication-patterns"><a aria-hidden="true" tabindex="-1" href="#communication-patterns" class="anchor"><span class="icon icon-link"></span></a>Communication Patterns</h3>
+        <h4 id="1-manager--ui-updates"><a aria-hidden="true" tabindex="-1" href="#1-manager--ui-updates" class="anchor"><span class="icon icon-link"></span></a>1. Manager → UI Updates</h4>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// In PlayerManager</span>
+</span><span class="code-line line-number" line="2"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> currentTrack<span class="token punctuation">:</span> <span class="token class-name">Track</span><span class="token operator">?</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="3">    <span class="token keyword">didSet</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="4">        <span class="token class-name">NotificationCenter</span><span class="token punctuation">.</span><span class="token keyword">default</span><span class="token punctuation">.</span><span class="token function">post</span><span class="token punctuation">(</span>name<span class="token punctuation">:</span> <span class="token class-name">NSNotification</span><span class="token punctuation">.</span><span class="token class-name">Name</span><span class="token punctuation">(</span><span class="token string-literal"><span class="token string">"TrackChanged"</span></span><span class="token punctuation">)</span><span class="token punctuation">,</span> object<span class="token punctuation">:</span> <span class="token nil constant">nil</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="5">    <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="6"><span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="7">
+</span><span class="code-line line-number" line="8"><span class="token comment">// In AppDelegate</span>
+</span><span class="code-line line-number" line="9"><span class="token class-name">NotificationCenter</span><span class="token punctuation">.</span><span class="token keyword">default</span><span class="token punctuation">.</span><span class="token function">addObserver</span><span class="token punctuation">(</span>
+</span><span class="code-line line-number" line="10">    <span class="token keyword">self</span><span class="token punctuation">,</span> selector<span class="token punctuation">:</span> <span class="token other-directive property">#selector</span><span class="token punctuation">(</span>updateMenuItems<span class="token punctuation">)</span><span class="token punctuation">,</span> 
+</span><span class="code-line line-number" line="11">    name<span class="token punctuation">:</span> <span class="token class-name">NSNotification</span><span class="token punctuation">.</span><span class="token class-name">Name</span><span class="token punctuation">(</span><span class="token string-literal"><span class="token string">"TrackChanged"</span></span><span class="token punctuation">)</span><span class="token punctuation">,</span> object<span class="token punctuation">:</span> <span class="token nil constant">nil</span>
+</span><span class="code-line line-number" line="12"><span class="token punctuation">)</span>
+</span></code><input type="hidden" value="// In PlayerManager
+@Published var currentTrack: Track? {
+    didSet {
+        NotificationCenter.default.post(name: NSNotification.Name(&#x22;TrackChanged&#x22;), object: nil)
+    }
+}
+
+// In AppDelegate
+NotificationCenter.default.addObserver(
+    self, selector: #selector(updateMenuItems), 
+    name: NSNotification.Name(&#x22;TrackChanged&#x22;), object: nil
+)
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h4 id="2-cross-manager-communication"><a aria-hidden="true" tabindex="-1" href="#2-cross-manager-communication" class="anchor"><span class="icon icon-link"></span></a>2. Cross-Manager Communication</h4>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// LibraryManager notifies PlayerManager of library changes</span>
+</span><span class="code-line line-number" line="2"><span class="token class-name">NotificationCenter</span><span class="token punctuation">.</span><span class="token keyword">default</span><span class="token punctuation">.</span><span class="token function">post</span><span class="token punctuation">(</span>name<span class="token punctuation">:</span> <span class="token class-name">NSNotification</span><span class="token punctuation">.</span><span class="token class-name">Name</span><span class="token punctuation">(</span><span class="token string-literal"><span class="token string">"RefreshMusicLibrary"</span></span><span class="token punctuation">)</span><span class="token punctuation">,</span> object<span class="token punctuation">:</span> <span class="token nil constant">nil</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="3">
+</span><span class="code-line line-number" line="4"><span class="token comment">// PlayerManager responds by reloading tracks</span>
+</span><span class="code-line line-number" line="5"><span class="token class-name">NotificationCenter</span><span class="token punctuation">.</span><span class="token keyword">default</span><span class="token punctuation">.</span><span class="token function">addObserver</span><span class="token punctuation">(</span><span class="token comment">/* refresh handler */</span><span class="token punctuation">)</span>
+</span></code><input type="hidden" value="// LibraryManager notifies PlayerManager of library changes
+NotificationCenter.default.post(name: NSNotification.Name(&#x22;RefreshMusicLibrary&#x22;), object: nil)
+
+// PlayerManager responds by reloading tracks
+NotificationCenter.default.addObserver(/* refresh handler */)
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h4 id="3-ui--manager-actions"><a aria-hidden="true" tabindex="-1" href="#3-ui--manager-actions" class="anchor"><span class="icon icon-link"></span></a>3. UI → Manager Actions</h4>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// Direct method calls for immediate actions</span>
+</span><span class="code-line line-number" line="2"><span class="token attribute atrule">@objc</span> <span class="token keyword">func</span> <span class="token function-definition function">togglePlayPause</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="3">    playerManager<span class="token punctuation">.</span>isPlaying <span class="token operator">?</span> playerManager<span class="token punctuation">.</span><span class="token function">pause</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">:</span> playerManager<span class="token punctuation">.</span><span class="token function">play</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="4"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="// Direct method calls for immediate actions
+@objc func togglePlayPause() {
+    playerManager.isPlaying ? playerManager.pause() : playerManager.play()
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h2 id="-data-models"><a aria-hidden="true" tabindex="-1" href="#-data-models" class="anchor"><span class="icon icon-link"></span></a>🎯 Data Models</h2>
+        <h3 id="track-model"><a aria-hidden="true" tabindex="-1" href="#track-model" class="anchor"><span class="icon icon-link"></span></a>Track Model</h3>
+        <p><strong>File</strong>: <code>Models/Track.swift</code></p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">struct</span> <span class="token class-name">Track</span><span class="token punctuation">:</span> <span class="token class-name">Identifiable</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token keyword">let</span> id<span class="token punctuation">:</span> <span class="token constant">UUID</span>
+</span><span class="code-line line-number" line="3">    <span class="token keyword">let</span> title<span class="token punctuation">:</span> <span class="token class-name">String</span>
+</span><span class="code-line line-number" line="4">    <span class="token keyword">let</span> artist<span class="token punctuation">:</span> <span class="token class-name">String</span>  
+</span><span class="code-line line-number" line="5">    <span class="token keyword">let</span> url<span class="token punctuation">:</span> <span class="token constant">URL</span>
+</span><span class="code-line line-number" line="6"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="struct Track: Identifiable {
+    let id: UUID
+    let title: String
+    let artist: String  
+    let url: URL
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p><strong>Design Decisions</strong>:</p>
+        <ul>
+          <li>Immutable struct for thread safety</li>
+          <li>URL-based file references for security</li>
+          <li>Minimal metadata for performance</li>
+        </ul>
+        <h3 id="musiclibrary-model"><a aria-hidden="true" tabindex="-1" href="#musiclibrary-model" class="anchor"><span class="icon icon-link"></span></a>MusicLibrary Model</h3>
+        <p><strong>File</strong>: <code>Models/MusicLibrary.swift</code></p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">struct</span> <span class="token class-name">MusicLibrary</span><span class="token punctuation">:</span> <span class="token class-name">Identifiable</span><span class="token punctuation">,</span> <span class="token class-name">Codable</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token keyword">let</span> id<span class="token punctuation">:</span> <span class="token constant">UUID</span>
+</span><span class="code-line line-number" line="3">    <span class="token keyword">var</span> name<span class="token punctuation">:</span> <span class="token class-name">String</span>
+</span><span class="code-line line-number" line="4">    <span class="token keyword">var</span> path<span class="token punctuation">:</span> <span class="token class-name">String</span>
+</span><span class="code-line line-number" line="5">    <span class="token keyword">var</span> createdAt<span class="token punctuation">:</span> <span class="token class-name">Date</span>
+</span><span class="code-line line-number" line="6">    <span class="token keyword">var</span> lastAccessed<span class="token punctuation">:</span> <span class="token class-name">Date</span>
+</span><span class="code-line line-number" line="7"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="struct MusicLibrary: Identifiable, Codable {
+    let id: UUID
+    var name: String
+    var path: String
+    var createdAt: Date
+    var lastAccessed: Date
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p><strong>Features</strong>:</p>
+        <ul>
+          <li>Codable for UserDefaults persistence</li>
+          <li>Timestamp tracking for usage analytics</li>
+          <li>Mutable properties for library management</li>
+        </ul>
+        <h2 id="-lifecycle--state-management"><a aria-hidden="true" tabindex="-1" href="#-lifecycle--state-management" class="anchor"><span class="icon icon-link"></span></a>🔄 Lifecycle &#x26; State Management</h2>
+        <h3 id="application-lifecycle"><a aria-hidden="true" tabindex="-1" href="#application-lifecycle" class="anchor"><span class="icon icon-link"></span></a>Application Lifecycle</h3>
+        <pre><code class="code-highlight"><span class="code-line line-number" line="1">1. AppDelegate.applicationDidFinishLaunching()
+</span><span class="code-line line-number" line="2">   ├── Initialize all managers
+</span><span class="code-line line-number" line="3">   ├── Setup menu bar interface  
+</span><span class="code-line line-number" line="4">   ├── Configure notification observers
+</span><span class="code-line line-number" line="5">   └── Load last-used library
+</span><span class="code-line line-number" line="6">
+</span><span class="code-line line-number" line="7">2. Manager Initialization
+</span><span class="code-line line-number" line="8">   ├── PlayerManager: Setup audio engine
+</span><span class="code-line line-number" line="9">   ├── LibraryManager: Load saved libraries
+</span><span class="code-line line-number" line="10">   ├── ConfigManager: Load API settings
+</span><span class="code-line line-number" line="11">   └── Other managers: Restore state
+</span><span class="code-line line-number" line="12">
+</span><span class="code-line line-number" line="13">3. Runtime Operation
+</span><span class="code-line line-number" line="14">   ├── UI events → Manager methods
+</span><span class="code-line line-number" line="15">   ├── Manager changes → NotificationCenter
+</span><span class="code-line line-number" line="16">   └── NotificationCenter → UI updates
+</span></code><input type="hidden" value="1. AppDelegate.applicationDidFinishLaunching()
+   ├── Initialize all managers
+   ├── Setup menu bar interface  
+   ├── Configure notification observers
+   └── Load last-used library
+
+2. Manager Initialization
+   ├── PlayerManager: Setup audio engine
+   ├── LibraryManager: Load saved libraries
+   ├── ConfigManager: Load API settings
+   └── Other managers: Restore state
+
+3. Runtime Operation
+   ├── UI events → Manager methods
+   ├── Manager changes → NotificationCenter
+   └── NotificationCenter → UI updates
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="state-persistence"><a aria-hidden="true" tabindex="-1" href="#state-persistence" class="anchor"><span class="icon icon-link"></span></a>State Persistence</h3>
+        <p><strong>PlayerManager State</strong>:</p>
+        <ul>
+          <li>EQ settings → UserDefaults</li>
+          <li>Playback mode → UserDefaults</li>
+          <li>Current track position → Memory only</li>
+        </ul>
+        <p><strong>LibraryManager State</strong>:</p>
+        <ul>
+          <li>Library list → UserDefaults (JSON encoded)</li>
+          <li>Current library ID → UserDefaults</li>
+          <li>Track scanning → Runtime only</li>
+        </ul>
+        <p><strong>ConfigManager State</strong>:</p>
+        <ul>
+          <li>API credentials → UserDefaults (⚠️ security concern)</li>
+          <li>Settings validation → Runtime</li>
+        </ul>
+        <h2 id="-testing-architecture"><a aria-hidden="true" tabindex="-1" href="#-testing-architecture" class="anchor"><span class="icon icon-link"></span></a>🧪 Testing Architecture</h2>
+        <h3 id="manager-testability"><a aria-hidden="true" tabindex="-1" href="#manager-testability" class="anchor"><span class="icon icon-link"></span></a>Manager Testability</h3>
+        <p>Each manager is designed to be testable in isolation:</p>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// Example: PlayerManager testing</span>
+</span><span class="code-line line-number" line="2"><span class="token keyword">class</span> <span class="token class-name">MockPlayerManager</span><span class="token punctuation">:</span> <span class="token class-name">PlayerManager</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="3">    <span class="token keyword">override</span> <span class="token keyword">func</span> <span class="token function-definition function">play</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="4">        <span class="token comment">// Mock implementation for testing</span>
+</span><span class="code-line line-number" line="5">        isPlaying <span class="token operator">=</span> <span class="token boolean">true</span>
+</span><span class="code-line line-number" line="6">    <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="7"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="// Example: PlayerManager testing
+class MockPlayerManager: PlayerManager {
+    override func play() {
+        // Mock implementation for testing
+        isPlaying = true
+    }
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p><strong>Testable Patterns</strong>:</p>
+        <ul>
+          <li>Dependency injection via initializers</li>
+          <li>Protocol-based interfaces (future enhancement)</li>
+          <li>Observable state via <code>@Published</code> properties</li>
+        </ul>
+        <h3 id="component-isolation"><a aria-hidden="true" tabindex="-1" href="#component-isolation" class="anchor"><span class="icon icon-link"></span></a>Component Isolation</h3>
+        <p><strong>Benefits of Manager Architecture</strong>:</p>
+        <ul>
+          <li><strong>Unit Testing</strong>: Test each manager independently</li>
+          <li><strong>Integration Testing</strong>: Test manager interactions via notifications</li>
+          <li><strong>UI Testing</strong>: Mock managers for predictable UI state</li>
+        </ul>
+        <hr>
+        <p>This component architecture provides a solid foundation for maintainable, testable, and extensible macOS application development while following platform conventions and best practices.</p>
+      </markdown-style>
+    </div>
+    <script src="../js/demo-preview.js?v=1.34.1"></script>
+    <div class="footer warpper" style="max-width:720px;">Copyright © 2025 <a href="https://github.com/samzong" target="_blank">samzong</a><br></div>
+    <script src="../js/tocbot.js?v=1.34.1"></script>
+  </body>
+</html>

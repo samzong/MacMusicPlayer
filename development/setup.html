@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Setup Guide MacMusicPlayer</title>
+    <meta name="description" content="Complete guide for setting up MacMusicPlayer development environment.">
+    <meta name="keywords" content="macOS, music player, menu bar, SwiftUI, seamless,macOS Integration, exceptional, user experience, Minimalist Design,Audio Player">
+    <link rel="stylesheet" type="text/css" href="../css/main.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/tocbot.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/media.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/sidebar.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/copy.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/demo-preview.css?v=1.34.1">
+    <script src="../js/copy.js?v=1.34.1"></script>
+    <script src="../js/dark-mode.js?v=1.34.1"></script>
+    <script src="../js/markdown-style.js?v=1.34.1"></script>
+  </head>
+  <body id="idoctotop"><a href="#idoctotop" class="gototop">top</a>
+    <header class="header">
+      <article class="inner warpper" style="max-width:720px;"><a class="logo" href="../index.html"><span class="title">MacMusicPlayer</span></a>
+        <div class="content">
+          <ul class="menu">
+            <li><a href="../index.html" target="" class="">Home</a></li>
+            <li><a href="https://github.com/samzong" target="__blank" class="">About</a></li>
+          </ul><a href="https://github.com/samzong/MacMusicPlayer" target="_blank" rel="noopener noreferrer" title="Github" name="Github" class="github"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg></a>
+          <dark-mode permanent=""></dark-mode>
+        </div>
+      </article>
+    </header>
+    <div style="max-width:720px;" class="warpper-content warpper notocs">
+      <markdown-style theme-auto-switch-disabled="">
+        <h1 id="developer-setup-guide"><a aria-hidden="true" tabindex="-1" href="#developer-setup-guide" class="anchor"><span class="icon icon-link"></span></a>Developer Setup Guide</h1>
+        <p>Complete guide for setting up MacMusicPlayer development environment.</p>
+        <h2 id="️-prerequisites"><a aria-hidden="true" tabindex="-1" href="#️-prerequisites" class="anchor"><span class="icon icon-link"></span></a>🛠️ Prerequisites</h2>
+        <h3 id="system-requirements"><a aria-hidden="true" tabindex="-1" href="#system-requirements" class="anchor"><span class="icon icon-link"></span></a>System Requirements</h3>
+        <ul>
+          <li><strong>macOS 13.0+</strong> (Ventura or later)</li>
+          <li><strong>Xcode 15.0+</strong> with Swift 5.9+</li>
+          <li><strong>Homebrew</strong> package manager</li>
+          <li><strong>Git</strong> for version control</li>
+        </ul>
+        <h3 id="external-tools-for-download-features"><a aria-hidden="true" tabindex="-1" href="#external-tools-for-download-features" class="anchor"><span class="icon icon-link"></span></a>External Tools (for download features)</h3>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1">brew <span class="token function">install</span> yt-dlp ffmpeg
+</span></code><input type="hidden" value="brew install yt-dlp ffmpeg
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h2 id="-project-setup"><a aria-hidden="true" tabindex="-1" href="#-project-setup" class="anchor"><span class="icon icon-link"></span></a>📦 Project Setup</h2>
+        <h3 id="1-clone-repository"><a aria-hidden="true" tabindex="-1" href="#1-clone-repository" class="anchor"><span class="icon icon-link"></span></a>1. Clone Repository</h3>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token function">git</span> clone https://github.com/samzong/MacMusicPlayer.git
+</span><span class="code-line line-number" line="2"><span class="token builtin class-name">cd</span> MacMusicPlayer
+</span></code><input type="hidden" value="git clone https://github.com/samzong/MacMusicPlayer.git
+cd MacMusicPlayer
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="2-open-in-xcode"><a aria-hidden="true" tabindex="-1" href="#2-open-in-xcode" class="anchor"><span class="icon icon-link"></span></a>2. Open in Xcode</h3>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token function">open</span> MacMusicPlayer.xcodeproj
+</span></code><input type="hidden" value="open MacMusicPlayer.xcodeproj
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="3-verify-build-settings"><a aria-hidden="true" tabindex="-1" href="#3-verify-build-settings" class="anchor"><span class="icon icon-link"></span></a>3. Verify Build Settings</h3>
+        <ul>
+          <li><strong>Deployment Target</strong>: macOS 13.0</li>
+          <li><strong>Swift Language Version</strong>: Swift 5</li>
+          <li><strong>Code Signing</strong>: Development Team set (for testing)</li>
+        </ul>
+        <h2 id="-build-system"><a aria-hidden="true" tabindex="-1" href="#-build-system" class="anchor"><span class="icon icon-link"></span></a>🔨 Build System</h2>
+        <p>MacMusicPlayer uses a <strong>Makefile-based build system</strong> for distribution and a <strong>direct Xcode workflow</strong> for development.</p>
+        <h3 id="development-builds"><a aria-hidden="true" tabindex="-1" href="#development-builds" class="anchor"><span class="icon icon-link"></span></a>Development Builds</h3>
+        <h4 id="quick-development-build"><a aria-hidden="true" tabindex="-1" href="#quick-development-build" class="anchor"><span class="icon icon-link"></span></a>Quick Development Build</h4>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token function">make</span> build
+</span></code><input type="hidden" value="make build
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <ul>
+          <li>Builds for current architecture</li>
+          <li>Uses development code signing</li>
+          <li>Output: <code>build/Release/MacMusicPlayer.app</code></li>
+        </ul>
+        <h4 id="install-locally"><a aria-hidden="true" tabindex="-1" href="#install-locally" class="anchor"><span class="icon icon-link"></span></a>Install Locally</h4>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token function">make</span> install-app
+</span></code><input type="hidden" value="make install-app
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <ul>
+          <li>Builds and installs to <code>/Applications/</code></li>
+          <li>Requires <code>sudo</code> permissions</li>
+          <li>Automatically removes existing version</li>
+        </ul>
+        <h3 id="distribution-builds"><a aria-hidden="true" tabindex="-1" href="#distribution-builds" class="anchor"><span class="icon icon-link"></span></a>Distribution Builds</h3>
+        <h4 id="create-dmg-packages"><a aria-hidden="true" tabindex="-1" href="#create-dmg-packages" class="anchor"><span class="icon icon-link"></span></a>Create DMG Packages</h4>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token function">make</span> dmg
+</span></code><input type="hidden" value="make dmg
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <ul>
+          <li>Builds both x86_64 and arm64 versions</li>
+          <li>Creates signed DMG files</li>
+          <li>Output: <code>build/MacMusicPlayer-{arch}.dmg</code></li>
+        </ul>
+        <h4 id="clean-build-artifacts"><a aria-hidden="true" tabindex="-1" href="#clean-build-artifacts" class="anchor"><span class="icon icon-link"></span></a>Clean Build Artifacts</h4>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token function">make</span> clean
+</span></code><input type="hidden" value="make clean
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="version-management"><a aria-hidden="true" tabindex="-1" href="#version-management" class="anchor"><span class="icon icon-link"></span></a>Version Management</h3>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token function">make</span> version
+</span></code><input type="hidden" value="make version
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p>Shows current version info:</p>
+        <pre><code class="code-highlight"><span class="code-line line-number" line="1">Version:     Dev-abc1234
+</span><span class="code-line line-number" line="2">Git Commit:  abc1234
+</span></code><input type="hidden" value="Version:     Dev-abc1234
+Git Commit:  abc1234
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h2 id="️-project-structure"><a aria-hidden="true" tabindex="-1" href="#️-project-structure" class="anchor"><span class="icon icon-link"></span></a>🏗️ Project Structure</h2>
+        <pre><code class="code-highlight"><span class="code-line line-number" line="1">MacMusicPlayer/
+</span><span class="code-line line-number" line="2">├── MacMusicPlayer.xcodeproj/          # Xcode project
+</span><span class="code-line line-number" line="3">├── MacMusicPlayer/                    # Source code
+</span><span class="code-line line-number" line="4">│   ├── AppDelegate.swift              # App coordinator
+</span><span class="code-line line-number" line="5">│   ├── MacMusicPlayerApp.swift        # SwiftUI app entry
+</span><span class="code-line line-number" line="6">│   ├── Managers/                      # Business logic
+</span><span class="code-line line-number" line="7">│   │   ├── PlayerManager.swift        # Audio playback
+</span><span class="code-line line-number" line="8">│   │   ├── LibraryManager.swift       # Music libraries
+</span><span class="code-line line-number" line="9">│   │   ├── DownloadManager.swift      # Online downloads
+</span><span class="code-line line-number" line="10">│   │   ├── ConfigManager.swift        # Settings
+</span><span class="code-line line-number" line="11">│   │   ├── SleepManager.swift         # Sleep prevention
+</span><span class="code-line line-number" line="12">│   │   ├── LaunchManager.swift        # Auto-launch
+</span><span class="code-line line-number" line="13">│   │   └── YTSearchManager.swift      # Search API
+</span><span class="code-line line-number" line="14">│   ├── Models/                        # Data structures
+</span><span class="code-line line-number" line="15">│   │   ├── Track.swift                # Music track
+</span><span class="code-line line-number" line="16">│   │   └── MusicLibrary.swift         # Library metadata
+</span><span class="code-line line-number" line="17">│   ├── Views/                         # SwiftUI views
+</span><span class="code-line line-number" line="18">│   │   ├── ContentView.swift          # Main interface
+</span><span class="code-line line-number" line="19">│   │   ├── ControlOverlay.swift       # Playback controls
+</span><span class="code-line line-number" line="20">│   │   └── CustomTableRowView.swift   # Track list
+</span><span class="code-line line-number" line="21">│   ├── Controllers/                   # AppKit controllers
+</span><span class="code-line line-number" line="22">│   │   ├── ConfigViewController.swift # Settings window
+</span><span class="code-line line-number" line="23">│   │   └── DownloadViewController.swift # Download interface
+</span><span class="code-line line-number" line="24">│   ├── Resources/                     # Assets and localization
+</span><span class="code-line line-number" line="25">│   │   └── Localization/             # 5 language files
+</span><span class="code-line line-number" line="26">│   ├── Assets.xcassets/              # App icons and images
+</span><span class="code-line line-number" line="27">│   ├── Info.plist                    # App configuration
+</span><span class="code-line line-number" line="28">│   └── MacMusicPlayer.entitlements   # Security permissions
+</span><span class="code-line line-number" line="29">├── Makefile                          # Build automation
+</span><span class="code-line line-number" line="30">├── exportOptions.plist               # Export configuration
+</span><span class="code-line line-number" line="31">└── docs/                             # Documentation
+</span></code><input type="hidden" value="MacMusicPlayer/
+├── MacMusicPlayer.xcodeproj/          # Xcode project
+├── MacMusicPlayer/                    # Source code
+│   ├── AppDelegate.swift              # App coordinator
+│   ├── MacMusicPlayerApp.swift        # SwiftUI app entry
+│   ├── Managers/                      # Business logic
+│   │   ├── PlayerManager.swift        # Audio playback
+│   │   ├── LibraryManager.swift       # Music libraries
+│   │   ├── DownloadManager.swift      # Online downloads
+│   │   ├── ConfigManager.swift        # Settings
+│   │   ├── SleepManager.swift         # Sleep prevention
+│   │   ├── LaunchManager.swift        # Auto-launch
+│   │   └── YTSearchManager.swift      # Search API
+│   ├── Models/                        # Data structures
+│   │   ├── Track.swift                # Music track
+│   │   └── MusicLibrary.swift         # Library metadata
+│   ├── Views/                         # SwiftUI views
+│   │   ├── ContentView.swift          # Main interface
+│   │   ├── ControlOverlay.swift       # Playback controls
+│   │   └── CustomTableRowView.swift   # Track list
+│   ├── Controllers/                   # AppKit controllers
+│   │   ├── ConfigViewController.swift # Settings window
+│   │   └── DownloadViewController.swift # Download interface
+│   ├── Resources/                     # Assets and localization
+│   │   └── Localization/             # 5 language files
+│   ├── Assets.xcassets/              # App icons and images
+│   ├── Info.plist                    # App configuration
+│   └── MacMusicPlayer.entitlements   # Security permissions
+├── Makefile                          # Build automation
+├── exportOptions.plist               # Export configuration
+└── docs/                             # Documentation
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h2 id="-development-workflow"><a aria-hidden="true" tabindex="-1" href="#-development-workflow" class="anchor"><span class="icon icon-link"></span></a>🔧 Development Workflow</h2>
+        <h3 id="1-local-development"><a aria-hidden="true" tabindex="-1" href="#1-local-development" class="anchor"><span class="icon icon-link"></span></a>1. <strong>Local Development</strong></h3>
+        <ul>
+          <li>Use Xcode for day-to-day development</li>
+          <li>Run directly from Xcode for debugging</li>
+          <li>Use <code>make build</code> for testing distribution builds</li>
+        </ul>
+        <h3 id="2-code-organization"><a aria-hidden="true" tabindex="-1" href="#2-code-organization" class="anchor"><span class="icon icon-link"></span></a>2. <strong>Code Organization</strong></h3>
+        <ul>
+          <li><strong>Managers</strong>: Business logic, one responsibility per manager</li>
+          <li><strong>Models</strong>: Simple data structures, <code>Codable</code> when needed</li>
+          <li><strong>Views</strong>: Lightweight SwiftUI components</li>
+          <li><strong>Controllers</strong>: AppKit integration for complex UI</li>
+        </ul>
+        <h3 id="3-styling-guidelines"><a aria-hidden="true" tabindex="-1" href="#3-styling-guidelines" class="anchor"><span class="icon icon-link"></span></a>3. <strong>Styling Guidelines</strong></h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// GOOD: Clear, descriptive names</span>
+</span><span class="code-line line-number" line="2"><span class="token keyword">func</span> <span class="token function-definition function">addLibrary</span><span class="token punctuation">(</span>name<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">,</span> path<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="3">
+</span><span class="code-line line-number" line="4"><span class="token comment">// GOOD: @Published for reactive properties</span>
+</span><span class="code-line line-number" line="5"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> currentTrack<span class="token punctuation">:</span> <span class="token class-name">Track</span><span class="token operator">?</span>
+</span><span class="code-line line-number" line="6">
+</span><span class="code-line line-number" line="7"><span class="token comment">// GOOD: Error handling with custom errors</span>
+</span><span class="code-line line-number" line="8"><span class="token keyword">enum</span> <span class="token class-name">DownloadError</span><span class="token punctuation">:</span> <span class="token class-name">Error</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="9">    <span class="token keyword">case</span> ytDlpNotFound
+</span><span class="code-line line-number" line="10"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="// GOOD: Clear, descriptive names
+func addLibrary(name: String, path: String) { }
+
+// GOOD: @Published for reactive properties
+@Published var currentTrack: Track?
+
+// GOOD: Error handling with custom errors
+enum DownloadError: Error {
+    case ytDlpNotFound
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h2 id="-testing-strategy"><a aria-hidden="true" tabindex="-1" href="#-testing-strategy" class="anchor"><span class="icon icon-link"></span></a>🧪 Testing Strategy</h2>
+        <h3 id="manual-testing-checklist"><a aria-hidden="true" tabindex="-1" href="#manual-testing-checklist" class="anchor"><span class="icon icon-link"></span></a>Manual Testing Checklist</h3>
+        <ul class="contains-task-list">
+          <li class="task-list-item"><input type="checkbox" disabled> App launches and shows menu bar icon</li>
+          <li class="task-list-item"><input type="checkbox" disabled> Music library loads and displays tracks</li>
+          <li class="task-list-item"><input type="checkbox" disabled> Playback controls work (play/pause/next/previous)</li>
+          <li class="task-list-item"><input type="checkbox" disabled> Equalizer settings apply correctly</li>
+          <li class="task-list-item"><input type="checkbox" disabled> Download features work (requires yt-dlp/ffmpeg)</li>
+          <li class="task-list-item"><input type="checkbox" disabled> Settings persist across app restarts</li>
+          <li class="task-list-item"><input type="checkbox" disabled> Multi-language support functions</li>
+        </ul>
+        <h3 id="debug-builds"><a aria-hidden="true" tabindex="-1" href="#debug-builds" class="anchor"><span class="icon icon-link"></span></a>Debug Builds</h3>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token comment"># Build with debug configuration</span>
+</span><span class="code-line line-number" line="2">xcodebuild <span class="token parameter variable">-scheme</span> MacMusicPlayer <span class="token parameter variable">-configuration</span> Debug
+</span><span class="code-line line-number" line="3">
+</span><span class="code-line line-number" line="4"><span class="token comment"># Run with debug logging</span>
+</span><span class="code-line line-number" line="5">./MacMusicPlayer.app/Contents/MacOS/MacMusicPlayer
+</span></code><input type="hidden" value="# Build with debug configuration
+xcodebuild -scheme MacMusicPlayer -configuration Debug
+
+# Run with debug logging
+./MacMusicPlayer.app/Contents/MacOS/MacMusicPlayer
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="performance-testing"><a aria-hidden="true" tabindex="-1" href="#performance-testing" class="anchor"><span class="icon icon-link"></span></a>Performance Testing</h3>
+        <ul>
+          <li>Monitor memory usage in Activity Monitor</li>
+          <li>Test with large music libraries (1000+ tracks)</li>
+          <li>Verify audio doesn't stutter during UI operations</li>
+        </ul>
+        <h2 id="-debugging-tools"><a aria-hidden="true" tabindex="-1" href="#-debugging-tools" class="anchor"><span class="icon icon-link"></span></a>🔍 Debugging Tools</h2>
+        <h3 id="1-xcode-debugger"><a aria-hidden="true" tabindex="-1" href="#1-xcode-debugger" class="anchor"><span class="icon icon-link"></span></a>1. <strong>Xcode Debugger</strong></h3>
+        <ul>
+          <li>Set breakpoints in manager classes</li>
+          <li>Use View Hierarchy debugger for UI issues</li>
+          <li>Memory graph debugger for leak detection</li>
+        </ul>
+        <h3 id="2-console-logging"><a aria-hidden="true" tabindex="-1" href="#2-console-logging" class="anchor"><span class="icon icon-link"></span></a>2. <strong>Console Logging</strong></h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// Already included throughout the codebase</span>
+</span><span class="code-line line-number" line="2"><span class="token function">print</span><span class="token punctuation">(</span><span class="token string-literal"><span class="token string">"PlayerManager: Loading track </span><span class="token interpolation-punctuation punctuation">\(</span><span class="token interpolation">track<span class="token punctuation">.</span>title</span><span class="token interpolation-punctuation punctuation">)</span><span class="token string">"</span></span><span class="token punctuation">)</span>
+</span></code><input type="hidden" value="// Already included throughout the codebase
+print(&#x22;PlayerManager: Loading track \(track.title)&#x22;)
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="3-external-tool-debugging"><a aria-hidden="true" tabindex="-1" href="#3-external-tool-debugging" class="anchor"><span class="icon icon-link"></span></a>3. <strong>External Tool Debugging</strong></h3>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token comment"># Test yt-dlp directly</span>
+</span><span class="code-line line-number" line="2">yt-dlp --list-formats <span class="token string">"https://youtube.com/watch?v=..."</span>
+</span><span class="code-line line-number" line="3">
+</span><span class="code-line line-number" line="4"><span class="token comment"># Test ffmpeg</span>
+</span><span class="code-line line-number" line="5">ffmpeg <span class="token parameter variable">-i</span> input.webm <span class="token parameter variable">-acodec</span> mp3 output.mp3
+</span></code><input type="hidden" value="# Test yt-dlp directly
+yt-dlp --list-formats &#x22;https://youtube.com/watch?v=...&#x22;
+
+# Test ffmpeg
+ffmpeg -i input.webm -acodec mp3 output.mp3
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h2 id="-distribution-process"><a aria-hidden="true" tabindex="-1" href="#-distribution-process" class="anchor"><span class="icon icon-link"></span></a>🚀 Distribution Process</h2>
+        <h3 id="1-prepare-release"><a aria-hidden="true" tabindex="-1" href="#1-prepare-release" class="anchor"><span class="icon icon-link"></span></a>1. <strong>Prepare Release</strong></h3>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token comment"># Tag release</span>
+</span><span class="code-line line-number" line="2"><span class="token function">git</span> tag <span class="token parameter variable">-a</span> v1.0.0 <span class="token parameter variable">-m</span> <span class="token string">"Release version 1.0.0"</span>
+</span><span class="code-line line-number" line="3"><span class="token function">git</span> push origin v1.0.0
+</span><span class="code-line line-number" line="4">
+</span><span class="code-line line-number" line="5"><span class="token comment"># Build distribution packages</span>
+</span><span class="code-line line-number" line="6"><span class="token assign-left variable">CI_BUILD</span><span class="token operator">=</span><span class="token number">1</span> <span class="token function">make</span> dmg
+</span></code><input type="hidden" value="# Tag release
+git tag -a v1.0.0 -m &#x22;Release version 1.0.0&#x22;
+git push origin v1.0.0
+
+# Build distribution packages
+CI_BUILD=1 make dmg
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="2-sign-packages-optional"><a aria-hidden="true" tabindex="-1" href="#2-sign-packages-optional" class="anchor"><span class="icon icon-link"></span></a>2. <strong>Sign Packages</strong> (Optional)</h3>
+        <p>For distribution outside Mac App Store:</p>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token comment"># Self-signing is automatic in Makefile</span>
+</span><span class="code-line line-number" line="2"><span class="token comment"># For developer signing, update TEAM_ID in Makefile</span>
+</span></code><input type="hidden" value="# Self-signing is automatic in Makefile
+# For developer signing, update TEAM_ID in Makefile
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="3-update-homebrew-automated"><a aria-hidden="true" tabindex="-1" href="#3-update-homebrew-automated" class="anchor"><span class="icon icon-link"></span></a>3. <strong>Update Homebrew</strong> (Automated)</h3>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token comment"># Only run from CI with GH_PAT token</span>
+</span><span class="code-line line-number" line="2"><span class="token function">make</span> update-homebrew
+</span></code><input type="hidden" value="# Only run from CI with GH_PAT token
+make update-homebrew
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h2 id="-security-considerations"><a aria-hidden="true" tabindex="-1" href="#-security-considerations" class="anchor"><span class="icon icon-link"></span></a>🔐 Security Considerations</h2>
+        <h3 id="code-signing"><a aria-hidden="true" tabindex="-1" href="#code-signing" class="anchor"><span class="icon icon-link"></span></a>Code Signing</h3>
+        <ul>
+          <li>Development builds use self-signing (<code>CODE_SIGN_IDENTITY="-"</code>)</li>
+          <li>Distribution builds can use developer certificates</li>
+          <li>Entitlements disable sandboxing for external tool access</li>
+        </ul>
+        <h3 id="external-tools"><a aria-hidden="true" tabindex="-1" href="#external-tools" class="anchor"><span class="icon icon-link"></span></a>External Tools</h3>
+        <ul>
+          <li>yt-dlp and ffmpeg are user-installed dependencies</li>
+          <li>Path validation prevents arbitrary command execution</li>
+          <li>Process arguments are carefully controlled</li>
+        </ul>
+        <h2 id="-code-contribution-guidelines"><a aria-hidden="true" tabindex="-1" href="#-code-contribution-guidelines" class="anchor"><span class="icon icon-link"></span></a>📝 Code Contribution Guidelines</h2>
+        <h3 id="1-branch-strategy"><a aria-hidden="true" tabindex="-1" href="#1-branch-strategy" class="anchor"><span class="icon icon-link"></span></a>1. <strong>Branch Strategy</strong></h3>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token comment"># Create feature branch</span>
+</span><span class="code-line line-number" line="2"><span class="token function">git</span> checkout <span class="token parameter variable">-b</span> feature/new-equalizer-preset
+</span><span class="code-line line-number" line="3">
+</span><span class="code-line line-number" line="4"><span class="token comment"># Make changes and commit</span>
+</span><span class="code-line line-number" line="5"><span class="token function">git</span> commit <span class="token parameter variable">-m</span> <span class="token string">"feat: add electronic equalizer preset"</span>
+</span><span class="code-line line-number" line="6">
+</span><span class="code-line line-number" line="7"><span class="token comment"># Push and create PR</span>
+</span><span class="code-line line-number" line="8"><span class="token function">git</span> push origin feature/new-equalizer-preset
+</span></code><input type="hidden" value="# Create feature branch
+git checkout -b feature/new-equalizer-preset
+
+# Make changes and commit
+git commit -m &#x22;feat: add electronic equalizer preset&#x22;
+
+# Push and create PR
+git push origin feature/new-equalizer-preset
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="2-code-style"><a aria-hidden="true" tabindex="-1" href="#2-code-style" class="anchor"><span class="icon icon-link"></span></a>2. <strong>Code Style</strong></h3>
+        <ul>
+          <li>Follow Swift conventions</li>
+          <li>Use <code>@Published</code> for reactive properties</li>
+          <li>Handle errors with proper Error types</li>
+          <li>Add localized strings for user-facing text</li>
+        </ul>
+        <h3 id="3-testing-requirements"><a aria-hidden="true" tabindex="-1" href="#3-testing-requirements" class="anchor"><span class="icon icon-link"></span></a>3. <strong>Testing Requirements</strong></h3>
+        <ul>
+          <li>Test on multiple macOS versions if possible</li>
+          <li>Verify both Intel and Apple Silicon compatibility</li>
+          <li>Test with and without external tools installed</li>
+        </ul>
+        <h3 id="4-documentation"><a aria-hidden="true" tabindex="-1" href="#4-documentation" class="anchor"><span class="icon icon-link"></span></a>4. <strong>Documentation</strong></h3>
+        <ul>
+          <li>Update relevant documentation for new features</li>
+          <li>Add inline comments for complex business logic</li>
+          <li>Update CLAUDE.md for new build commands</li>
+        </ul>
+        <h2 id="-common-issues"><a aria-hidden="true" tabindex="-1" href="#-common-issues" class="anchor"><span class="icon icon-link"></span></a>🆘 Common Issues</h2>
+        <h3 id="build-failures"><a aria-hidden="true" tabindex="-1" href="#build-failures" class="anchor"><span class="icon icon-link"></span></a>Build Failures</h3>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token comment"># Clean derived data</span>
+</span><span class="code-line line-number" line="2"><span class="token function">rm</span> <span class="token parameter variable">-rf</span> ~/Library/Developer/Xcode/DerivedData/MacMusicPlayer-*
+</span><span class="code-line line-number" line="3">
+</span><span class="code-line line-number" line="4"><span class="token comment"># Reset Xcode settings</span>
+</span><span class="code-line line-number" line="5">defaults delete com.apple.dt.Xcode
+</span></code><input type="hidden" value="# Clean derived data
+rm -rf ~/Library/Developer/Xcode/DerivedData/MacMusicPlayer-*
+
+# Reset Xcode settings
+defaults delete com.apple.dt.Xcode
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="code-signing-issues"><a aria-hidden="true" tabindex="-1" href="#code-signing-issues" class="anchor"><span class="icon icon-link"></span></a>Code Signing Issues</h3>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token comment"># Reset signing identity</span>
+</span><span class="code-line line-number" line="2">security delete-identity <span class="token parameter variable">-c</span> <span class="token string">"Mac Developer"</span>
+</span><span class="code-line line-number" line="3"><span class="token comment"># Re-add in Xcode Preferences > Accounts</span>
+</span></code><input type="hidden" value="# Reset signing identity
+security delete-identity -c &#x22;Mac Developer&#x22;
+# Re-add in Xcode Preferences > Accounts
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="external-tool-issues"><a aria-hidden="true" tabindex="-1" href="#external-tool-issues" class="anchor"><span class="icon icon-link"></span></a>External Tool Issues</h3>
+        <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1"><span class="token comment"># Verify tools are in PATH</span>
+</span><span class="code-line line-number" line="2"><span class="token function">which</span> yt-dlp
+</span><span class="code-line line-number" line="3"><span class="token function">which</span> ffmpeg
+</span><span class="code-line line-number" line="4">
+</span><span class="code-line line-number" line="5"><span class="token comment"># Reinstall if needed</span>
+</span><span class="code-line line-number" line="6">brew reinstall yt-dlp ffmpeg
+</span></code><input type="hidden" value="# Verify tools are in PATH
+which yt-dlp
+which ffmpeg
+
+# Reinstall if needed
+brew reinstall yt-dlp ffmpeg
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <hr>
+        <p>🎉 <strong>You're ready to contribute!</strong> Start with small changes and gradually work up to larger features. The modular architecture makes it easy to add new functionality without breaking existing code.</p>
+      </markdown-style>
+    </div>
+    <script src="../js/demo-preview.js?v=1.34.1"></script>
+    <div class="footer warpper" style="max-width:720px;">Copyright © 2025 <a href="https://github.com/samzong" target="_blank">samzong</a><br></div>
+    <script src="../js/tocbot.js?v=1.34.1"></script>
+  </body>
+</html>

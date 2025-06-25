@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Architecture Overview MacMusicPlayer</title>
+    <meta name="description" content="MacMusicPlayer follows a Manager-based MVVM architecture that cleanly separates business logic, data management, and use">
+    <meta name="keywords" content="macOS, music player, menu bar, SwiftUI, seamless,macOS Integration, exceptional, user experience, Minimalist Design,Audio Player">
+    <link rel="stylesheet" type="text/css" href="../css/main.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/tocbot.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/media.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/sidebar.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/copy.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/demo-preview.css?v=1.34.1">
+    <script src="../js/copy.js?v=1.34.1"></script>
+    <script src="../js/dark-mode.js?v=1.34.1"></script>
+    <script src="../js/markdown-style.js?v=1.34.1"></script>
+  </head>
+  <body id="idoctotop"><a href="#idoctotop" class="gototop">top</a>
+    <header class="header">
+      <article class="inner warpper" style="max-width:720px;"><a class="logo" href="../index.html"><span class="title">MacMusicPlayer</span></a>
+        <div class="content">
+          <ul class="menu">
+            <li><a href="../index.html" target="" class="">Home</a></li>
+            <li><a href="https://github.com/samzong" target="__blank" class="">About</a></li>
+          </ul><a href="https://github.com/samzong/MacMusicPlayer" target="_blank" rel="noopener noreferrer" title="Github" name="Github" class="github"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg></a>
+          <dark-mode permanent=""></dark-mode>
+        </div>
+      </article>
+    </header>
+    <div style="max-width:720px;" class="warpper-content warpper notocs">
+      <markdown-style theme-auto-switch-disabled="">
+        <h1 id="system-architecture-overview"><a aria-hidden="true" tabindex="-1" href="#system-architecture-overview" class="anchor"><span class="icon icon-link"></span></a>System Architecture Overview</h1>
+        <h2 id="️-high-level-architecture"><a aria-hidden="true" tabindex="-1" href="#️-high-level-architecture" class="anchor"><span class="icon icon-link"></span></a>🏗️ High-Level Architecture</h2>
+        <p>MacMusicPlayer follows a <strong>Manager-based MVVM architecture</strong> that cleanly separates business logic, data management, and user interface concerns.</p>
+        <pre><code class="code-highlight"><span class="code-line line-number" line="1">┌─────────────────────────────────────────┐
+</span><span class="code-line line-number" line="2">│              AppDelegate                │
+</span><span class="code-line line-number" line="3">│         (Application Coordinator)       │
+</span><span class="code-line line-number" line="4">└─────────────────┬───────────────────────┘
+</span><span class="code-line line-number" line="5">                  │
+</span><span class="code-line line-number" line="6">    ┌─────────────┼─────────────┐
+</span><span class="code-line line-number" line="7">    │             │             │
+</span><span class="code-line line-number" line="8">    ▼             ▼             ▼
+</span><span class="code-line line-number" line="9">┌─────────┐  ┌─────────┐  ┌─────────┐
+</span><span class="code-line line-number" line="10">│ Manager │  │ Manager │  │ Manager │
+</span><span class="code-line line-number" line="11">│ Layer   │  │ Layer   │  │ Layer   │
+</span><span class="code-line line-number" line="12">└─────────┘  └─────────┘  └─────────┘
+</span><span class="code-line line-number" line="13">    │             │             │
+</span><span class="code-line line-number" line="14">    └─────────────┼─────────────┘
+</span><span class="code-line line-number" line="15">                  │
+</span><span class="code-line line-number" line="16">         ┌────────┼────────┐
+</span><span class="code-line line-number" line="17">         │                 │
+</span><span class="code-line line-number" line="18">         ▼                 ▼
+</span><span class="code-line line-number" line="19">    ┌─────────┐      ┌─────────┐
+</span><span class="code-line line-number" line="20">    │ SwiftUI │      │ AppKit  │
+</span><span class="code-line line-number" line="21">    │ Views   │      │ Views   │
+</span><span class="code-line line-number" line="22">    └─────────┘      └─────────┘
+</span></code><input type="hidden" value="┌─────────────────────────────────────────┐
+│              AppDelegate                │
+│         (Application Coordinator)       │
+└─────────────────┬───────────────────────┘
+                  │
+    ┌─────────────┼─────────────┐
+    │             │             │
+    ▼             ▼             ▼
+┌─────────┐  ┌─────────┐  ┌─────────┐
+│ Manager │  │ Manager │  │ Manager │
+│ Layer   │  │ Layer   │  │ Layer   │
+└─────────┘  └─────────┘  └─────────┘
+    │             │             │
+    └─────────────┼─────────────┘
+                  │
+         ┌────────┼────────┐
+         │                 │
+         ▼                 ▼
+    ┌─────────┐      ┌─────────┐
+    │ SwiftUI │      │ AppKit  │
+    │ Views   │      │ Views   │
+    └─────────┘      └─────────┘
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h2 id="-core-components"><a aria-hidden="true" tabindex="-1" href="#-core-components" class="anchor"><span class="icon icon-link"></span></a>🔧 Core Components</h2>
+        <h3 id="1-appdelegate---application-coordinator"><a aria-hidden="true" tabindex="-1" href="#1-appdelegate---application-coordinator" class="anchor"><span class="icon icon-link"></span></a>1. <strong>AppDelegate</strong> - Application Coordinator</h3>
+        <ul>
+          <li><strong>Role</strong>: Central coordinator and entry point</li>
+          <li><strong>Responsibilities</strong>:
+            <ul>
+              <li>Initialize all manager instances</li>
+              <li>Handle system integration (status bar, media keys)</li>
+              <li>Manage application lifecycle</li>
+              <li>Coordinate between managers and UI</li>
+            </ul>
+          </li>
+        </ul>
+        <h3 id="2-manager-layer---business-logic"><a aria-hidden="true" tabindex="-1" href="#2-manager-layer---business-logic" class="anchor"><span class="icon icon-link"></span></a>2. <strong>Manager Layer</strong> - Business Logic</h3>
+        <p>Seven specialized managers handle distinct concerns:</p>
+        <ul>
+          <li><strong>PlayerManager</strong>: Audio playback and controls</li>
+          <li><strong>LibraryManager</strong>: Music library CRUD operations</li>
+          <li><strong>DownloadManager</strong>: External tool integration (yt-dlp)</li>
+          <li><strong>ConfigManager</strong>: Settings persistence</li>
+          <li><strong>SleepManager</strong>: System sleep prevention</li>
+          <li><strong>LaunchManager</strong>: Login item management</li>
+          <li><strong>YTSearchManager</strong>: Online search API integration</li>
+        </ul>
+        <h3 id="3-model-layer---data-structures"><a aria-hidden="true" tabindex="-1" href="#3-model-layer---data-structures" class="anchor"><span class="icon icon-link"></span></a>3. <strong>Model Layer</strong> - Data Structures</h3>
+        <ul>
+          <li><strong>Track</strong>: Individual music file representation</li>
+          <li><strong>MusicLibrary</strong>: Collection metadata and paths</li>
+        </ul>
+        <h3 id="4-view-layer---user-interface"><a aria-hidden="true" tabindex="-1" href="#4-view-layer---user-interface" class="anchor"><span class="icon icon-link"></span></a>4. <strong>View Layer</strong> - User Interface</h3>
+        <ul>
+          <li><strong>SwiftUI Views</strong>: Modern reactive UI components</li>
+          <li><strong>AppKit Controllers</strong>: System integration and complex forms</li>
+        </ul>
+        <h2 id="-data-flow-patterns"><a aria-hidden="true" tabindex="-1" href="#-data-flow-patterns" class="anchor"><span class="icon icon-link"></span></a>🔄 Data Flow Patterns</h2>
+        <h3 id="reactive-updates"><a aria-hidden="true" tabindex="-1" href="#reactive-updates" class="anchor"><span class="icon icon-link"></span></a>Reactive Updates</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token class-name">Manager</span> <span class="token punctuation">(</span><span class="token attribute atrule">@Published</span> property<span class="token punctuation">)</span> 
+</span><span class="code-line line-number" line="2">    → <span class="token class-name">NotificationCenter</span><span class="token punctuation">.</span><span class="token function">post</span><span class="token punctuation">(</span><span class="token punctuation">)</span> 
+</span><span class="code-line line-number" line="3">    → <span class="token constant">UI</span> automatically updates
+</span></code><input type="hidden" value="Manager (@Published property) 
+    → NotificationCenter.post() 
+    → UI automatically updates
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="manager-communication"><a aria-hidden="true" tabindex="-1" href="#manager-communication" class="anchor"><span class="icon icon-link"></span></a>Manager Communication</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token class-name">Manager</span> <span class="token class-name">A</span> → <span class="token class-name">NotificationCenter</span> → <span class="token class-name">Manager</span> <span class="token class-name">B</span>
+</span><span class="code-line line-number" line="2">    ↓
+</span><span class="code-line line-number" line="3"><span class="token class-name">AppDelegate</span> coordinates cross<span class="token operator">-</span>manager operations
+</span></code><input type="hidden" value="Manager A → NotificationCenter → Manager B
+    ↓
+AppDelegate coordinates cross-manager operations
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h2 id="-design-principles"><a aria-hidden="true" tabindex="-1" href="#-design-principles" class="anchor"><span class="icon icon-link"></span></a>🎯 Design Principles</h2>
+        <h3 id="1-separation-of-concerns"><a aria-hidden="true" tabindex="-1" href="#1-separation-of-concerns" class="anchor"><span class="icon icon-link"></span></a>1. <strong>Separation of Concerns</strong></h3>
+        <ul>
+          <li>Each manager has a single, well-defined responsibility</li>
+          <li>UI components are lightweight and reactive</li>
+          <li>Business logic is isolated from presentation</li>
+        </ul>
+        <h3 id="2-reactive-architecture"><a aria-hidden="true" tabindex="-1" href="#2-reactive-architecture" class="anchor"><span class="icon icon-link"></span></a>2. <strong>Reactive Architecture</strong></h3>
+        <ul>
+          <li><code>@Published</code> properties for automatic UI updates</li>
+          <li><code>NotificationCenter</code> for loose coupling between components</li>
+          <li>SwiftUI's declarative paradigm for responsive interfaces</li>
+        </ul>
+        <h3 id="3-system-integration"><a aria-hidden="true" tabindex="-1" href="#3-system-integration" class="anchor"><span class="icon icon-link"></span></a>3. <strong>System Integration</strong></h3>
+        <ul>
+          <li>Hybrid UI approach: SwiftUI for modern views, AppKit for system features</li>
+          <li>macOS-native patterns for menu bar applications</li>
+          <li>Proper handling of system permissions and entitlements</li>
+        </ul>
+        <h3 id="4-extensibility"><a aria-hidden="true" tabindex="-1" href="#4-extensibility" class="anchor"><span class="icon icon-link"></span></a>4. <strong>Extensibility</strong></h3>
+        <ul>
+          <li>Manager-based design allows easy addition of new features</li>
+          <li>Protocol-oriented approach enables testing and mocking</li>
+          <li>Clear boundaries enable independent component development</li>
+        </ul>
+        <h2 id="-security-architecture"><a aria-hidden="true" tabindex="-1" href="#-security-architecture" class="anchor"><span class="icon icon-link"></span></a>🔒 Security Architecture</h2>
+        <h3 id="sandboxing-strategy"><a aria-hidden="true" tabindex="-1" href="#sandboxing-strategy" class="anchor"><span class="icon icon-link"></span></a>Sandboxing Strategy</h3>
+        <ul>
+          <li><strong>Disabled App Sandbox</strong>: Required for external tool execution</li>
+          <li><strong>Controlled Process Execution</strong>: Limited to specific tools (yt-dlp, ffmpeg)</li>
+          <li><strong>Path Validation</strong>: Strict validation of executable locations</li>
+        </ul>
+        <h3 id="data-protection"><a aria-hidden="true" tabindex="-1" href="#data-protection" class="anchor"><span class="icon icon-link"></span></a>Data Protection</h3>
+        <ul>
+          <li><strong>Local Storage</strong>: Music metadata only, no sensitive content</li>
+          <li><strong>API Credentials</strong>: Currently UserDefaults (⚠️ recommendation: migrate to Keychain)</li>
+          <li><strong>External Communication</strong>: HTTPS-only for API calls</li>
+        </ul>
+        <h2 id="-technology-stack"><a aria-hidden="true" tabindex="-1" href="#-technology-stack" class="anchor"><span class="icon icon-link"></span></a>📊 Technology Stack</h2>
+        <h3 id="core-technologies"><a aria-hidden="true" tabindex="-1" href="#core-technologies" class="anchor"><span class="icon icon-link"></span></a>Core Technologies</h3>
+        <ul>
+          <li><strong>Swift 5.9+</strong>: Modern Swift features and patterns</li>
+          <li><strong>SwiftUI</strong>: Declarative UI framework</li>
+          <li><strong>AppKit</strong>: System integration and complex views</li>
+          <li><strong>AVFoundation</strong>: Audio playback and processing</li>
+          <li><strong>Foundation</strong>: Core system services</li>
+        </ul>
+        <h3 id="external-dependencies"><a aria-hidden="true" tabindex="-1" href="#external-dependencies" class="anchor"><span class="icon icon-link"></span></a>External Dependencies</h3>
+        <ul>
+          <li><strong>yt-dlp</strong>: Media extraction from online sources</li>
+          <li><strong>ffmpeg</strong>: Audio format conversion and processing</li>
+        </ul>
+        <h3 id="development-tools"><a aria-hidden="true" tabindex="-1" href="#development-tools" class="anchor"><span class="icon icon-link"></span></a>Development Tools</h3>
+        <ul>
+          <li><strong>Xcode 15.0+</strong>: Primary development environment</li>
+          <li><strong>Swift Package Manager</strong>: Dependency management</li>
+          <li><strong>Make</strong>: Build automation and distribution</li>
+        </ul>
+        <h2 id="-performance-characteristics"><a aria-hidden="true" tabindex="-1" href="#-performance-characteristics" class="anchor"><span class="icon icon-link"></span></a>🚀 Performance Characteristics</h2>
+        <h3 id="strengths"><a aria-hidden="true" tabindex="-1" href="#strengths" class="anchor"><span class="icon icon-link"></span></a>Strengths</h3>
+        <ul>
+          <li><strong>Lightweight</strong>: Minimal memory footprint for menu bar app</li>
+          <li><strong>Responsive</strong>: Reactive updates prevent UI blocking</li>
+          <li><strong>Efficient</strong>: Lazy loading and on-demand resource allocation</li>
+        </ul>
+        <h3 id="considerations"><a aria-hidden="true" tabindex="-1" href="#considerations" class="anchor"><span class="icon icon-link"></span></a>Considerations</h3>
+        <ul>
+          <li><strong>Menu Rebuilding</strong>: Full reconstruction on updates (optimization opportunity)</li>
+          <li><strong>Process Execution</strong>: Synchronous tool execution may block UI</li>
+          <li><strong>Audio Engine</strong>: Dual-engine setup for EQ functionality</li>
+        </ul>
+        <hr>
+        <p>This architecture provides a solid foundation for a maintainable, extensible macOS music player while following platform conventions and best practices.</p>
+      </markdown-style>
+    </div>
+    <script src="../js/demo-preview.js?v=1.34.1"></script>
+    <div class="footer warpper" style="max-width:720px;">Copyright © 2025 <a href="https://github.com/samzong" target="_blank">samzong</a><br></div>
+    <script src="../js/tocbot.js?v=1.34.1"></script>
+  </body>
+</html>

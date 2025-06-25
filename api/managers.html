@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Classes API Reference MacMusicPlayer</title>
+    <meta name="description" content="This document provides comprehensive API documentation for all manager classes in MacMusicPlayer.">
+    <meta name="keywords" content="macOS, music player, menu bar, SwiftUI, seamless,macOS Integration, exceptional, user experience, Minimalist Design,Audio Player">
+    <link rel="stylesheet" type="text/css" href="../css/main.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/tocbot.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/media.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/sidebar.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/copy.css?v=1.34.1">
+    <link rel="stylesheet" type="text/css" href="../css/demo-preview.css?v=1.34.1">
+    <script src="../js/copy.js?v=1.34.1"></script>
+    <script src="../js/dark-mode.js?v=1.34.1"></script>
+    <script src="../js/markdown-style.js?v=1.34.1"></script>
+  </head>
+  <body id="idoctotop"><a href="#idoctotop" class="gototop">top</a>
+    <header class="header">
+      <article class="inner warpper" style="max-width:720px;"><a class="logo" href="../index.html"><span class="title">MacMusicPlayer</span></a>
+        <div class="content">
+          <ul class="menu">
+            <li><a href="../index.html" target="" class="">Home</a></li>
+            <li><a href="https://github.com/samzong" target="__blank" class="">About</a></li>
+          </ul><a href="https://github.com/samzong/MacMusicPlayer" target="_blank" rel="noopener noreferrer" title="Github" name="Github" class="github"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg></a>
+          <dark-mode permanent=""></dark-mode>
+        </div>
+      </article>
+    </header>
+    <div style="max-width:720px;" class="warpper-content warpper notocs">
+      <markdown-style theme-auto-switch-disabled="">
+        <h1 id="manager-classes-api-reference"><a aria-hidden="true" tabindex="-1" href="#manager-classes-api-reference" class="anchor"><span class="icon icon-link"></span></a>Manager Classes API Reference</h1>
+        <p>This document provides comprehensive API documentation for all manager classes in MacMusicPlayer.</p>
+        <h2 id="-playermanager"><a aria-hidden="true" tabindex="-1" href="#-playermanager" class="anchor"><span class="icon icon-link"></span></a>🎵 PlayerManager</h2>
+        <p><strong>Location</strong>: <code>MacMusicPlayer/Managers/PlayerManager.swift</code></p>
+        <p>The core audio playback controller with equalizer support.</p>
+        <h3 id="properties"><a aria-hidden="true" tabindex="-1" href="#properties" class="anchor"><span class="icon icon-link"></span></a>Properties</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> playlist<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token class-name">Track</span><span class="token punctuation">]</span>          <span class="token comment">// Current playlist</span>
+</span><span class="code-line line-number" line="2"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> currentTrack<span class="token punctuation">:</span> <span class="token class-name">Track</span><span class="token operator">?</span>       <span class="token comment">// Currently playing track</span>
+</span><span class="code-line line-number" line="3"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> isPlaying<span class="token punctuation">:</span> <span class="token class-name">Bool</span>           <span class="token comment">// Playback state</span>
+</span><span class="code-line line-number" line="4"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> bassGain<span class="token punctuation">:</span> <span class="token class-name">Float</span>           <span class="token comment">// Bass EQ level (-12.0 to 12.0)</span>
+</span><span class="code-line line-number" line="5"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> midGain<span class="token punctuation">:</span> <span class="token class-name">Float</span>            <span class="token comment">// Mid EQ level (-12.0 to 12.0)  </span>
+</span><span class="code-line line-number" line="6"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> trebleGain<span class="token punctuation">:</span> <span class="token class-name">Float</span>         <span class="token comment">// Treble EQ level (-12.0 to 12.0)</span>
+</span><span class="code-line line-number" line="7"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> equalizerEnabled<span class="token punctuation">:</span> <span class="token class-name">Bool</span>    <span class="token comment">// Equalizer on/off</span>
+</span><span class="code-line line-number" line="8"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> currentPreset<span class="token punctuation">:</span> <span class="token class-name">EqualizerPreset</span> <span class="token comment">// Selected EQ preset</span>
+</span></code><input type="hidden" value="@Published var playlist: [Track]          // Current playlist
+@Published var currentTrack: Track?       // Currently playing track
+@Published var isPlaying: Bool           // Playback state
+@Published var bassGain: Float           // Bass EQ level (-12.0 to 12.0)
+@Published var midGain: Float            // Mid EQ level (-12.0 to 12.0)  
+@Published var trebleGain: Float         // Treble EQ level (-12.0 to 12.0)
+@Published var equalizerEnabled: Bool    // Equalizer on/off
+@Published var currentPreset: EqualizerPreset // Selected EQ preset
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="equalizer-presets"><a aria-hidden="true" tabindex="-1" href="#equalizer-presets" class="anchor"><span class="icon icon-link"></span></a>Equalizer Presets</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">enum</span> <span class="token class-name">EqualizerPreset</span><span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">CaseIterable</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token keyword">case</span> flat        <span class="token comment">// (0.0, 0.0, 0.0)</span>
+</span><span class="code-line line-number" line="3">    <span class="token keyword">case</span> classical   <span class="token comment">// (0.0, 0.0, 3.0)</span>
+</span><span class="code-line line-number" line="4">    <span class="token keyword">case</span> rock        <span class="token comment">// (3.0, 0.0, 3.0)</span>
+</span><span class="code-line line-number" line="5">    <span class="token keyword">case</span> pop         <span class="token comment">// (1.0, 2.0, 2.0)</span>
+</span><span class="code-line line-number" line="6">    <span class="token keyword">case</span> jazz        <span class="token comment">// (2.0, -1.0, 1.0)</span>
+</span><span class="code-line line-number" line="7">    <span class="token keyword">case</span> electronic  <span class="token comment">// (4.0, 0.0, 2.0)</span>
+</span><span class="code-line line-number" line="8">    <span class="token keyword">case</span> hiphop      <span class="token comment">// (5.0, -1.0, 0.0)</span>
+</span><span class="code-line line-number" line="9"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="enum EqualizerPreset: String, CaseIterable {
+    case flat        // (0.0, 0.0, 0.0)
+    case classical   // (0.0, 0.0, 3.0)
+    case rock        // (3.0, 0.0, 3.0)
+    case pop         // (1.0, 2.0, 2.0)
+    case jazz        // (2.0, -1.0, 1.0)
+    case electronic  // (4.0, 0.0, 2.0)
+    case hiphop      // (5.0, -1.0, 0.0)
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="methods"><a aria-hidden="true" tabindex="-1" href="#methods" class="anchor"><span class="icon icon-link"></span></a>Methods</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// Playback Control</span>
+</span><span class="code-line line-number" line="2"><span class="token keyword">func</span> <span class="token function-definition function">play</span><span class="token punctuation">(</span><span class="token punctuation">)</span>                              <span class="token comment">// Start/resume playback</span>
+</span><span class="code-line line-number" line="3"><span class="token keyword">func</span> <span class="token function-definition function">pause</span><span class="token punctuation">(</span><span class="token punctuation">)</span>                             <span class="token comment">// Pause playback</span>
+</span><span class="code-line line-number" line="4"><span class="token keyword">func</span> <span class="token function-definition function">playNext</span><span class="token punctuation">(</span><span class="token punctuation">)</span>                          <span class="token comment">// Skip to next track</span>
+</span><span class="code-line line-number" line="5"><span class="token keyword">func</span> <span class="token function-definition function">playPrevious</span><span class="token punctuation">(</span><span class="token punctuation">)</span>                      <span class="token comment">// Go to previous track</span>
+</span><span class="code-line line-number" line="6"><span class="token keyword">func</span> <span class="token function-definition function">loadLibrary</span><span class="token punctuation">(</span><span class="token omit keyword">_</span> library<span class="token punctuation">:</span> <span class="token class-name">MusicLibrary</span><span class="token punctuation">)</span> <span class="token comment">// Load new music library</span>
+</span><span class="code-line line-number" line="7">
+</span><span class="code-line line-number" line="8"><span class="token comment">// Audio Setup</span>
+</span><span class="code-line line-number" line="9"><span class="token keyword">func</span> <span class="token function-definition function">requestMusicFolderAccess</span><span class="token punctuation">(</span><span class="token punctuation">)</span>          <span class="token comment">// Request folder permissions</span>
+</span></code><input type="hidden" value="// Playback Control
+func play()                              // Start/resume playback
+func pause()                             // Pause playback
+func playNext()                          // Skip to next track
+func playPrevious()                      // Go to previous track
+func loadLibrary(_ library: MusicLibrary) // Load new music library
+
+// Audio Setup
+func requestMusicFolderAccess()          // Request folder permissions
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="example-usage"><a aria-hidden="true" tabindex="-1" href="#example-usage" class="anchor"><span class="icon icon-link"></span></a>Example Usage</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">let</span> playerManager <span class="token operator">=</span> <span class="token class-name">PlayerManager</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="2">
+</span><span class="code-line line-number" line="3"><span class="token comment">// Load a music library</span>
+</span><span class="code-line line-number" line="4">playerManager<span class="token punctuation">.</span><span class="token function">loadLibrary</span><span class="token punctuation">(</span>musicLibrary<span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="5">
+</span><span class="code-line line-number" line="6"><span class="token comment">// Control playback</span>
+</span><span class="code-line line-number" line="7">playerManager<span class="token punctuation">.</span><span class="token function">play</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="8">playerManager<span class="token punctuation">.</span><span class="token function">pause</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="9">
+</span><span class="code-line line-number" line="10"><span class="token comment">// Adjust equalizer</span>
+</span><span class="code-line line-number" line="11">playerManager<span class="token punctuation">.</span>equalizerEnabled <span class="token operator">=</span> <span class="token boolean">true</span>
+</span><span class="code-line line-number" line="12">playerManager<span class="token punctuation">.</span>currentPreset <span class="token operator">=</span> <span class="token punctuation">.</span>rock
+</span><span class="code-line line-number" line="13">playerManager<span class="token punctuation">.</span>bassGain <span class="token operator">=</span> <span class="token number">5.0</span>
+</span></code><input type="hidden" value="let playerManager = PlayerManager()
+
+// Load a music library
+playerManager.loadLibrary(musicLibrary)
+
+// Control playback
+playerManager.play()
+playerManager.pause()
+
+// Adjust equalizer
+playerManager.equalizerEnabled = true
+playerManager.currentPreset = .rock
+playerManager.bassGain = 5.0
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <hr>
+        <h2 id="-librarymanager"><a aria-hidden="true" tabindex="-1" href="#-librarymanager" class="anchor"><span class="icon icon-link"></span></a>📚 LibraryManager</h2>
+        <p><strong>Location</strong>: <code>MacMusicPlayer/Managers/LibraryManager.swift</code></p>
+        <p>Manages multiple music library collections and their metadata.</p>
+        <h3 id="properties-1"><a aria-hidden="true" tabindex="-1" href="#properties-1" class="anchor"><span class="icon icon-link"></span></a>Properties</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> libraries<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token class-name">MusicLibrary</span><span class="token punctuation">]</span>     <span class="token comment">// All available libraries</span>
+</span><span class="code-line line-number" line="2"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> currentLibrary<span class="token punctuation">:</span> <span class="token class-name">MusicLibrary</span><span class="token operator">?</span> <span class="token comment">// Active library</span>
+</span></code><input type="hidden" value="@Published var libraries: [MusicLibrary]     // All available libraries
+@Published var currentLibrary: MusicLibrary? // Active library
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="methods-1"><a aria-hidden="true" tabindex="-1" href="#methods-1" class="anchor"><span class="icon icon-link"></span></a>Methods</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// Library Management</span>
+</span><span class="code-line line-number" line="2"><span class="token keyword">func</span> <span class="token function-definition function">addLibrary</span><span class="token punctuation">(</span>name<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">,</span> path<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">)</span>     <span class="token comment">// Add new music library</span>
+</span><span class="code-line line-number" line="3"><span class="token keyword">func</span> <span class="token function-definition function">removeLibrary</span><span class="token punctuation">(</span>id<span class="token punctuation">:</span> <span class="token constant">UUID</span><span class="token punctuation">)</span>                    <span class="token comment">// Delete library (keeps files)</span>
+</span><span class="code-line line-number" line="4"><span class="token keyword">func</span> <span class="token function-definition function">switchLibrary</span><span class="token punctuation">(</span>id<span class="token punctuation">:</span> <span class="token constant">UUID</span><span class="token punctuation">)</span>                    <span class="token comment">// Change active library</span>
+</span><span class="code-line line-number" line="5"><span class="token keyword">func</span> <span class="token function-definition function">renameLibrary</span><span class="token punctuation">(</span>id<span class="token punctuation">:</span> <span class="token constant">UUID</span><span class="token punctuation">,</span> newName<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">)</span>   <span class="token comment">// Update library name</span>
+</span><span class="code-line line-number" line="6">
+</span><span class="code-line line-number" line="7"><span class="token comment">// Private Methods</span>
+</span><span class="code-line line-number" line="8"><span class="token keyword">private</span> <span class="token keyword">func</span> <span class="token function-definition function">loadLibraries</span><span class="token punctuation">(</span><span class="token punctuation">)</span>                    <span class="token comment">// Load from UserDefaults</span>
+</span><span class="code-line line-number" line="9"><span class="token keyword">private</span> <span class="token keyword">func</span> <span class="token function-definition function">saveLibraries</span><span class="token punctuation">(</span><span class="token punctuation">)</span>                    <span class="token comment">// Persist to UserDefaults</span>
+</span><span class="code-line line-number" line="10"><span class="token keyword">private</span> <span class="token keyword">func</span> <span class="token function-definition function">migrateExistingSingleLibrary</span><span class="token punctuation">(</span><span class="token punctuation">)</span>     <span class="token comment">// Legacy migration</span>
+</span></code><input type="hidden" value="// Library Management
+func addLibrary(name: String, path: String)     // Add new music library
+func removeLibrary(id: UUID)                    // Delete library (keeps files)
+func switchLibrary(id: UUID)                    // Change active library
+func renameLibrary(id: UUID, newName: String)   // Update library name
+
+// Private Methods
+private func loadLibraries()                    // Load from UserDefaults
+private func saveLibraries()                    // Persist to UserDefaults
+private func migrateExistingSingleLibrary()     // Legacy migration
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="example-usage-1"><a aria-hidden="true" tabindex="-1" href="#example-usage-1" class="anchor"><span class="icon icon-link"></span></a>Example Usage</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">let</span> libraryManager <span class="token operator">=</span> <span class="token class-name">LibraryManager</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="2">
+</span><span class="code-line line-number" line="3"><span class="token comment">// Add a new library</span>
+</span><span class="code-line line-number" line="4">libraryManager<span class="token punctuation">.</span><span class="token function">addLibrary</span><span class="token punctuation">(</span>name<span class="token punctuation">:</span> <span class="token string-literal"><span class="token string">"Rock Collection"</span></span><span class="token punctuation">,</span> path<span class="token punctuation">:</span> <span class="token string-literal"><span class="token string">"/Users/me/Music/Rock"</span></span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="5">
+</span><span class="code-line line-number" line="6"><span class="token comment">// Switch between libraries</span>
+</span><span class="code-line line-number" line="7">libraryManager<span class="token punctuation">.</span><span class="token function">switchLibrary</span><span class="token punctuation">(</span>id<span class="token punctuation">:</span> libraryId<span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="8">
+</span><span class="code-line line-number" line="9"><span class="token comment">// Rename a library</span>
+</span><span class="code-line line-number" line="10">libraryManager<span class="token punctuation">.</span><span class="token function">renameLibrary</span><span class="token punctuation">(</span>id<span class="token punctuation">:</span> libraryId<span class="token punctuation">,</span> newName<span class="token punctuation">:</span> <span class="token string-literal"><span class="token string">"Metal Collection"</span></span><span class="token punctuation">)</span>
+</span></code><input type="hidden" value="let libraryManager = LibraryManager()
+
+// Add a new library
+libraryManager.addLibrary(name: &#x22;Rock Collection&#x22;, path: &#x22;/Users/me/Music/Rock&#x22;)
+
+// Switch between libraries
+libraryManager.switchLibrary(id: libraryId)
+
+// Rename a library
+libraryManager.renameLibrary(id: libraryId, newName: &#x22;Metal Collection&#x22;)
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <hr>
+        <h2 id="-downloadmanager"><a aria-hidden="true" tabindex="-1" href="#-downloadmanager" class="anchor"><span class="icon icon-link"></span></a>📥 DownloadManager</h2>
+        <p><strong>Location</strong>: <code>MacMusicPlayer/Managers/DownloadManager.swift</code></p>
+        <p>Handles downloading music from online sources using yt-dlp and ffmpeg.</p>
+        <h3 id="data-structures"><a aria-hidden="true" tabindex="-1" href="#data-structures" class="anchor"><span class="icon icon-link"></span></a>Data Structures</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">struct</span> <span class="token class-name">DownloadFormat</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token keyword">let</span> formatId<span class="token punctuation">:</span> <span class="token class-name">String</span>        <span class="token comment">// Format identifier</span>
+</span><span class="code-line line-number" line="3">    <span class="token keyword">let</span> fileExtension<span class="token punctuation">:</span> <span class="token class-name">String</span>   <span class="token comment">// File extension (.mp3, .m4a, etc.)</span>
+</span><span class="code-line line-number" line="4">    <span class="token keyword">let</span> description<span class="token punctuation">:</span> <span class="token class-name">String</span>     <span class="token comment">// Human-readable description</span>
+</span><span class="code-line line-number" line="5">    <span class="token keyword">let</span> bitrate<span class="token punctuation">:</span> <span class="token class-name">String</span>        <span class="token comment">// Audio bitrate</span>
+</span><span class="code-line line-number" line="6">    <span class="token keyword">let</span> sampleRate<span class="token punctuation">:</span> <span class="token class-name">String</span>     <span class="token comment">// Sample rate</span>
+</span><span class="code-line line-number" line="7">    <span class="token keyword">let</span> channels<span class="token punctuation">:</span> <span class="token class-name">String</span>       <span class="token comment">// Audio channels</span>
+</span><span class="code-line line-number" line="8">    <span class="token keyword">let</span> fileSize<span class="token punctuation">:</span> <span class="token class-name">String</span>       <span class="token comment">// Estimated file size</span>
+</span><span class="code-line line-number" line="9"><span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="10">
+</span><span class="code-line line-number" line="11"><span class="token keyword">struct</span> <span class="token class-name">PlaylistInfo</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="12">    <span class="token keyword">let</span> id<span class="token punctuation">:</span> <span class="token class-name">String</span>             <span class="token comment">// Playlist identifier</span>
+</span><span class="code-line line-number" line="13">    <span class="token keyword">let</span> title<span class="token punctuation">:</span> <span class="token class-name">String</span>          <span class="token comment">// Playlist title</span>
+</span><span class="code-line line-number" line="14">    <span class="token keyword">let</span> description<span class="token punctuation">:</span> <span class="token class-name">String</span>    <span class="token comment">// Playlist description</span>
+</span><span class="code-line line-number" line="15">    <span class="token keyword">let</span> uploader<span class="token punctuation">:</span> <span class="token class-name">String</span>       <span class="token comment">// Channel/uploader name</span>
+</span><span class="code-line line-number" line="16">    <span class="token keyword">let</span> videoCount<span class="token punctuation">:</span> <span class="token class-name">Int</span>        <span class="token comment">// Number of items</span>
+</span><span class="code-line line-number" line="17">    <span class="token keyword">let</span> items<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token class-name">PlaylistItem</span><span class="token punctuation">]</span>  <span class="token comment">// Playlist contents</span>
+</span><span class="code-line line-number" line="18"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="struct DownloadFormat {
+    let formatId: String        // Format identifier
+    let fileExtension: String   // File extension (.mp3, .m4a, etc.)
+    let description: String     // Human-readable description
+    let bitrate: String        // Audio bitrate
+    let sampleRate: String     // Sample rate
+    let channels: String       // Audio channels
+    let fileSize: String       // Estimated file size
+}
+
+struct PlaylistInfo {
+    let id: String             // Playlist identifier
+    let title: String          // Playlist title
+    let description: String    // Playlist description
+    let uploader: String       // Channel/uploader name
+    let videoCount: Int        // Number of items
+    let items: [PlaylistItem]  // Playlist contents
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="error-types"><a aria-hidden="true" tabindex="-1" href="#error-types" class="anchor"><span class="icon icon-link"></span></a>Error Types</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">enum</span> <span class="token class-name">DownloadError</span><span class="token punctuation">:</span> <span class="token class-name">Error</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token keyword">case</span> formatFetchFailed             <span class="token comment">// Failed to get available formats</span>
+</span><span class="code-line line-number" line="3">    <span class="token keyword">case</span> <span class="token function">downloadFailed</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">)</span>        <span class="token comment">// Download failed with message</span>
+</span><span class="code-line line-number" line="4">    <span class="token keyword">case</span> invalidURL                    <span class="token comment">// URL validation failed</span>
+</span><span class="code-line line-number" line="5">    <span class="token keyword">case</span> ytDlpNotFound                <span class="token comment">// yt-dlp not installed</span>
+</span><span class="code-line line-number" line="6">    <span class="token keyword">case</span> ffmpegNotFound               <span class="token comment">// ffmpeg not installed</span>
+</span><span class="code-line line-number" line="7">    <span class="token keyword">case</span> playlistFetchFailed          <span class="token comment">// Playlist info fetch failed</span>
+</span><span class="code-line line-number" line="8">    <span class="token keyword">case</span> noFormatsAvailable           <span class="token comment">// No compatible formats</span>
+</span><span class="code-line line-number" line="9">    <span class="token keyword">case</span> libraryNotFound              <span class="token comment">// Target library not found</span>
+</span><span class="code-line line-number" line="10"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="enum DownloadError: Error {
+    case formatFetchFailed             // Failed to get available formats
+    case downloadFailed(String)        // Download failed with message
+    case invalidURL                    // URL validation failed
+    case ytDlpNotFound                // yt-dlp not installed
+    case ffmpegNotFound               // ffmpeg not installed
+    case playlistFetchFailed          // Playlist info fetch failed
+    case noFormatsAvailable           // No compatible formats
+    case libraryNotFound              // Target library not found
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="methods-2"><a aria-hidden="true" tabindex="-1" href="#methods-2" class="anchor"><span class="icon icon-link"></span></a>Methods</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// Tool Verification</span>
+</span><span class="code-line line-number" line="2"><span class="token keyword">func</span> <span class="token function-definition function">checkYTDlpAvailability</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token operator">-></span> <span class="token class-name">String</span>    <span class="token comment">// Verify yt-dlp installation</span>
+</span><span class="code-line line-number" line="3"><span class="token keyword">func</span> <span class="token function-definition function">checkFFmpegAvailability</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token operator">-></span> <span class="token class-name">String</span>   <span class="token comment">// Verify ffmpeg installation</span>
+</span><span class="code-line line-number" line="4">
+</span><span class="code-line line-number" line="5"><span class="token comment">// Format Discovery</span>
+</span><span class="code-line line-number" line="6"><span class="token keyword">func</span> <span class="token function-definition function">fetchAvailableFormats</span><span class="token punctuation">(</span><span class="token keyword">for</span> url<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">)</span> <span class="token keyword">async</span> <span class="token keyword">throws</span> <span class="token operator">-></span> <span class="token punctuation">[</span><span class="token class-name">DownloadFormat</span><span class="token punctuation">]</span>
+</span><span class="code-line line-number" line="7">
+</span><span class="code-line line-number" line="8"><span class="token comment">// Single Downloads</span>
+</span><span class="code-line line-number" line="9"><span class="token keyword">func</span> <span class="token function-definition function">download</span><span class="token punctuation">(</span>url<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">,</span> format<span class="token punctuation">:</span> <span class="token class-name">DownloadFormat</span><span class="token punctuation">,</span> libraryId<span class="token punctuation">:</span> <span class="token constant">UUID</span><span class="token punctuation">,</span> 
+</span><span class="code-line line-number" line="10">             progress<span class="token punctuation">:</span> <span class="token attribute atrule">@escaping</span> <span class="token punctuation">(</span><span class="token class-name">Double</span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token class-name">Void</span><span class="token punctuation">)</span> <span class="token keyword">async</span> <span class="token keyword">throws</span>
+</span><span class="code-line line-number" line="11">
+</span><span class="code-line line-number" line="12"><span class="token comment">// Playlist Operations</span>
+</span><span class="code-line line-number" line="13"><span class="token keyword">func</span> <span class="token function-definition function">fetchPlaylistInfo</span><span class="token punctuation">(</span><span class="token keyword">for</span> url<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">)</span> <span class="token keyword">async</span> <span class="token keyword">throws</span> <span class="token operator">-></span> <span class="token class-name">PlaylistInfo</span>
+</span><span class="code-line line-number" line="14"><span class="token keyword">func</span> <span class="token function-definition function">downloadPlaylist</span><span class="token punctuation">(</span>playlist<span class="token punctuation">:</span> <span class="token class-name">PlaylistInfo</span><span class="token punctuation">,</span> format<span class="token punctuation">:</span> <span class="token class-name">DownloadFormat</span><span class="token punctuation">,</span> 
+</span><span class="code-line line-number" line="15">                     libraryId<span class="token punctuation">:</span> <span class="token constant">UUID</span><span class="token punctuation">,</span> selectedItems<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token class-name">PlaylistItem</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+</span><span class="code-line line-number" line="16">                     progress<span class="token punctuation">:</span> <span class="token attribute atrule">@escaping</span> <span class="token punctuation">(</span><span class="token class-name">PlaylistDownloadProgress</span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token class-name">Void</span><span class="token punctuation">)</span> <span class="token keyword">async</span> <span class="token keyword">throws</span>
+</span></code><input type="hidden" value="// Tool Verification
+func checkYTDlpAvailability() throws -> String    // Verify yt-dlp installation
+func checkFFmpegAvailability() throws -> String   // Verify ffmpeg installation
+
+// Format Discovery
+func fetchAvailableFormats(for url: String) async throws -> [DownloadFormat]
+
+// Single Downloads
+func download(url: String, format: DownloadFormat, libraryId: UUID, 
+             progress: @escaping (Double) -> Void) async throws
+
+// Playlist Operations
+func fetchPlaylistInfo(for url: String) async throws -> PlaylistInfo
+func downloadPlaylist(playlist: PlaylistInfo, format: DownloadFormat, 
+                     libraryId: UUID, selectedItems: [PlaylistItem],
+                     progress: @escaping (PlaylistDownloadProgress) -> Void) async throws
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="example-usage-2"><a aria-hidden="true" tabindex="-1" href="#example-usage-2" class="anchor"><span class="icon icon-link"></span></a>Example Usage</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">let</span> downloadManager <span class="token operator">=</span> <span class="token class-name">DownloadManager</span><span class="token punctuation">.</span>shared
+</span><span class="code-line line-number" line="2">
+</span><span class="code-line line-number" line="3"><span class="token comment">// Check if tools are installed</span>
+</span><span class="code-line line-number" line="4"><span class="token keyword">do</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="5">    <span class="token keyword">let</span> ytDlpPath <span class="token operator">=</span> <span class="token keyword">try</span> downloadManager<span class="token punctuation">.</span><span class="token function">checkYTDlpAvailability</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="6">    <span class="token keyword">let</span> ffmpegPath <span class="token operator">=</span> <span class="token keyword">try</span> downloadManager<span class="token punctuation">.</span><span class="token function">checkFFmpegAvailability</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="7">    <span class="token function">print</span><span class="token punctuation">(</span><span class="token string-literal"><span class="token string">"Tools ready: yt-dlp at </span><span class="token interpolation-punctuation punctuation">\(</span><span class="token interpolation">ytDlpPath</span><span class="token interpolation-punctuation punctuation">)</span><span class="token string">, ffmpeg at </span><span class="token interpolation-punctuation punctuation">\(</span><span class="token interpolation">ffmpegPath</span><span class="token interpolation-punctuation punctuation">)</span><span class="token string">"</span></span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="8"><span class="token punctuation">}</span> <span class="token keyword">catch</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="9">    <span class="token function">print</span><span class="token punctuation">(</span><span class="token string-literal"><span class="token string">"Missing tools: </span><span class="token interpolation-punctuation punctuation">\(</span><span class="token interpolation">error</span><span class="token interpolation-punctuation punctuation">)</span><span class="token string">"</span></span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="10"><span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="11">
+</span><span class="code-line line-number" line="12"><span class="token comment">// Download a single track</span>
+</span><span class="code-line line-number" line="13"><span class="token class-name">Task</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="14">    <span class="token keyword">do</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="15">        <span class="token keyword">let</span> formats <span class="token operator">=</span> <span class="token keyword">try</span> <span class="token keyword">await</span> downloadManager<span class="token punctuation">.</span><span class="token function">fetchAvailableFormats</span><span class="token punctuation">(</span><span class="token keyword">for</span><span class="token punctuation">:</span> youtubeURL<span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="16">        <span class="token keyword">let</span> mp3Format <span class="token operator">=</span> formats<span class="token punctuation">.</span>first <span class="token punctuation">{</span> <span class="token short-argument">$0</span><span class="token punctuation">.</span>fileExtension <span class="token operator">==</span> <span class="token string-literal"><span class="token string">"mp3"</span></span> <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="17">        
+</span><span class="code-line line-number" line="18">        <span class="token keyword">try</span> <span class="token keyword">await</span> downloadManager<span class="token punctuation">.</span><span class="token function">download</span><span class="token punctuation">(</span>
+</span><span class="code-line line-number" line="19">            url<span class="token punctuation">:</span> youtubeURL<span class="token punctuation">,</span>
+</span><span class="code-line line-number" line="20">            format<span class="token punctuation">:</span> mp3Format<span class="token operator">!</span><span class="token punctuation">,</span>
+</span><span class="code-line line-number" line="21">            libraryId<span class="token punctuation">:</span> libraryId
+</span><span class="code-line line-number" line="22">        <span class="token punctuation">)</span> <span class="token punctuation">{</span> progress <span class="token keyword">in</span>
+</span><span class="code-line line-number" line="23">            <span class="token function">print</span><span class="token punctuation">(</span><span class="token string-literal"><span class="token string">"Download progress: </span><span class="token interpolation-punctuation punctuation">\(</span><span class="token interpolation">progress <span class="token operator">*</span> <span class="token number">100</span></span><span class="token interpolation-punctuation punctuation">)</span><span class="token string">%"</span></span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="24">        <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="25">    <span class="token punctuation">}</span> <span class="token keyword">catch</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="26">        <span class="token function">print</span><span class="token punctuation">(</span><span class="token string-literal"><span class="token string">"Download failed: </span><span class="token interpolation-punctuation punctuation">\(</span><span class="token interpolation">error</span><span class="token interpolation-punctuation punctuation">)</span><span class="token string">"</span></span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="27">    <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="28"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="let downloadManager = DownloadManager.shared
+
+// Check if tools are installed
+do {
+    let ytDlpPath = try downloadManager.checkYTDlpAvailability()
+    let ffmpegPath = try downloadManager.checkFFmpegAvailability()
+    print(&#x22;Tools ready: yt-dlp at \(ytDlpPath), ffmpeg at \(ffmpegPath)&#x22;)
+} catch {
+    print(&#x22;Missing tools: \(error)&#x22;)
+}
+
+// Download a single track
+Task {
+    do {
+        let formats = try await downloadManager.fetchAvailableFormats(for: youtubeURL)
+        let mp3Format = formats.first { $0.fileExtension == &#x22;mp3&#x22; }
+        
+        try await downloadManager.download(
+            url: youtubeURL,
+            format: mp3Format!,
+            libraryId: libraryId
+        ) { progress in
+            print(&#x22;Download progress: \(progress * 100)%&#x22;)
+        }
+    } catch {
+        print(&#x22;Download failed: \(error)&#x22;)
+    }
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <hr>
+        <h2 id="️-configmanager"><a aria-hidden="true" tabindex="-1" href="#️-configmanager" class="anchor"><span class="icon icon-link"></span></a>⚙️ ConfigManager</h2>
+        <p><strong>Location</strong>: <code>MacMusicPlayer/Managers/ConfigManager.swift</code></p>
+        <p>Manages application configuration and API settings.</p>
+        <h3 id="properties-2"><a aria-hidden="true" tabindex="-1" href="#properties-2" class="anchor"><span class="icon icon-link"></span></a>Properties</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">var</span> apiKey<span class="token punctuation">:</span> <span class="token class-name">String</span>          <span class="token comment">// YouTube API key</span>
+</span><span class="code-line line-number" line="2"><span class="token keyword">var</span> apiUrl<span class="token punctuation">:</span> <span class="token class-name">String</span>          <span class="token comment">// API endpoint URL</span>
+</span><span class="code-line line-number" line="3"><span class="token keyword">var</span> isConfigValid<span class="token punctuation">:</span> <span class="token class-name">Bool</span>     <span class="token comment">// Configuration validation status</span>
+</span></code><input type="hidden" value="var apiKey: String          // YouTube API key
+var apiUrl: String          // API endpoint URL
+var isConfigValid: Bool     // Configuration validation status
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="methods-3"><a aria-hidden="true" tabindex="-1" href="#methods-3" class="anchor"><span class="icon icon-link"></span></a>Methods</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">func</span> <span class="token function-definition function">saveConfig</span><span class="token punctuation">(</span>apiKey<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">,</span> apiUrl<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">)</span>  <span class="token comment">// Save API configuration</span>
+</span><span class="code-line line-number" line="2"><span class="token keyword">func</span> <span class="token function-definition function">resetConfig</span><span class="token punctuation">(</span><span class="token punctuation">)</span>                               <span class="token comment">// Clear all settings</span>
+</span></code><input type="hidden" value="func saveConfig(apiKey: String, apiUrl: String)  // Save API configuration
+func resetConfig()                               // Clear all settings
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="example-usage-3"><a aria-hidden="true" tabindex="-1" href="#example-usage-3" class="anchor"><span class="icon icon-link"></span></a>Example Usage</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">let</span> configManager <span class="token operator">=</span> <span class="token class-name">ConfigManager</span><span class="token punctuation">.</span>shared
+</span><span class="code-line line-number" line="2">
+</span><span class="code-line line-number" line="3"><span class="token comment">// Configure API settings</span>
+</span><span class="code-line line-number" line="4">configManager<span class="token punctuation">.</span><span class="token function">saveConfig</span><span class="token punctuation">(</span>
+</span><span class="code-line line-number" line="5">    apiKey<span class="token punctuation">:</span> <span class="token string-literal"><span class="token string">"your-youtube-api-key"</span></span><span class="token punctuation">,</span>
+</span><span class="code-line line-number" line="6">    apiUrl<span class="token punctuation">:</span> <span class="token string-literal"><span class="token string">"https://your-api-server.com"</span></span>
+</span><span class="code-line line-number" line="7"><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="8">
+</span><span class="code-line line-number" line="9"><span class="token comment">// Check if configuration is valid</span>
+</span><span class="code-line line-number" line="10"><span class="token keyword">if</span> configManager<span class="token punctuation">.</span>isConfigValid <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="11">    <span class="token comment">// Proceed with API calls</span>
+</span><span class="code-line line-number" line="12"><span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="13">    <span class="token comment">// Prompt user for configuration</span>
+</span><span class="code-line line-number" line="14"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="let configManager = ConfigManager.shared
+
+// Configure API settings
+configManager.saveConfig(
+    apiKey: &#x22;your-youtube-api-key&#x22;,
+    apiUrl: &#x22;https://your-api-server.com&#x22;
+)
+
+// Check if configuration is valid
+if configManager.isConfigValid {
+    // Proceed with API calls
+} else {
+    // Prompt user for configuration
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <hr>
+        <h2 id="-ytsearchmanager"><a aria-hidden="true" tabindex="-1" href="#-ytsearchmanager" class="anchor"><span class="icon icon-link"></span></a>🔍 YTSearchManager</h2>
+        <p><strong>Location</strong>: <code>MacMusicPlayer/Managers/YTSearchManager.swift</code></p>
+        <p>Handles online music search functionality.</p>
+        <h3 id="data-structures-1"><a aria-hidden="true" tabindex="-1" href="#data-structures-1" class="anchor"><span class="icon icon-link"></span></a>Data Structures</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">struct</span> <span class="token class-name">SearchResult</span><span class="token punctuation">:</span> <span class="token class-name">Codable</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token keyword">struct</span> <span class="token class-name">VideoItem</span><span class="token punctuation">:</span> <span class="token class-name">Codable</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="3">        <span class="token keyword">let</span> videoId<span class="token punctuation">:</span> <span class="token class-name">String</span>        <span class="token comment">// Video identifier</span>
+</span><span class="code-line line-number" line="4">        <span class="token keyword">let</span> videoUrl<span class="token punctuation">:</span> <span class="token class-name">String</span>       <span class="token comment">// Full URL</span>
+</span><span class="code-line line-number" line="5">        <span class="token keyword">let</span> title<span class="token punctuation">:</span> <span class="token class-name">String</span>          <span class="token comment">// Video title</span>
+</span><span class="code-line line-number" line="6">        <span class="token keyword">let</span> thumbnailUrl<span class="token punctuation">:</span> <span class="token class-name">String</span>   <span class="token comment">// Thumbnail image URL</span>
+</span><span class="code-line line-number" line="7">        <span class="token keyword">let</span> platform<span class="token punctuation">:</span> <span class="token class-name">String</span>       <span class="token comment">// Source platform</span>
+</span><span class="code-line line-number" line="8">    <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="9">    
+</span><span class="code-line line-number" line="10">    <span class="token keyword">let</span> items<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token class-name">VideoItem</span><span class="token punctuation">]</span>         <span class="token comment">// Search results</span>
+</span><span class="code-line line-number" line="11">    <span class="token keyword">let</span> nextPageToken<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token operator">?</span>     <span class="token comment">// Pagination token</span>
+</span><span class="code-line line-number" line="12">    <span class="token keyword">let</span> totalResults<span class="token punctuation">:</span> <span class="token class-name">Int</span>          <span class="token comment">// Total result count</span>
+</span><span class="code-line line-number" line="13"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="struct SearchResult: Codable {
+    struct VideoItem: Codable {
+        let videoId: String        // Video identifier
+        let videoUrl: String       // Full URL
+        let title: String          // Video title
+        let thumbnailUrl: String   // Thumbnail image URL
+        let platform: String       // Source platform
+    }
+    
+    let items: [VideoItem]         // Search results
+    let nextPageToken: String?     // Pagination token
+    let totalResults: Int          // Total result count
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="methods-4"><a aria-hidden="true" tabindex="-1" href="#methods-4" class="anchor"><span class="icon icon-link"></span></a>Methods</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">func</span> <span class="token function-definition function">search</span><span class="token punctuation">(</span>keyword<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">,</span> pageToken<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token operator">?</span> <span class="token operator">=</span> <span class="token nil constant">nil</span><span class="token punctuation">,</span> 
+</span><span class="code-line line-number" line="2">           completion<span class="token punctuation">:</span> <span class="token attribute atrule">@escaping</span> <span class="token punctuation">(</span><span class="token class-name">Result</span><span class="token operator">&#x3C;</span><span class="token class-name">SearchResult</span><span class="token punctuation">,</span> <span class="token class-name">Error</span><span class="token operator">></span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token class-name">Void</span><span class="token punctuation">)</span>
+</span></code><input type="hidden" value="func search(keyword: String, pageToken: String? = nil, 
+           completion: @escaping (Result<SearchResult, Error>) -> Void)
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="example-usage-4"><a aria-hidden="true" tabindex="-1" href="#example-usage-4" class="anchor"><span class="icon icon-link"></span></a>Example Usage</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">let</span> searchManager <span class="token operator">=</span> <span class="token class-name">YTSearchManager</span><span class="token punctuation">.</span>shared
+</span><span class="code-line line-number" line="2">
+</span><span class="code-line line-number" line="3">searchManager<span class="token punctuation">.</span><span class="token function">search</span><span class="token punctuation">(</span>keyword<span class="token punctuation">:</span> <span class="token string-literal"><span class="token string">"jazz music"</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span> result <span class="token keyword">in</span>
+</span><span class="code-line line-number" line="4">    <span class="token keyword">switch</span> result <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="5">    <span class="token keyword">case</span> <span class="token punctuation">.</span><span class="token function">success</span><span class="token punctuation">(</span><span class="token keyword">let</span> searchResult<span class="token punctuation">)</span><span class="token punctuation">:</span>
+</span><span class="code-line line-number" line="6">        <span class="token keyword">for</span> item <span class="token keyword">in</span> searchResult<span class="token punctuation">.</span>items <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="7">            <span class="token function">print</span><span class="token punctuation">(</span><span class="token string-literal"><span class="token string">"Found: </span><span class="token interpolation-punctuation punctuation">\(</span><span class="token interpolation">item<span class="token punctuation">.</span>title</span><span class="token interpolation-punctuation punctuation">)</span><span class="token string"> - </span><span class="token interpolation-punctuation punctuation">\(</span><span class="token interpolation">item<span class="token punctuation">.</span>videoUrl</span><span class="token interpolation-punctuation punctuation">)</span><span class="token string">"</span></span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="8">        <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="9">    <span class="token keyword">case</span> <span class="token punctuation">.</span><span class="token function">failure</span><span class="token punctuation">(</span><span class="token keyword">let</span> error<span class="token punctuation">)</span><span class="token punctuation">:</span>
+</span><span class="code-line line-number" line="10">        <span class="token function">print</span><span class="token punctuation">(</span><span class="token string-literal"><span class="token string">"Search failed: </span><span class="token interpolation-punctuation punctuation">\(</span><span class="token interpolation">error</span><span class="token interpolation-punctuation punctuation">)</span><span class="token string">"</span></span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="11">    <span class="token punctuation">}</span>
+</span><span class="code-line line-number" line="12"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="let searchManager = YTSearchManager.shared
+
+searchManager.search(keyword: &#x22;jazz music&#x22;) { result in
+    switch result {
+    case .success(let searchResult):
+        for item in searchResult.items {
+            print(&#x22;Found: \(item.title) - \(item.videoUrl)&#x22;)
+        }
+    case .failure(let error):
+        print(&#x22;Search failed: \(error)&#x22;)
+    }
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <hr>
+        <h2 id="-sleepmanager"><a aria-hidden="true" tabindex="-1" href="#-sleepmanager" class="anchor"><span class="icon icon-link"></span></a>💤 SleepManager</h2>
+        <p><strong>Location</strong>: <code>MacMusicPlayer/Managers/SleepManager.swift</code></p>
+        <p>Controls system sleep prevention during music playback.</p>
+        <h3 id="properties-3"><a aria-hidden="true" tabindex="-1" href="#properties-3" class="anchor"><span class="icon icon-link"></span></a>Properties</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> preventSleep<span class="token punctuation">:</span> <span class="token class-name">Bool</span>    <span class="token comment">// Sleep prevention state</span>
+</span></code><input type="hidden" value="@Published var preventSleep: Bool    // Sleep prevention state
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="methods-5"><a aria-hidden="true" tabindex="-1" href="#methods-5" class="anchor"><span class="icon icon-link"></span></a>Methods</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// Implementation uses IOKit for power assertion management</span>
+</span><span class="code-line line-number" line="2"><span class="token comment">// Automatically prevents system sleep when enabled</span>
+</span></code><input type="hidden" value="// Implementation uses IOKit for power assertion management
+// Automatically prevents system sleep when enabled
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <hr>
+        <h2 id="-launchmanager"><a aria-hidden="true" tabindex="-1" href="#-launchmanager" class="anchor"><span class="icon icon-link"></span></a>🚀 LaunchManager</h2>
+        <p><strong>Location</strong>: <code>MacMusicPlayer/Managers/LaunchManager.swift</code></p>
+        <p>Manages launch-at-login functionality.</p>
+        <h3 id="properties-4"><a aria-hidden="true" tabindex="-1" href="#properties-4" class="anchor"><span class="icon icon-link"></span></a>Properties</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token attribute atrule">@Published</span> <span class="token keyword">var</span> launchAtLogin<span class="token punctuation">:</span> <span class="token class-name">Bool</span>   <span class="token comment">// Auto-launch state</span>
+</span></code><input type="hidden" value="@Published var launchAtLogin: Bool   // Auto-launch state
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="methods-6"><a aria-hidden="true" tabindex="-1" href="#methods-6" class="anchor"><span class="icon icon-link"></span></a>Methods</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// Uses ServiceManagement framework for login item management</span>
+</span><span class="code-line line-number" line="2"><span class="token comment">// Automatically registers/unregisters app for auto-launch</span>
+</span></code><input type="hidden" value="// Uses ServiceManagement framework for login item management
+// Automatically registers/unregisters app for auto-launch
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <hr>
+        <h2 id="-notification-system"><a aria-hidden="true" tabindex="-1" href="#-notification-system" class="anchor"><span class="icon icon-link"></span></a>🔄 Notification System</h2>
+        <p>All managers use <code>NotificationCenter</code> for loose coupling:</p>
+        <h3 id="standard-notifications"><a aria-hidden="true" tabindex="-1" href="#standard-notifications" class="anchor"><span class="icon icon-link"></span></a>Standard Notifications</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token comment">// Posted by PlayerManager</span>
+</span><span class="code-line line-number" line="2"><span class="token string-literal"><span class="token string">"TrackChanged"</span></span>           <span class="token comment">// When currentTrack changes</span>
+</span><span class="code-line line-number" line="3"><span class="token string-literal"><span class="token string">"PlaybackStateChanged"</span></span>   <span class="token comment">// When isPlaying changes</span>
+</span><span class="code-line line-number" line="4">
+</span><span class="code-line line-number" line="5"><span class="token comment">// Posted by LibraryManager/AppDelegate  </span>
+</span><span class="code-line line-number" line="6"><span class="token string-literal"><span class="token string">"RefreshMusicLibrary"</span></span>    <span class="token comment">// When library needs refresh</span>
+</span><span class="code-line line-number" line="7"><span class="token string-literal"><span class="token string">"AddNewLibrary"</span></span>          <span class="token comment">// When new library is added</span>
+</span><span class="code-line line-number" line="8">
+</span><span class="code-line line-number" line="9"><span class="token comment">// Posted by ConfigViewController</span>
+</span><span class="code-line line-number" line="10"><span class="token string-literal"><span class="token string">"ConfigUpdated"</span></span>          <span class="token comment">// When settings change</span>
+</span></code><input type="hidden" value="// Posted by PlayerManager
+&#x22;TrackChanged&#x22;           // When currentTrack changes
+&#x22;PlaybackStateChanged&#x22;   // When isPlaying changes
+
+// Posted by LibraryManager/AppDelegate  
+&#x22;RefreshMusicLibrary&#x22;    // When library needs refresh
+&#x22;AddNewLibrary&#x22;          // When new library is added
+
+// Posted by ConfigViewController
+&#x22;ConfigUpdated&#x22;          // When settings change
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="listening-to-notifications"><a aria-hidden="true" tabindex="-1" href="#listening-to-notifications" class="anchor"><span class="icon icon-link"></span></a>Listening to Notifications</h3>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token class-name">NotificationCenter</span><span class="token punctuation">.</span><span class="token keyword">default</span><span class="token punctuation">.</span><span class="token function">addObserver</span><span class="token punctuation">(</span>
+</span><span class="code-line line-number" line="2">    <span class="token keyword">self</span><span class="token punctuation">,</span>
+</span><span class="code-line line-number" line="3">    selector<span class="token punctuation">:</span> <span class="token other-directive property">#selector</span><span class="token punctuation">(</span>handleTrackChange<span class="token punctuation">)</span><span class="token punctuation">,</span>
+</span><span class="code-line line-number" line="4">    name<span class="token punctuation">:</span> <span class="token class-name">NSNotification</span><span class="token punctuation">.</span><span class="token class-name">Name</span><span class="token punctuation">(</span><span class="token string-literal"><span class="token string">"TrackChanged"</span></span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+</span><span class="code-line line-number" line="5">    object<span class="token punctuation">:</span> <span class="token nil constant">nil</span>
+</span><span class="code-line line-number" line="6"><span class="token punctuation">)</span>
+</span></code><input type="hidden" value="NotificationCenter.default.addObserver(
+    self,
+    selector: #selector(handleTrackChange),
+    name: NSNotification.Name(&#x22;TrackChanged&#x22;),
+    object: nil
+)
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <hr>
+        <p>This API documentation provides the foundation for understanding and extending MacMusicPlayer's manager architecture. Each manager is designed to be independent and communicate through well-defined interfaces.</p>
+      </markdown-style>
+    </div>
+    <script src="../js/demo-preview.js?v=1.34.1"></script>
+    <div class="footer warpper" style="max-width:720px;">Copyright © 2025 <a href="https://github.com/samzong" target="_blank">samzong</a><br></div>
+    <script src="../js/tocbot.js?v=1.34.1"></script>
+  </body>
+</html>
