@@ -294,12 +294,12 @@ public class DownloadManager {
             DownloadFormat(
                 formatId: "bestaudio", 
                 fileExtension: "mp3", 
-                description: NSLocalizedString("🎵 Best Quality (Auto Select)", comment: "Format description for best audio quality")
+                description: NSLocalizedString("Best Quality (Auto Select)", comment: "Format description for best audio quality")
             ),
             DownloadFormat(
                 formatId: "140", 
                 fileExtension: "m4a", 
-                description: NSLocalizedString("🎵 M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]", comment: "Predefined format description"),
+                description: NSLocalizedString("M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]", comment: "Predefined format description"),
                 bitrate: "128kbps",
                 sampleRate: "44kHz",
                 channels: NSLocalizedString("stereo", comment: "Audio channel type"),
@@ -308,7 +308,7 @@ public class DownloadManager {
             DownloadFormat(
                 formatId: "251", 
                 fileExtension: "webm", 
-                description: NSLocalizedString("🎵 WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]", comment: "Predefined format description"),
+                description: NSLocalizedString("WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]", comment: "Predefined format description"),
                 bitrate: "160kbps",
                 sampleRate: "48kHz",
                 channels: NSLocalizedString("stereo", comment: "Audio channel type"),
@@ -423,7 +423,7 @@ public class DownloadManager {
         var description = ""
         
         if !properties.bitrate.isEmpty {
-            description = String(format: NSLocalizedString("🎵 %@ Audio (%@", comment: "Format description with bitrate"), properties.fileExtension.uppercased(), properties.bitrate)
+            description = String(format: NSLocalizedString("%@ Audio (%@", comment: "Format description with bitrate"), properties.fileExtension.uppercased(), properties.bitrate)
             
             if !properties.sampleRate.isEmpty {
                 description += String(format: ", %@", properties.sampleRate)
@@ -437,7 +437,7 @@ public class DownloadManager {
             
             description += ")"
         } else {
-            description = String(format: NSLocalizedString("🎵 %@ Audio", comment: "Format description without details"), properties.fileExtension.uppercased())
+            description = String(format: NSLocalizedString("%@ Audio", comment: "Format description without details"), properties.fileExtension.uppercased())
             
             if !properties.sampleRate.isEmpty || !properties.channels.isEmpty || !properties.fileSize.isEmpty {
                 description += " ("
