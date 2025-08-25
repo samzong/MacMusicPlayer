@@ -484,7 +484,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
-        sleepManager.preventSleep = false
+        sleepManager.cleanupResourcesOnly()
     }
     
     private func getVersionString() -> String {
