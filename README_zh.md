@@ -5,6 +5,11 @@
 <div align="center">
   <img src="./MacMusicPlayer/Assets.xcassets/AppIcon.appiconset/icon_256x256_2x.png" alt="mac-music-player logo" width="200" />
   <br />
+  <div id="download-section" style="margin: 20px 0;">
+    <a href="#" onclick="downloadLatest(); return false;" style="text-decoration: none;">
+      <img src="https://img.shields.io/badge/⬇%20Download%20for%20Your%20System-28a745?style=for-the-badge&labelColor=28a745" alt="Download" />
+    </a>
+  </div>
   <p>一款优雅简洁的 macOS 菜单栏音乐播放器，采用 SwiftUI 构建，完美融入 macOS 生态系统，为您带来极致的用户体验。</p>
   <p>
     <a href="https://github.com/samzong/MacMusicPlayer/releases"><img src="https://img.shields.io/github/v/release/samzong/MacMusicPlayer" alt="Release Version" /></a>
