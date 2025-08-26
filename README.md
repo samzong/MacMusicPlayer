@@ -5,6 +5,11 @@
 <div align="center">
   <img src="./MacMusicPlayer/Assets.xcassets/AppIcon.appiconset/icon_256x256_2x.png" alt="mac-music-player logo" width="200" />
   <br />
+  <div id="download-section" style="margin: 20px 0;">
+    <a href="#" onclick="downloadLatest(); return false;" style="text-decoration: none;">
+      <img src="https://img.shields.io/badge/⬇%20Download%20for%20Your%20System-28a745?style=for-the-badge&labelColor=28a745" alt="Download" />
+    </a>
+  </div>
   <p>An elegant and minimalist music player for macOS, designed as a menu bar application to provide a seamless music playback experience. Built with SwiftUI, it perfectly integrates into the macOS ecosystem.</p>
   <p>
     <a href="https://github.com/samzong/MacMusicPlayer/releases"><img src="https://img.shields.io/github/v/release/samzong/MacMusicPlayer" alt="Release Version" /></a>

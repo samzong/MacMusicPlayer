@@ -45,7 +45,28 @@ jobs:
 
           footer: |
             Copyright © {{idocYear}} <a href="https://github.com/samzong" target="_blank">samzong</a><br />
-          
+            <script>
+              function downloadLatest() {
+                const platform = navigator.platform.toLowerCase();
+                const userAgent = navigator.userAgent.toLowerCase();
+                
+                let downloadUrl = '';
+                
+                if (platform.includes('mac')) {
+                  // macOS
+                  if (userAgent.includes('arm') || userAgent.includes('apple')) {
+                    downloadUrl = 'https://github.com/samzong/MacMusicPlayer/releases/latest/download/MacMusicPlayer-arm64.dmg';
+                  } else {
+                    downloadUrl = 'https://github.com/samzong/MacMusicPlayer/releases/latest/download/MacMusicPlayer-x86_64.dmg';
+                  }
+                } else {
+                  // other
+                  window.open('https://github.com/samzong/MacMusicPlayer/releases/latest', '_blank');
+                  return;
+                }
+                window.location.href = downloadUrl;
+              }
+            </script>
           EOF
 
       - run: npm install idoc@1 -g
