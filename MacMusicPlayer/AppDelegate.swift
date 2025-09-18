@@ -577,12 +577,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func refreshCurrentLibrary() {
-        guard let currentLibrary = libraryManager.currentLibrary else { return }
+        guard libraryManager.currentLibrary != nil else { return }
         
         NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
         
         if let button = statusItem?.button {
-            let oldImage = button.image
+            _ = button.image
             button.image = NSImage(systemSymbolName: "arrow.clockwise", accessibilityDescription: "Refreshing")
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -622,7 +622,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         
-        let configVC = ConfigViewController { [weak self] in
+        let configVC = ConfigViewController {
             NotificationCenter.default.post(name: NSNotification.Name("ConfigUpdated"), object: nil)
         }
         

@@ -1816,9 +1816,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
         statusLabel.textColor = NSColor.systemOrange
     }
     
-    private func startDownload() {
-        guard let playlist = currentPlaylist else { return }
-        
+    private func startDownload() {        
         let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         
         // 更新下载状态
