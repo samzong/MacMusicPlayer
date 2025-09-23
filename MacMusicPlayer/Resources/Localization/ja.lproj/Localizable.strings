@@ -22,10 +22,12 @@
 "Rename Current Library" = "現在のライブラリの名前を変更";
 "My Music" = "マイミュージック";
 "Confirm Deletion" = "削除の確認";
-"Are you sure you want to delete the current music library?" = "現在の音楽ライブラリを削除してもよろしいですか？";
-"Enter new name" = "新しい名前を入力";
-"Please enter a new name for the library" = "ライブラリの新しい名前を入力してください";
-"Refresh Library" = "ライブラリを更新";
+"This operation will not delete music files on disk, it only removes this library from the app." = "この操作はディスク上の音楽ファイルを削除せず、アプリからこのライブラリを削除するだけです。";
+"Delete" = "削除";
+"Cancel" = "キャンセル";
+"Rename Library" = "ライブラリの名前を変更";
+"Please enter a new name for the library:" = "ライブラリの新しい名前を入力してください：";
+"OK" = "OK";
 "Refresh Current Library" = "現在のライブラリを更新";
 
 // Dialog
@@ -60,14 +62,14 @@
 "Error checking yt-dlp: %@" = "yt-dlpの確認中にエラーが発生しました: %@";
 "Error getting video title: %@" = "動画タイトルの取得中にエラーが発生しました: %@";
 "Getting available formats, URL: %@" = "利用可能なフォーマットを取得中、URL: %@";
-"🎵 Best Quality (Auto Select)" = "🎵 最高音質 (自動選択)";
+"Best Quality (Auto Select)" = "最高音質 (自動選択)";
 "stereo" = "ステレオ";
 "mono" = "モノラル";
 "5.1 channels" = "5.1チャンネル";
-"🎵 %@ Audio (%@" = "🎵 %@ オーディオ (%@";
-"🎵 %@ Audio" = "🎵 %@ オーディオ";
-"🎵 M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "🎵 M4A オーディオ (128kbps, 44kHz, ステレオ, 3.5MiB) [AAC]";
-"🎵 WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "🎵 WebM オーディオ (160kbps, 48kHz, ステレオ, 3.2MiB) [Opus]";
+"%@ Audio (%@" = "%@ オーディオ (%@";
+"%@ Audio" = "%@ オーディオ";
+"M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "M4A オーディオ (128kbps, 44kHz, ステレオ, 3.5MiB) [AAC]";
+"WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "WebM オーディオ (160kbps, 48kHz, ステレオ, 3.2MiB) [Opus]";
 "Failed to get formats: %@" = "フォーマットの取得に失敗しました: %@";
 "Error getting formats: %@" = "フォーマットの取得中にエラーが発生しました: %@";
 "Starting audio download, URL: %@, Format ID: %@" = "オーディオのダウンロードを開始、URL: %@, フォーマットID: %@";

@@ -22,10 +22,12 @@
 "Rename Current Library" = "현재 라이브러리 이름 변경";
 "My Music" = "내 음악";
 "Confirm Deletion" = "삭제 확인";
-"Are you sure you want to delete the current music library?" = "현재 음악 라이브러리를 삭제하시겠습니까?";
-"Enter new name" = "새 이름 입력";
-"Please enter a new name for the library" = "라이브러리의 새 이름을 입력하세요";
-"Refresh Library" = "라이브러리 새로고침";
+"This operation will not delete music files on disk, it only removes this library from the app." = "이 작업은 디스크의 음악 파일을 삭제하지 않으며, 앱에서 이 라이브러리만 제거합니다.";
+"Delete" = "삭제";
+"Cancel" = "취소";
+"Rename Library" = "라이브러리 이름 변경";
+"Please enter a new name for the library:" = "라이브러리의 새 이름을 입력하세요:";
+"OK" = "확인";
 "Refresh Current Library" = "현재 라이브러리 새로고침";
 
 // Dialog
@@ -60,14 +62,14 @@
 "Error checking yt-dlp: %@" = "yt-dlp 확인 중 오류 발생: %@";
 "Error getting video title: %@" = "비디오 제목을 가져오는 중 오류 발생: %@";
 "Getting available formats, URL: %@" = "사용 가능한 형식을 가져오는 중, URL: %@";
-"🎵 Best Quality (Auto Select)" = "🎵 최고 품질 (자동 선택)";
+"Best Quality (Auto Select)" = "최고 품질 (자동 선택)";
 "stereo" = "스테레오";
 "mono" = "모노";
 "5.1 channels" = "5.1 채널";
-"🎵 %@ Audio (%@" = "🎵 %@ 오디오 (%@";
-"🎵 %@ Audio" = "🎵 %@ 오디오";
-"🎵 M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "🎵 M4A 오디오 (128kbps, 44kHz, 스테레오, 3.5MiB) [AAC]";
-"🎵 WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "🎵 WebM 오디오 (160kbps, 48kHz, 스테레오, 3.2MiB) [Opus]";
+"%@ Audio (%@" = "%@ 오디오 (%@";
+"%@ Audio" = "%@ 오디오";
+"M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "M4A 오디오 (128kbps, 44kHz, 스테레오, 3.5MiB) [AAC]";
+"WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "WebM 오디오 (160kbps, 48kHz, 스테레오, 3.2MiB) [Opus]";
 "Failed to get formats: %@" = "형식을 가져오지 못했습니다: %@";
 "Error getting formats: %@" = "형식을 가져오는 중 오류 발생: %@";
 "Starting audio download, URL: %@, Format ID: %@" = "오디오 다운로드 시작, URL: %@, 형식 ID: %@";

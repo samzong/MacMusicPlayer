@@ -22,10 +22,12 @@
 "Rename Current Library" = "重命名當前音樂庫";
 "My Music" = "我的音樂";
 "Confirm Deletion" = "確認刪除";
-"Are you sure you want to delete the current music library?" = "您確定要刪除當前音樂庫嗎？";
-"Enter new name" = "輸入新名稱";
-"Please enter a new name for the library" = "請為庫輸入新名稱";
-"Refresh Library" = "刷新音樂庫";
+"This operation will not delete music files on disk, it only removes this library from the app." = "此操作不會刪除磁盤上的音樂文件，僅從應用中移除此音樂庫。";
+"Delete" = "刪除";
+"Cancel" = "取消";
+"Rename Library" = "重命名音樂庫";
+"Please enter a new name for the library:" = "請輸入新的音樂庫名稱：";
+"OK" = "確定";
 "Refresh Current Library" = "刷新當前音樂庫";
 
 // Dialog
@@ -60,14 +62,14 @@
 "Error checking yt-dlp: %@" = "檢查 yt-dlp 時出錯: %@";
 "Error getting video title: %@" = "獲取視頻標題時出錯: %@";
 "Getting available formats, URL: %@" = "獲取可用格式，URL: %@";
-"🎵 Best Quality (Auto Select)" = "🎵 最佳音質 (自動選擇)";
+"Best Quality (Auto Select)" = "最佳音質 (自動選擇)";
 "stereo" = "立體聲";
 "mono" = "單聲道";
 "5.1 channels" = "5.1聲道";
-"🎵 %@ Audio (%@" = "🎵 %@ 音頻 (%@";
-"🎵 %@ Audio" = "🎵 %@ 音頻";
-"🎵 M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "🎵 M4A 音頻 (128kbps, 44kHz, 立體聲, 3.5MiB) [AAC]";
-"🎵 WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "🎵 WebM 音頻 (160kbps, 48kHz, 立體聲, 3.2MiB) [Opus]";
+"%@ Audio (%@" = "%@ 音頻 (%@";
+"%@ Audio" = "%@ 音頻";
+"M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "M4A 音頻 (128kbps, 44kHz, 立體聲, 3.5MiB) [AAC]";
+"WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "WebM 音頻 (160kbps, 48kHz, 立體聲, 3.2MiB) [Opus]";
 "Failed to get formats: %@" = "獲取格式失敗: %@";
 "Error getting formats: %@" = "獲取格式時出錯: %@";
 "Starting audio download, URL: %@, Format ID: %@" = "開始下載音頻，URL: %@, 格式ID: %@";
