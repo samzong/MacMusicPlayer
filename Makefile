@@ -14,7 +14,7 @@ CONFIGURATION = Release
 BUILT_APP_PATH = $(BUILD_DIR)/$(CONFIGURATION)/$(APP_NAME).app
 INSTALL_PATH = /Applications/$(APP_NAME).app
 
-# 签名相关变量 - 使用自签名选项
+# Signature related variables - use self-sign option
 SELF_SIGN = true
 TEAM_ID = 
 APPLE_ID = 
@@ -39,7 +39,7 @@ clean:
 
 # Build for local development (current architecture)
 build:
-	@echo "🔨 构建 $(APP_NAME) 应用 (本地开发版本)..."
+	@echo "🔨 Build $(APP_NAME) application (local development version)..."
 	@mkdir -p $(BUILD_DIR)
 	xcodebuild \
 		-scheme $(APP_NAME) \
@@ -52,29 +52,29 @@ build:
 		DEVELOPMENT_TEAM="" \
 		CURRENT_PROJECT_VERSION=$(VERSION) \
 		MARKETING_VERSION=$(VERSION)
-	@echo "✅ 构建完成！"
-	@echo "📍 应用位置: $(BUILT_APP_PATH)"
+	@echo "✅ Build completed!"
+	@echo "📍 Application location: $(BUILT_APP_PATH)"
 
 # Install app to /Applications
 install-app: build
-	@echo "📦 安装 $(APP_NAME) 到 /Applications..."
+	@echo "📦 Install $(APP_NAME) to /Applications..."
 	@if [ -d "$(INSTALL_PATH)" ]; then \
-		echo "⚠️  发现已安装的版本，正在删除..."; \
+		echo "⚠️  Found installed version, deleting..."; \
 		sudo rm -rf "$(INSTALL_PATH)"; \
 	fi
 	@if [ -d "$(BUILT_APP_PATH)" ]; then \
 		sudo cp -R "$(BUILT_APP_PATH)" /Applications/; \
-		echo "✅ $(APP_NAME) 已成功安装到 /Applications!"; \
-		echo "🚀 您可以从 Launchpad 或 Applications 文件夹启动应用"; \
+		echo "✅ $(APP_NAME) has been successfully installed to /Applications!"; \
+		echo "🚀 You can launch the application from Launchpad or Applications folder"; \
 	else \
-		echo "❌ 错误: 找不到构建的应用文件 $(BUILT_APP_PATH)"; \
-		echo "💡 请先运行 'make build' 构建应用"; \
+		echo "❌ Error: Unable to find the built application file $(BUILT_APP_PATH)"; \
+		echo "💡 Please run 'make build' to build the application"; \
 		exit 1; \
 	fi
 
 # Build for x86_64 (Intel)
 build-x86_64:
-	@echo "==> 构建 x86_64 架构的应用..."
+	@echo "==> Build x86_64 architecture application..."
 	xcodebuild clean archive \
 		-project $(APP_NAME).xcodeproj \
 		-scheme $(APP_NAME) \
@@ -90,7 +90,7 @@ build-x86_64:
 
 # Build for arm64 (Apple Silicon)
 build-arm64:
-	@echo "==> 构建 arm64 架构的应用..."
+	@echo "==> Build arm64 architecture application..."
 	xcodebuild clean archive \
 		-project $(APP_NAME).xcodeproj \
 		-scheme $(APP_NAME) \
@@ -119,8 +119,8 @@ dmg: build-x86_64 build-arm64
 	# Copy application to temporary directory
 	cp -r "$(BUILD_DIR)/x86_64/$(APP_NAME).app" "$(BUILD_DIR)/tmp-x86_64/"
 	
-	# 对 x86_64 应用进行自签名
-	@echo "==> 对 x86_64 应用进行自签名..."
+	# Self-sign x86_64 application
+	@echo "==> Self-sign x86_64 application..."
 	codesign --force --deep --sign - "$(BUILD_DIR)/tmp-x86_64/$(APP_NAME).app"
 	
 	# Create symbolic link to Applications folder
@@ -148,8 +148,8 @@ dmg: build-x86_64 build-arm64
 	# Copy application to temporary directory
 	cp -r "$(BUILD_DIR)/arm64/$(APP_NAME).app" "$(BUILD_DIR)/tmp-arm64/"
 	
-	# 对 arm64 应用进行自签名
-	@echo "==> 对 arm64 应用进行自签名..."
+	# Self-sign arm64 application
+	@echo "==> Self-sign arm64 application..."
 	codesign --force --deep --sign - "$(BUILD_DIR)/tmp-arm64/$(APP_NAME).app"
 	
 	# Create symbolic link to Applications folder
@@ -164,37 +164,37 @@ dmg: build-x86_64 build-arm64
 	# Clean up
 	rm -rf $(BUILD_DIR)/tmp-arm64 $(BUILD_DIR)/arm64
 	
-	# 检查架构兼容性
+	# Check architecture compatibility
 	@make check-arch
 	
-	@echo "==> 所有 DMG 文件已创建:"
-	@echo "    - x86_64 版本: $(X86_64_DMG_PATH)"
-	@echo "    - arm64 版本: $(ARM64_DMG_PATH)"
+	@echo "==> All DMG files have been created:"
+	@echo "    - x86_64 version: $(X86_64_DMG_PATH)"
+	@echo "    - arm64 version: $(ARM64_DMG_PATH)"
 	@echo ""
-	@echo "注意: 这些应用使用了自签名，用户首次运行时可能需要在系统偏好设置中手动允许运行。"
-	@echo "在 README 中添加相关说明可以帮助用户解决这个问题。"
+	@echo "Note: These applications are self-signed, and users may need to manually allow them to run in the system preferences. Adding relevant instructions in the README can help users resolve this issue."
+	@echo "Adding relevant instructions in the README can help users resolve this issue."
 
 # Check architecture compatibility
 check-arch:
-	@echo "==> 检查应用架构兼容性..."
+	@echo "==> Check application architecture compatibility..."
 	@if [ -f "$(X86_64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" ]; then \
-		echo "==> 检查 x86_64 版本架构:"; \
+		echo "==> Check x86_64 version architecture:"; \
 		lipo -info "$(X86_64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"; \
 		if lipo -info "$(X86_64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" | grep -q "x86_64"; then \
-			echo "✅ x86_64 版本支持 x86_64 架构"; \
+			echo "✅ x86_64 version supports x86_64 architecture"; \
 		else \
-			echo "❌ x86_64 版本不支持 x86_64 架构"; \
+			echo "❌ x86_64 version does not support x86_64 architecture"; \
 			exit 1; \
 		fi; \
 	fi
 	
 	@if [ -f "$(ARM64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" ]; then \
-		echo "==> 检查 arm64 版本架构:"; \
+		echo "==> Check arm64 version architecture:"; \
 		lipo -info "$(ARM64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"; \
 		if lipo -info "$(ARM64_ARCHIVE_PATH)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)" | grep -q "arm64"; then \
-			echo "✅ arm64 版本支持 arm64 架构"; \
+			echo "✅ arm64 version supports arm64 architecture"; \
 		else \
-			echo "❌ arm64 版本不支持 arm64 架构"; \
+			echo "❌ arm64 version does not support arm64 architecture"; \
 			exit 1; \
 		fi; \
 	fi
@@ -282,27 +282,27 @@ update-homebrew:
 
 # Help command
 help:
-	@echo "MacMusicPlayer 构建工具使用说明："
+	@echo "MacMusicPlayer build tool usage guide:"
 	@echo ""
-	@echo "可用命令："
-	@echo "  make build           - 构建应用 (本地开发，当前架构)"
-	@echo "  make install-app     - 构建并安装应用到 /Applications"
-	@echo "  make build-x86_64    - 构建 x86_64 架构版本"
-	@echo "  make build-arm64     - 构建 arm64 架构版本"
-	@echo "  make clean           - 清理构建文件"
-	@echo "  make dmg             - 创建 DMG 安装包 (Intel 和 Apple Silicon)"
-	@echo "  make version         - 显示版本信息"
-	@echo "  make check-arch      - 检查应用架构兼容性"
-	@echo "  make update-homebrew - 更新 Homebrew cask (需要 GH_PAT)"
+	@echo "Available commands:"
+	@echo "  make build           - Build application (local development, current architecture)"
+	@echo "  make install-app     - Build and install application to /Applications"
+	@echo "  make build-x86_64    - Build x86_64 architecture version"
+	@echo "  make build-arm64     - Build arm64 architecture version"
+	@echo "  make clean           - Clean build files"
+	@echo "  make dmg             - Create DMG installation package (Intel and Apple Silicon)"
+	@echo "  make version         - Display version information"
+	@echo "  make check-arch      - Check application architecture compatibility"
+	@echo "  make update-homebrew - Update Homebrew cask (needs GH_PAT)"
 	@echo ""
-	@echo "📝 注意事项："
-	@echo "  • install-app 需要管理员权限 (sudo)"
-	@echo "  • 安装前会自动删除已存在的旧版本"
-	@echo "  • build 命令用于快速本地开发构建"
-	@echo "  • dmg 命令用于发布分发，支持双架构"
+	@echo "📝 Notes:"
+	@echo "  • install-app needs admin permissions (sudo)"
+	@echo "  • The old version will be automatically deleted before installation"
+	@echo "  • The build command is used for quick local development build"
+	@echo "  • The dmg command is used for release distribution, supporting dual architecture"
 	@echo ""
-	@echo "🚀 快速开始："
-	@echo "  make install-app          # 一键构建并安装 (本地开发)"
-	@echo "  make dmg                  # 创建发布版 DMG"
+	@echo "🚀 Quick start:"
+	@echo "  make install-app          # Build and install (local development)"
+	@echo "  make dmg                  # Create release DMG"
 
 .DEFAULT_GOAL := help
