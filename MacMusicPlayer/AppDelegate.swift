@@ -93,11 +93,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let playModeMenu = NSMenu()
         let playModeItem = NSMenuItem(title: NSLocalizedString("Playback Mode", comment: ""), action: nil, keyEquivalent: "")
         
-        let sequentialItem = NSMenuItem(title: PlayerManager.PlayMode.sequential.localizedString, action: #selector(setPlayMode(_:)), keyEquivalent: "")
+        let sequentialItem = NSMenuItem(title: PlayMode.sequential.localizedString, action: #selector(setPlayMode(_:)), keyEquivalent: "")
         sequentialItem.tag = 0
-        let singleLoopItem = NSMenuItem(title: PlayerManager.PlayMode.singleLoop.localizedString, action: #selector(setPlayMode(_:)), keyEquivalent: "")
+        let singleLoopItem = NSMenuItem(title: PlayMode.singleLoop.localizedString, action: #selector(setPlayMode(_:)), keyEquivalent: "")
         singleLoopItem.tag = 1
-        let randomItem = NSMenuItem(title: PlayerManager.PlayMode.random.localizedString, action: #selector(setPlayMode(_:)), keyEquivalent: "")
+        let randomItem = NSMenuItem(title: PlayMode.random.localizedString, action: #selector(setPlayMode(_:)), keyEquivalent: "")
         randomItem.tag = 2
         
         playModeMenu.addItem(sequentialItem)
@@ -372,7 +372,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func setPlayMode(_ sender: NSMenuItem) {
-        let mode: PlayerManager.PlayMode
+        let mode: PlayMode
         switch sender.tag {
         case 0:
             mode = .sequential
