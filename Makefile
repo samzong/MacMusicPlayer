@@ -1,4 +1,4 @@
-.PHONY: clean build install-app dmg update-homebrew check-arch build-x86_64 build-arm64
+.PHONY: clean build install-app dmg update-homebrew check-arch build-x86_64 build-arm64 quit-app launch-app
 
 # Variables
 APP_NAME = MacMusicPlayer
@@ -12,7 +12,8 @@ DMG_VOLUME_NAME = "$(APP_NAME)"
 # Install variables
 CONFIGURATION = Release
 BUILT_APP_PATH = $(BUILD_DIR)/$(CONFIGURATION)/$(APP_NAME).app
-INSTALL_PATH = /Applications/$(APP_NAME).app
+USER_APPLICATIONS = $(HOME)/Applications
+INSTALL_PATH = $(USER_APPLICATIONS)/$(APP_NAME).app
 
 # Signature related variables - use self-sign option
 SELF_SIGN = true
@@ -55,22 +56,41 @@ build:
 	@echo "✅ Build completed!"
 	@echo "📍 Application location: $(BUILT_APP_PATH)"
 
+# Force quit running application instances
+quit-app:
+	@echo "⏹️  Force quitting any running $(APP_NAME) instances..."
+	@if pgrep -x "$(APP_NAME)" >/dev/null 2>&1; then \
+		pkill -KILL -x "$(APP_NAME)" >/dev/null 2>&1; \
+		echo "✅ $(APP_NAME) has been force quit."; \
+	else \
+		echo "ℹ️  $(APP_NAME) is not currently running."; \
+	fi
+
 # Install app to /Applications
-install-app: build
-	@echo "📦 Install $(APP_NAME) to /Applications..."
+install-app:
+	@$(MAKE) --no-print-directory quit-app
+	@$(MAKE) --no-print-directory build
+	@echo "📦 Install $(APP_NAME) to ~/Applications..."
 	@if [ -d "$(INSTALL_PATH)" ]; then \
 		echo "⚠️  Found installed version, deleting..."; \
-		sudo rm -rf "$(INSTALL_PATH)"; \
+		rm -rf "$(INSTALL_PATH)"; \
 	fi
 	@if [ -d "$(BUILT_APP_PATH)" ]; then \
-		sudo cp -R "$(BUILT_APP_PATH)" /Applications/; \
-		echo "✅ $(APP_NAME) has been successfully installed to /Applications!"; \
-		echo "🚀 You can launch the application from Launchpad or Applications folder"; \
+		cp -R "$(BUILT_APP_PATH)" "$(USER_APPLICATIONS)/"; \
+		echo "✅ $(APP_NAME) has been successfully installed to ~/Applications!"; \
+		echo "🚀 Launching the freshly installed application"; \
 	else \
 		echo "❌ Error: Unable to find the built application file $(BUILT_APP_PATH)"; \
-		echo "💡 Please run 'make build' to build the application"; \
+		echo "💡 Please rerun 'make install-app' to rebuild and install"; \
 		exit 1; \
 	fi
+	@$(MAKE) --no-print-directory launch-app
+
+# Launch installed application
+launch-app:
+	@echo "🚀 Launching $(APP_NAME)..."
+	@open "$(INSTALL_PATH)"
+	@echo "✅ $(APP_NAME) launched."
 
 # Build for x86_64 (Intel)
 build-x86_64:

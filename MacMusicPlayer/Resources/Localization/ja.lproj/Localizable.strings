@@ -10,6 +10,7 @@
 "Random" = "シャッフル";
 "Set Music Source" = "音楽フォルダを選択";
 "Download Music" = "音楽をダウンロードする";
+"Browse Songs..." = "曲を選択...";
 "Prevent Mac Sleep" = "システムのスリープを防止";
 "Launch at Login" = "ログイン時に起動";
 "Settings" = "設定";
@@ -159,3 +160,8 @@
 "Jazz" = "ジャズ";
 "Electronic" = "エレクトロニック";
 "Hip-Hop" = "ヒップホップ";
+
+// Song Picker Window Status
+"search_songs_placeholder" = "曲を検索...";
+"song_count_format" = "%d 曲";
+"operation_hints" = "Tab切替，Enter再生，Esc閉じる";

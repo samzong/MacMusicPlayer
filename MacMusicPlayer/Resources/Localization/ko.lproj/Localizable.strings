@@ -10,6 +10,7 @@
 "Random" = "무작위 재생";
 "Set Music Source" = "음악 폴더 선택";
 "Download Music" = "음악 다운로드";
+"Browse Songs..." = "노래 선택...";
 "Prevent Mac Sleep" = "시스템 절전 방지";
 "Launch at Login" = "로그인 시 실행";
 "Settings" = "설정";
@@ -159,3 +160,8 @@
 "Jazz" = "재즈";
 "Electronic" = "전자";
 "Hip-Hop" = "힙합";
+
+// Song Picker Window Status
+"search_songs_placeholder" = "곡 검색...";
+"song_count_format" = "%d 곡";
+"operation_hints" = "Tab 전환，Enter 재생，Esc 닫기";

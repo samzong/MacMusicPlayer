@@ -10,6 +10,7 @@
 "Random" = "Shuffle";
 "Set Music Source" = "Choose Music Folder";
 "Download Music" = "Download Music";
+"Browse Songs..." = "Browse Songs...";
 "Prevent Mac Sleep" = "Keep Mac Awake";
 "Launch at Login" = "Start at Login";
 "Settings" = "Settings";
@@ -159,3 +160,8 @@
 "Jazz" = "Jazz";
 "Electronic" = "Electronic";
 "Hip-Hop" = "Hip-Hop";
+
+// Song Picker Window Status
+"search_songs_placeholder" = "Search songs...";
+"song_count_format" = "%d Song";
+"operation_hints" = "Tab to switch, Enter to play, Esc to close";
