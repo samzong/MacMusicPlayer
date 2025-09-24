@@ -14,7 +14,12 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published var playlist: [Track] = []
     @Published var currentTrack: Track? {
         didSet {
-            player = nil  // Reset player when track changes
+            // Save current volume before destroying player
+            if let currentPlayer = player {
+                savedVolume = currentPlayer.volume
+                currentPlayer.stop()
+            }
+            player = nil
             NotificationCenter.default.post(name: NSNotification.Name("TrackChanged"), object: nil)
         }
     }
@@ -25,6 +30,7 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
     private var player: AVAudioPlayer?
     private var currentIndex = 0
+    private var savedVolume: Float = 0.3  // Store user's preferred volume
     var audioEngine: AVAudioEngine!
     var playerNode: AVAudioPlayerNode!
     
@@ -367,6 +373,7 @@ class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
             do {
                 player = try AVAudioPlayer(contentsOf: track.url)
                 player?.delegate = self
+                player?.volume = savedVolume
             } catch {
                 print(NSLocalizedString("Could not create player", comment: "") + " \(track.title): \(error)")
                 return
