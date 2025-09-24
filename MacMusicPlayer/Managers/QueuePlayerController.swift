@@ -32,6 +32,18 @@ class QueuePlayerController: NSObject, PlaybackControlling {
         set { queuePlayer.volume = newValue }
     }
 
+    var currentItemDuration: TimeInterval? {
+        guard let duration = queuePlayer.currentItem?.asset.duration else { return nil }
+        let seconds = CMTimeGetSeconds(duration)
+        return seconds.isFinite ? seconds : nil
+    }
+
+    var currentItemElapsedTime: TimeInterval? {
+        let currentTime = queuePlayer.currentTime()
+        let seconds = CMTimeGetSeconds(currentTime)
+        return seconds.isFinite ? seconds : nil
+    }
+
     override init() {
         queuePlayer = AVQueuePlayer()
         super.init()
@@ -45,7 +57,7 @@ class QueuePlayerController: NSObject, PlaybackControlling {
     private func setupObservers() {
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(playerItemDidFinish),
+            selector: #selector(playerItemDidFinish(_:)),
             name: .AVPlayerItemDidPlayToEndTime,
             object: nil
         )
@@ -69,9 +81,14 @@ class QueuePlayerController: NSObject, PlaybackControlling {
         }
     }
 
-    @objc private func playerItemDidFinish() {
-        // Notify PlayerManager about automatic track completion
-        onTrackFinished?(currentTrack)
+    @objc private func playerItemDidFinish(_ notification: Notification) {
+        guard let finishedItem = notification.object as? AVPlayerItem,
+              let index = playerItems.firstIndex(of: finishedItem),
+              index < tracks.count else {
+            return
+        }
+
+        onTrackFinished?(tracks[index])
     }
 
     private func updateCurrentTrackIndex() {
@@ -107,20 +124,30 @@ class QueuePlayerController: NSObject, PlaybackControlling {
     func setQueue(_ tracks: [Track], startingAt index: Int) {
         clearQueue()
 
+        guard !tracks.isEmpty else { return }
+
         self.tracks = tracks
-        self.currentTrackIndex = min(index, tracks.count - 1)
+
+        var newPlayerItems: [AVPlayerItem] = []
+        newPlayerItems.reserveCapacity(tracks.count)
 
         for track in tracks {
-            guard let playerItem = createPlayerItem(from: track) else { continue }
-            playerItems.append(playerItem)
-            queuePlayer.insert(playerItem, after: queuePlayer.items().last)
+            let playerItem = createPlayerItem(from: track)
+            newPlayerItems.append(playerItem)
         }
 
-        if index > 0 {
-            // Advance to the specified starting index
-            for _ in 0..<index {
-                queuePlayer.advanceToNextItem()
-            }
+        guard !newPlayerItems.isEmpty else { return }
+
+        playerItems = newPlayerItems
+
+        let boundedIndex = max(0, min(index, playerItems.count - 1))
+        currentTrackIndex = boundedIndex
+
+        let orderedIndices = Array(boundedIndex..<playerItems.count) + Array(0..<boundedIndex)
+
+        for trackIndex in orderedIndices {
+            let playerItem = playerItems[trackIndex]
+            queuePlayer.insert(playerItem, after: queuePlayer.items().last)
         }
     }
 
@@ -139,7 +166,7 @@ class QueuePlayerController: NSObject, PlaybackControlling {
         return true
     }
 
-    private func createPlayerItem(from track: Track) -> AVPlayerItem? {
+    private func createPlayerItem(from track: Track) -> AVPlayerItem {
         return AVPlayerItem(url: track.url)
     }
 }

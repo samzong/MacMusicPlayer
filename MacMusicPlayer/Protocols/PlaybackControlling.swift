@@ -12,6 +12,8 @@ protocol PlaybackControlling {
     var isPlaying: Bool { get }
     var currentTrack: Track? { get }
     var volume: Float { get set }
+    var currentItemDuration: TimeInterval? { get }
+    var currentItemElapsedTime: TimeInterval? { get }
 
     func play()
     func pause()
@@ -24,4 +26,5 @@ protocol PlaybackControlling {
 
     var onTrackChanged: ((Track?) -> Void)? { get set }
     var onPlaybackStateChanged: ((Bool) -> Void)? { get set }
+    var onTrackFinished: ((Track?) -> Void)? { get set }
 }

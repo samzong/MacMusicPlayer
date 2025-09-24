@@ -35,8 +35,8 @@ class PlaylistStore: ObservableObject {
     func nextIndex(for playMode: PlayMode) -> Int? {
         switch playMode {
         case .sequential:
-            let nextIndex = (currentIndex + 1) % tracks.count
-            return nextIndex != currentIndex || tracks.count == 1 ? nextIndex : nil
+            guard !tracks.isEmpty else { return nil }
+            return (currentIndex + 1) % tracks.count
 
         case .random:
             guard tracks.count > 1 else { return currentIndex }

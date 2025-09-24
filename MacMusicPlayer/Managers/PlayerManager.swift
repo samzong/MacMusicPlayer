@@ -135,7 +135,7 @@ class PlayerManager: NSObject, ObservableObject {
             playMode = .sequential
         }
 
-        // 加载均衡器设置
+        // Load equalizer settings
         if UserDefaults.standard.object(forKey: "BassGain") != nil {
             bassGain = UserDefaults.standard.float(forKey: "BassGain")
         }
@@ -330,6 +330,14 @@ class PlayerManager: NSObject, ObservableObject {
             nowPlayingInfo[MPMediaItemPropertyTitle] = currentTrack.title
             nowPlayingInfo[MPMediaItemPropertyArtist] = currentTrack.artist
             nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = queueController.isPlaying ? 1.0 : 0.0
+
+            if let duration = queueController.currentItemDuration {
+                nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = duration
+            }
+
+            if let elapsed = queueController.currentItemElapsedTime {
+                nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = elapsed
+            }
         }
 
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
@@ -408,13 +416,13 @@ class PlayerManager: NSObject, ObservableObject {
     }
 
     func play() {
-        // Use queue controller for new architecture
-        queueController.play()
-
         guard let track = currentTrack else {
             print(NSLocalizedString("No current track to play", comment: ""))
             return
         }
+
+        // Use queue controller for new architecture
+        queueController.play()
 
         print(NSLocalizedString("Started playing", comment: "") + ": \(track.title)")
 
@@ -530,14 +538,32 @@ class PlayerManager: NSObject, ObservableObject {
 
         switch playMode {
         case .sequential:
-            // Let AVQueuePlayer handle sequential advancement naturally
-            // If it reaches the end, it will stop (no wrap-around for automatic completion)
-            break
+            guard
+                let finishedTrack,
+                let finishedIndex = playlistStore.tracks.firstIndex(where: { $0.id == finishedTrack.id })
+            else { return }
+
+            if finishedIndex == playlistStore.count - 1 {
+                // Last track finished – rebuild queue from the top to loop
+                let nextIndex = (finishedIndex + 1) % playlistStore.count
+                queueController.setQueue(playlistStore.tracks, startingAt: nextIndex)
+                queueController.play()
+                updateNowPlayingInfo()
+            }
 
         case .singleLoop:
-            // Restart the same track
-            queueController.stop()
+            guard
+                let finishedTrack,
+                let finishedIndex = playlistStore.tracks.firstIndex(where: { $0.id == finishedTrack.id })
+            else { return }
+
+            playlistStore.setCurrentIndex(finishedIndex)
+            currentIndex = finishedIndex
+            currentTrack = playlistStore.currentTrack
+
+            queueController.setQueue(playlistStore.tracks, startingAt: finishedIndex)
             queueController.play()
+            updateNowPlayingInfo()
 
         case .random:
             // Pick a truly random next track and rebuild queue
