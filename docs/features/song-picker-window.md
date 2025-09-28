@@ -1,148 +1,72 @@
-# 歌曲选择窗口功能规范
+# Song Picker Window Enhancement Proposal
 
-为 MacMusicPlayer 添加一个最小化的歌曲选择窗口，允许用户快速浏览和选择音乐库中的歌曲进行播放。这个功能通过菜单栏的一个菜单项激活，显示一个轻量级的弹出窗口（activeWindow 居中），包含最多 9 首歌曲的列表。
+## Summary
 
-## 动机
+Provide a minimal search-and-play surface so users can jump to a specific track without fighting the full library. The picker is a floating `NSPanel` invoked from the status-bar menu and relies on filenames only.
 
-### 背景
+## Motivation
 
-当前 MacMusicPlayer 用户在拥有大量本地音乐文件时，无法快速定位并播放特定歌曲。用户必须依赖随机或顺序播放模式来找到想听的歌曲，这在音乐库较大时效率很低。
+Users with large libraries asked for a way to play a known song instantly instead of cycling through sequential or random playback. The existing player offered no quick filtering or direct play control once a track was buried in the list.
 
-GitHub Issue #52 明确指出了这个需求："能否增加一个播放列表功能。当本地音乐特别多的时候，或者我想听某一首歌的时候，播放列表可以快速定位到目标歌曲。"
+## Goals
 
-### 用户故事
+- Deliver an always-on-top panel that opens fast and stays lightweight.
+- Allow immediate filtering by typing, with sane keyboard shortcuts for playback.
+- Reuse the current `PlayerManager.playlist` without building new data plumbing.
 
-1. **特定歌曲播放**: 用户想要播放特定歌曲，而不是依赖随机播放
-2. **快速歌曲切换**: 在工作或学习过程中需要快速更换背景音乐
-3. **音乐库浏览**: 用户想要看到自己的音乐收藏并进行选择
+## Non-Goals
 
-## 目标与非目标
+- No playlist management, metadata browsing, or persistent filters.
+- No fuzzy search, multi-column table, artwork, or other cosmetic extras.
+- No system-wide hotkeys beyond the existing menu item + `⌘F` accelerator.
 
-### 目标
+## Proposal
 
-- ✅ 提供快速歌曲选择界面
-- ✅ 保持 MacMusicPlayer 轻量级的特性
-- ✅ 零性能影响
-- ✅ 与现有架构无缝集成
+Implement `SimpleSongPickerWindow` as an `NSPanel` created from the _Browse Songs…_ menu action.
 
-### 非目标
+### Activation Flow
 
-- ❌ 复杂的播放列表管理
-- ❌ 搜索和过滤功能
-- ❌ 最近播放历史
-- ❌ 专辑或艺术家分组
-- ❌ 全局快捷键
-- ❌ 自定义主题或外观设置
+1. User clicks **Browse Songs…** or presses `⌘F`.
+2. If a picker already exists, bring it forward; otherwise, spawn one and center it.
+3. Focus the search box so typing starts filtering immediately.
 
-## 提案
+### Layout
 
-### 核心交互模型
+- Fixed 600×400 panel, borderless, floating level, with a plain control-colored background view.
+- Contents: search field, table view, bottom status label.
+- Currently playing track renders in accent color with semibold font.
 
-```text
-用户点击菜单栏 → "浏览歌曲..." → 显示9首歌曲 → 选择一首 → 播放 → 继续选择或ESC关闭
-```
+### Filtering Behavior
 
-### 技术实现
+- We snapshot `PlayerManager.playlist` into `allTracks` and maintain a filtered copy.
+- A 150 ms debounce keeps filtering off every keystroke; matches use case-insensitive substring on the filename (extension stripped).
+- Empty query shows all tracks. Empty result keeps focus in the field and surfaces “No results found”.
 
-创建一个新的 `SongPickerWindow.swift`，实现一个继承自 `NSPanel` 的轻量级窗口。在 `AppDelegate.swift` 中添加菜单项和相应的处理方法。
+### Playback & Shortcuts
 
-## 设计详情
+- `Return`/`Enter`: play highlighted row without closing the window.
+- Double-click mirrors the return behavior.
+- `Space`: toggles play/pause when the current track is selected; otherwise, plays the highlighted track and repaints the table while preserving selection.
+- `Esc`: closes the panel even if the search field is first responder (handled through the delegate callback).
+- Typing alphanumerics while the table has focus hands control back to the search field so filtering never pauses.
 
-### 用户界面设计
+### Localization & Status Copy
 
-#### 视觉外观
+- Placeholder text, status messages, and operation hints use `NSLocalizedString` keys (`search_songs_placeholder`, `song_count_format`, `operation_hints`).
+- Translations live in `Resources/Localization/*/Localizable.strings` alongside the rest of the app.
 
-- **窗口类型**: 无边框 NSPanel（类似 Raycast 风格）
-- **尺寸**: 固定高度，显示 9 行歌曲
-- **位置**: ActiveWindow 居中
-- **样式**: 系统默认外观，单列歌曲标题
+## Drawbacks
 
-#### 交互模式
+- Filename-only search ignores tags or metadata; users with poorly named files get limited benefit.
+- Fixed geometry means long titles truncate; we accept this to keep the panel predictable.
 
-- **键盘导航**: ↑↓ 方向键移动选择，Enter 键播放选中歌曲
-- **快速选择**: Command+1 到 Command+9 快速选择对应行
-- **鼠标操作**: 点击任意歌曲行即播放
-- **关闭方式**: ESC 键或点击窗口外部
-- **持续性**: 播放歌曲后窗口保持打开状态，方便连续选择
+## Alternatives Considered
 
-### 架构设计
+- Rich playlist UI with multiple columns (rejected: heavy, drifts from menu-bar app vision).
+- Spotlight-style overlay with fuzzy matching (rejected for complexity and power key conflicts).
+- Global shortcut to summon the picker anywhere (rejected to avoid competing for system-level key bindings).
 
-#### 数据源
+## Implementation History
 
-```swift
-private var songs: [Track] {
-    return playerManager.playlist
-}
-```
-
-直接使用现有的 PlayerManager.playlist，无需新的数据结构。
-
-#### 播放集成
-
-```swift
-func playTrack(at index: Int) {
-    playerManager.playlistStore.setCurrentIndex(index)
-    playerManager.currentTrack = songs[index]
-    playerManager.play()
-}
-```
-
-直接调用现有的 PlayerManager 方法，无抽象层。
-
-#### 文件结构影响
-
-```text
-MacMusicPlayer/
-├── Views/
-│   └── SongPickerWindow.swift
-├── Core/
-│   └── AppDelegate.swift
-```
-
-### 性能考虑
-
-- **内存使用**: 零额外内存开销（直接引用现有播放列表）
-- **CPU 影响**: 最小化（简单的表格视图渲染）
-- **响应速度**: 目标 50 毫秒内打开窗口
-- **用户体验**: 无阻塞操作，所有交互在主线程完成
-
-## 被否决的替代方案
-
-### 方案 A: iTunes 风格迷你播放器窗口
-
-**否决理由**: 违背了 MacMusicPlayer"轻量级菜单栏应用"的核心理念。
-
-### 方案 B: 复杂的播放列表管理系统
-
-**否决理由**: 过度工程化，用户只需要快速选歌功能。
-
-### 方案 C: 搜索覆盖层界面
-
-**否决理由**: 为 v1.0 版本增加了不必要的复杂性。
-
-### 方案 D: 全局快捷键激活
-
-**否决理由**: macOS 已有太多应用抢占快捷键，菜单项更符合原生体验。
-
-## 风险评估
-
-### 低风险项
-
-- ✅ 单文件实现，影响范围最小
-- ✅ 使用现有数据结构，无新依赖
-- ✅ 标准 macOS UI 组件
-
-### 缓解策略
-
-- **代码质量**: 严格遵循项目现有的 MVVM 模式
-- **性能监控**: 确保 UI 响应时间符合标准
-- **回滚计划**: 如有问题可轻松移除单个文件
-
-## 参考资料
-
-- GitHub Issue #52: https://github.com/samzong/MacMusicPlayer/issues/52
-- Apple Human Interface Guidelines - Panels and Popovers
-
----
-
-**开发原则**: "解决实际问题，不要为了技术而技术。最好的代码是不写代码，第二好的是解决问题的最简代码。"
+- Initial implementation shipped in `SimpleSongPickerWindow.swift`.
+- Debounce, selection restore, and localized strings landed in the same file with supporting entries in localization bundles.

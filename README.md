@@ -35,6 +35,7 @@ Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/
 - 🎵 Lightweight menu bar player for instant music control
 - 🎨 Native macOS interface with perfect light/dark theme support
 - 🌍 Multi-language support (English, Chinese, Japanese, Korean)
+- 🔎 Command+F song picker with instant filename filtering
 - 🎧 Audio format support (mp3, m4a, wav, flac, aac, aiff, etc.)
 - 🔄 Multiple playback modes (Sequential, Single Loop, Random)
 - 📥 Download music from online sources (YouTube, SoundCloud, etc.)
