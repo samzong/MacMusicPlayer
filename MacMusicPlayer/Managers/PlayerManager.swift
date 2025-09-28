@@ -441,6 +441,19 @@ class PlayerManager: NSObject, ObservableObject {
         updateNowPlayingInfo()
     }
 
+    func playTrack(at index: Int) {
+        guard index >= 0 && index < playlistStore.tracks.count else { return }
+
+        let tracks = playlistStore.tracks
+        queueController.setQueue(tracks, startingAt: index)
+        playlistStore.setCurrentIndex(index)
+        currentIndex = index
+        currentTrack = tracks[index]
+        queueController.play()
+        isPlaying = true
+        updateNowPlayingInfo()
+    }
+
     func clearQueue() {
         // Clear queue controller (destructive)
         queueController.clearQueue()

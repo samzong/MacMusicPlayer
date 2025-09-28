@@ -22,6 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // Strong reference to the window
     private var downloadWindow: NSWindow?
     private var configWindow: NSWindow?
+    private var songPickerWindow: SimpleSongPickerWindow?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         playerManager = PlayerManager()
@@ -89,7 +90,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: NSLocalizedString("Previous", comment: ""), action: #selector(playPrevious), keyEquivalent: ""))        
         menu.addItem(NSMenuItem(title: NSLocalizedString("Next", comment: ""), action: #selector(playNext), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
-        
+
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Browse Songs...", comment: "Menu item for browsing and selecting songs"), action: #selector(showSongPickerWindow), keyEquivalent: "f"))
+
         let playModeMenu = NSMenu()
         let playModeItem = NSMenuItem(title: NSLocalizedString("Playback Mode", comment: ""), action: nil, keyEquivalent: "")
         
@@ -106,7 +109,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         playModeItem.submenu = playModeMenu
         menu.addItem(playModeItem)
-        
+
         let equalizerMenu = NSMenu()
         let equalizerItem = NSMenuItem(title: NSLocalizedString("Equalizer", comment: ""), action: nil, keyEquivalent: "")
         
@@ -621,11 +624,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             NSApp.activate(ignoringOtherApps: true)
             return
         }
-        
+
         let configVC = ConfigViewController {
             NotificationCenter.default.post(name: NSNotification.Name("ConfigUpdated"), object: nil)
         }
-        
+
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 400, height: 280),
             styleMask: [.titled, .closable, .miniaturizable],
@@ -635,13 +638,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.contentViewController = configVC
         window.title = NSLocalizedString("Settings", comment: "")
         window.center()
-        
+
         window.isReleasedWhenClosed = false
         window.delegate = self
-        
+
         self.configWindow = window
-        
+
         window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @objc func showSongPickerWindow() {
+        if let existingWindow = self.songPickerWindow {
+            existingWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let songPickerWindow = SimpleSongPickerWindow(playerManager: playerManager)
+        songPickerWindow.delegate = self
+
+        self.songPickerWindow = songPickerWindow
+
+        songPickerWindow.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
 }
@@ -653,6 +672,8 @@ extension AppDelegate: NSWindowDelegate {
                 downloadWindow = nil
             } else if window == configWindow {
                 configWindow = nil
+            } else if window == songPickerWindow {
+                songPickerWindow = nil
             }
         }
     }

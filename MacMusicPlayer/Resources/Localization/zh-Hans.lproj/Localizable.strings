@@ -10,6 +10,7 @@
 "Random" = "随机播放";
 "Set Music Source" = "选择音乐文件夹";
 "Download Music" = "下载音乐";
+"Browse Songs..." = "浏览歌曲...";
 "Prevent Mac Sleep" = "保持系统唤醒";
 "Launch at Login" = "开机启动";
 "Settings" = "设置";
@@ -159,3 +160,8 @@
 "Jazz" = "爵士";
 "Electronic" = "电子";
 "Hip-Hop" = "嘻哈";
+
+// Song Picker Window Status
+"search_songs_placeholder" = "搜索歌曲...";
+"song_count_format" = "%d 首歌曲";
+"operation_hints" = "Tab 切换，回车播放，Esc 关闭";
