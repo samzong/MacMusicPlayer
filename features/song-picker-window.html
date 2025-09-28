@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>歌曲选择窗口功能规范 MacMusicPlayer</title>
+    <meta name="description" content="为 MacMusicPlayer 添加一个最小化的歌曲选择窗口，允许用户快速浏览和选择音乐库中的歌曲进行播放。这个功能通过菜单栏的一个菜单项激活，显示一个轻量级的弹出窗口（activeWindow 居中），包含最多 9 首歌曲的列表。">
+    <meta name="keywords" content="macOS, music player, menu bar, SwiftUI, seamless,macOS Integration, exceptional, user experience, Minimalist Design,Audio Player">
+    <link rel="stylesheet" type="text/css" href="../css/main.css?v=1.34.2">
+    <link rel="stylesheet" type="text/css" href="../css/tocbot.css?v=1.34.2">
+    <link rel="stylesheet" type="text/css" href="../css/media.css?v=1.34.2">
+    <link rel="stylesheet" type="text/css" href="../css/sidebar.css?v=1.34.2">
+    <link rel="stylesheet" type="text/css" href="../css/copy.css?v=1.34.2">
+    <link rel="stylesheet" type="text/css" href="../css/demo-preview.css?v=1.34.2">
+    <script src="../js/copy.js?v=1.34.2"></script>
+    <script src="../js/dark-mode.js?v=1.34.2"></script>
+    <script src="../js/markdown-style.js?v=1.34.2"></script>
+  </head>
+  <body id="idoctotop"><a href="#idoctotop" class="gototop">top</a>
+    <header class="header">
+      <article class="inner warpper" style="max-width:720px;"><a class="logo" href="../index.html"><span class="title">MacMusicPlayer</span></a>
+        <div class="content">
+          <ul class="menu">
+            <li><a href="../index.html" target="" class="">Home</a></li>
+            <li><a href="https://github.com/samzong" target="__blank" class="">About</a></li>
+          </ul><a href="https://github.com/samzong/MacMusicPlayer" target="_blank" rel="noopener noreferrer" title="Github" name="Github" class="github"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg></a>
+          <dark-mode permanent=""></dark-mode>
+        </div>
+      </article>
+    </header>
+    <div style="max-width:720px;" class="warpper-content warpper notocs">
+      <markdown-style theme-auto-switch-disabled="">
+        <h1 id="歌曲选择窗口功能规范"><a aria-hidden="true" tabindex="-1" href="#歌曲选择窗口功能规范" class="anchor"><span class="icon icon-link"></span></a>歌曲选择窗口功能规范</h1>
+        <p>为 MacMusicPlayer 添加一个最小化的歌曲选择窗口，允许用户快速浏览和选择音乐库中的歌曲进行播放。这个功能通过菜单栏的一个菜单项激活，显示一个轻量级的弹出窗口（activeWindow 居中），包含最多 9 首歌曲的列表。</p>
+        <h2 id="动机"><a aria-hidden="true" tabindex="-1" href="#动机" class="anchor"><span class="icon icon-link"></span></a>动机</h2>
+        <h3 id="背景"><a aria-hidden="true" tabindex="-1" href="#背景" class="anchor"><span class="icon icon-link"></span></a>背景</h3>
+        <p>当前 MacMusicPlayer 用户在拥有大量本地音乐文件时，无法快速定位并播放特定歌曲。用户必须依赖随机或顺序播放模式来找到想听的歌曲，这在音乐库较大时效率很低。</p>
+        <p>GitHub Issue #52 明确指出了这个需求："能否增加一个播放列表功能。当本地音乐特别多的时候，或者我想听某一首歌的时候，播放列表可以快速定位到目标歌曲。"</p>
+        <h3 id="用户故事"><a aria-hidden="true" tabindex="-1" href="#用户故事" class="anchor"><span class="icon icon-link"></span></a>用户故事</h3>
+        <ol>
+          <li><strong>特定歌曲播放</strong>: 用户想要播放特定歌曲，而不是依赖随机播放</li>
+          <li><strong>快速歌曲切换</strong>: 在工作或学习过程中需要快速更换背景音乐</li>
+          <li><strong>音乐库浏览</strong>: 用户想要看到自己的音乐收藏并进行选择</li>
+        </ol>
+        <h2 id="目标与非目标"><a aria-hidden="true" tabindex="-1" href="#目标与非目标" class="anchor"><span class="icon icon-link"></span></a>目标与非目标</h2>
+        <h3 id="目标"><a aria-hidden="true" tabindex="-1" href="#目标" class="anchor"><span class="icon icon-link"></span></a>目标</h3>
+        <ul>
+          <li>✅ 提供快速歌曲选择界面</li>
+          <li>✅ 保持 MacMusicPlayer 轻量级的特性</li>
+          <li>✅ 零性能影响</li>
+          <li>✅ 与现有架构无缝集成</li>
+        </ul>
+        <h3 id="非目标"><a aria-hidden="true" tabindex="-1" href="#非目标" class="anchor"><span class="icon icon-link"></span></a>非目标</h3>
+        <ul>
+          <li>❌ 复杂的播放列表管理</li>
+          <li>❌ 搜索和过滤功能</li>
+          <li>❌ 最近播放历史</li>
+          <li>❌ 专辑或艺术家分组</li>
+          <li>❌ 全局快捷键</li>
+          <li>❌ 自定义主题或外观设置</li>
+        </ul>
+        <h2 id="提案"><a aria-hidden="true" tabindex="-1" href="#提案" class="anchor"><span class="icon icon-link"></span></a>提案</h2>
+        <h3 id="核心交互模型"><a aria-hidden="true" tabindex="-1" href="#核心交互模型" class="anchor"><span class="icon icon-link"></span></a>核心交互模型</h3>
+        <pre class="language-text"><code class="language-text code-highlight"><span class="code-line line-number" line="1">用户点击菜单栏 → "浏览歌曲..." → 显示9首歌曲 → 选择一首 → 播放 → 继续选择或ESC关闭
+</span></code><input type="hidden" value="用户点击菜单栏 → &#x22;浏览歌曲...&#x22; → 显示9首歌曲 → 选择一首 → 播放 → 继续选择或ESC关闭
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="技术实现"><a aria-hidden="true" tabindex="-1" href="#技术实现" class="anchor"><span class="icon icon-link"></span></a>技术实现</h3>
+        <p>创建一个新的 <code>SongPickerWindow.swift</code>，实现一个继承自 <code>NSPanel</code> 的轻量级窗口。在 <code>AppDelegate.swift</code> 中添加菜单项和相应的处理方法。</p>
+        <h2 id="设计详情"><a aria-hidden="true" tabindex="-1" href="#设计详情" class="anchor"><span class="icon icon-link"></span></a>设计详情</h2>
+        <h3 id="用户界面设计"><a aria-hidden="true" tabindex="-1" href="#用户界面设计" class="anchor"><span class="icon icon-link"></span></a>用户界面设计</h3>
+        <h4 id="视觉外观"><a aria-hidden="true" tabindex="-1" href="#视觉外观" class="anchor"><span class="icon icon-link"></span></a>视觉外观</h4>
+        <ul>
+          <li><strong>窗口类型</strong>: 无边框 NSPanel（类似 Raycast 风格）</li>
+          <li><strong>尺寸</strong>: 固定高度，显示 9 行歌曲</li>
+          <li><strong>位置</strong>: ActiveWindow 居中</li>
+          <li><strong>样式</strong>: 系统默认外观，单列歌曲标题</li>
+        </ul>
+        <h4 id="交互模式"><a aria-hidden="true" tabindex="-1" href="#交互模式" class="anchor"><span class="icon icon-link"></span></a>交互模式</h4>
+        <ul>
+          <li><strong>键盘导航</strong>: ↑↓ 方向键移动选择，Enter 键播放选中歌曲</li>
+          <li><strong>快速选择</strong>: Command+1 到 Command+9 快速选择对应行</li>
+          <li><strong>鼠标操作</strong>: 点击任意歌曲行即播放</li>
+          <li><strong>关闭方式</strong>: ESC 键或点击窗口外部</li>
+          <li><strong>持续性</strong>: 播放歌曲后窗口保持打开状态，方便连续选择</li>
+        </ul>
+        <h3 id="架构设计"><a aria-hidden="true" tabindex="-1" href="#架构设计" class="anchor"><span class="icon icon-link"></span></a>架构设计</h3>
+        <h4 id="数据源"><a aria-hidden="true" tabindex="-1" href="#数据源" class="anchor"><span class="icon icon-link"></span></a>数据源</h4>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">private</span> <span class="token keyword">var</span> songs<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token class-name">Track</span><span class="token punctuation">]</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    <span class="token keyword">return</span> playerManager<span class="token punctuation">.</span>playlist
+</span><span class="code-line line-number" line="3"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="private var songs: [Track] {
+    return playerManager.playlist
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p>直接使用现有的 PlayerManager.playlist，无需新的数据结构。</p>
+        <h4 id="播放集成"><a aria-hidden="true" tabindex="-1" href="#播放集成" class="anchor"><span class="icon icon-link"></span></a>播放集成</h4>
+        <pre class="language-swift"><code class="language-swift code-highlight"><span class="code-line line-number" line="1"><span class="token keyword">func</span> <span class="token function-definition function">playTrack</span><span class="token punctuation">(</span>at index<span class="token punctuation">:</span> <span class="token class-name">Int</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+</span><span class="code-line line-number" line="2">    playerManager<span class="token punctuation">.</span>playlistStore<span class="token punctuation">.</span><span class="token function">setCurrentIndex</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="3">    playerManager<span class="token punctuation">.</span>currentTrack <span class="token operator">=</span> songs<span class="token punctuation">[</span>index<span class="token punctuation">]</span>
+</span><span class="code-line line-number" line="4">    playerManager<span class="token punctuation">.</span><span class="token function">play</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</span><span class="code-line line-number" line="5"><span class="token punctuation">}</span>
+</span></code><input type="hidden" value="func playTrack(at index: Int) {
+    playerManager.playlistStore.setCurrentIndex(index)
+    playerManager.currentTrack = songs[index]
+    playerManager.play()
+}
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <p>直接调用现有的 PlayerManager 方法，无抽象层。</p>
+        <h4 id="文件结构影响"><a aria-hidden="true" tabindex="-1" href="#文件结构影响" class="anchor"><span class="icon icon-link"></span></a>文件结构影响</h4>
+        <pre class="language-text"><code class="language-text code-highlight"><span class="code-line line-number" line="1">MacMusicPlayer/
+</span><span class="code-line line-number" line="2">├── Views/
+</span><span class="code-line line-number" line="3">│   └── SongPickerWindow.swift
+</span><span class="code-line line-number" line="4">├── Core/
+</span><span class="code-line line-number" line="5">│   └── AppDelegate.swift
+</span></code><input type="hidden" value="MacMusicPlayer/
+├── Views/
+│   └── SongPickerWindow.swift
+├── Core/
+│   └── AppDelegate.swift
+"><div onclick="copied(this)" class="copied"><svg class="octicon-copy" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg><svg class="octicon-check" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor" height="12" width="12"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg></div></pre>
+        <h3 id="性能考虑"><a aria-hidden="true" tabindex="-1" href="#性能考虑" class="anchor"><span class="icon icon-link"></span></a>性能考虑</h3>
+        <ul>
+          <li><strong>内存使用</strong>: 零额外内存开销（直接引用现有播放列表）</li>
+          <li><strong>CPU 影响</strong>: 最小化（简单的表格视图渲染）</li>
+          <li><strong>响应速度</strong>: 目标 50 毫秒内打开窗口</li>
+          <li><strong>用户体验</strong>: 无阻塞操作，所有交互在主线程完成</li>
+        </ul>
+        <h2 id="被否决的替代方案"><a aria-hidden="true" tabindex="-1" href="#被否决的替代方案" class="anchor"><span class="icon icon-link"></span></a>被否决的替代方案</h2>
+        <h3 id="方案-a-itunes-风格迷你播放器窗口"><a aria-hidden="true" tabindex="-1" href="#方案-a-itunes-风格迷你播放器窗口" class="anchor"><span class="icon icon-link"></span></a>方案 A: iTunes 风格迷你播放器窗口</h3>
+        <p><strong>否决理由</strong>: 违背了 MacMusicPlayer"轻量级菜单栏应用"的核心理念。</p>
+        <h3 id="方案-b-复杂的播放列表管理系统"><a aria-hidden="true" tabindex="-1" href="#方案-b-复杂的播放列表管理系统" class="anchor"><span class="icon icon-link"></span></a>方案 B: 复杂的播放列表管理系统</h3>
+        <p><strong>否决理由</strong>: 过度工程化，用户只需要快速选歌功能。</p>
+        <h3 id="方案-c-搜索覆盖层界面"><a aria-hidden="true" tabindex="-1" href="#方案-c-搜索覆盖层界面" class="anchor"><span class="icon icon-link"></span></a>方案 C: 搜索覆盖层界面</h3>
+        <p><strong>否决理由</strong>: 为 v1.0 版本增加了不必要的复杂性。</p>
+        <h3 id="方案-d-全局快捷键激活"><a aria-hidden="true" tabindex="-1" href="#方案-d-全局快捷键激活" class="anchor"><span class="icon icon-link"></span></a>方案 D: 全局快捷键激活</h3>
+        <p><strong>否决理由</strong>: macOS 已有太多应用抢占快捷键，菜单项更符合原生体验。</p>
+        <h2 id="风险评估"><a aria-hidden="true" tabindex="-1" href="#风险评估" class="anchor"><span class="icon icon-link"></span></a>风险评估</h2>
+        <h3 id="低风险项"><a aria-hidden="true" tabindex="-1" href="#低风险项" class="anchor"><span class="icon icon-link"></span></a>低风险项</h3>
+        <ul>
+          <li>✅ 单文件实现，影响范围最小</li>
+          <li>✅ 使用现有数据结构，无新依赖</li>
+          <li>✅ 标准 macOS UI 组件</li>
+        </ul>
+        <h3 id="缓解策略"><a aria-hidden="true" tabindex="-1" href="#缓解策略" class="anchor"><span class="icon icon-link"></span></a>缓解策略</h3>
+        <ul>
+          <li><strong>代码质量</strong>: 严格遵循项目现有的 MVVM 模式</li>
+          <li><strong>性能监控</strong>: 确保 UI 响应时间符合标准</li>
+          <li><strong>回滚计划</strong>: 如有问题可轻松移除单个文件</li>
+        </ul>
+        <h2 id="参考资料"><a aria-hidden="true" tabindex="-1" href="#参考资料" class="anchor"><span class="icon icon-link"></span></a>参考资料</h2>
+        <ul>
+          <li>GitHub Issue #52: <a href="https://github.com/samzong/MacMusicPlayer/issues/52">https://github.com/samzong/MacMusicPlayer/issues/52</a></li>
+          <li>Apple Human Interface Guidelines - Panels and Popovers</li>
+        </ul>
+        <hr>
+        <p><strong>开发原则</strong>: "解决实际问题，不要为了技术而技术。最好的代码是不写代码，第二好的是解决问题的最简代码。"</p>
+      </markdown-style>
+    </div>
+    <script src="../js/demo-preview.js?v=1.34.2"></script>
+    <div class="footer warpper" style="max-width:720px;">Copyright © 2025 <a href="https://github.com/samzong" target="_blank">samzong</a><br>
+      <script>
+  function downloadLatest() {
+    const platform = navigator.platform.toLowerCase();
+    const userAgent = navigator.userAgent.toLowerCase();
+    
+    let downloadUrl = '';
+    
+    if (platform.includes('mac')) {
+      // macOS
+      if (userAgent.includes('arm') || userAgent.includes('apple')) {
+        downloadUrl = 'https://github.com/samzong/MacMusicPlayer/releases/latest/download/MacMusicPlayer-arm64.dmg';
+      } else {
+        downloadUrl = 'https://github.com/samzong/MacMusicPlayer/releases/latest/download/MacMusicPlayer-x86_64.dmg';
+      }
+    } else {
+      // other
+      window.open('https://github.com/samzong/MacMusicPlayer/releases/latest', '_blank');
+      return;
+    }
+    window.location.href = downloadUrl;
+  }
+</script>
+    </div>
+    <script src="../js/tocbot.js?v=1.34.2"></script>
+  </body>
+</html>
