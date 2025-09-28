@@ -33,6 +33,15 @@ class DownloadViewController: NSViewController {
     private var ffmpegVersion: String = ""
     private var isYtDlpInstalled: Bool = false
     private var isFfmpegInstalled: Bool = false
+    private var hasScheduledDependencyCheck = false
+    private let dependencyQueue = DispatchQueue(label: "com.macmusicplayer.download.dependencycheck", qos: .utility)
+
+    private struct DependencyStatus {
+        var ytInstalled: Bool
+        var ytVersion: String
+        var ffmpegInstalled: Bool
+        var ffmpegVersion: String
+    }
     private var libraryManager: LibraryManager!
     
     // Playlist相关属性
@@ -80,7 +89,6 @@ class DownloadViewController: NSViewController {
         }
         
         setupUI()
-        checkDependencies()
         
         // 添加文本框变化事件监听
         NotificationCenter.default.addObserver(
@@ -112,6 +120,7 @@ class DownloadViewController: NSViewController {
         }
         
         updateLibraryPopup()
+        scheduleDependencyCheckIfNeeded()
     }
     
     // MARK: - UI Setup
@@ -456,15 +465,23 @@ class DownloadViewController: NSViewController {
     }
     
     // MARK: - Dependencies Check
+    private func scheduleDependencyCheckIfNeeded() {
+        guard !hasScheduledDependencyCheck else { return }
+        hasScheduledDependencyCheck = true
+
+        dependencyQueue.async { [weak self] in
+            self?.checkDependencies()
+        }
+    }
+
     private func checkDependencies() {
-        isYtDlpInstalled = false
-        isFfmpegInstalled = false
-        
+        var status = DependencyStatus(ytInstalled: false, ytVersion: "", ffmpegInstalled: false, ffmpegVersion: "")
+
         // Shell script direct detection tool
         let script = """
         #!/bin/bash
         export PATH=$PATH:/usr/local/bin:/opt/homebrew/bin:/opt/local/bin:/usr/bin
-        
+
         # Check yt-dlp
         if command -v yt-dlp &> /dev/null; then
             echo "YT_DLP_INSTALLED=true"
@@ -489,62 +506,79 @@ class DownloadViewController: NSViewController {
         
         let pipe = Pipe()
         task.standardOutput = pipe
-        
+
         do {
             try task.run()
-            
+
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             if let output = String(data: data, encoding: .utf8) {
-                // Parse output
                 let lines = output.components(separatedBy: "\n")
                 for line in lines {
                     if line.starts(with: "YT_DLP_INSTALLED=") {
-                        isYtDlpInstalled = line.contains("true")
+                        status.ytInstalled = line.contains("true")
                     } else if line.starts(with: "YT_DLP_VERSION=") {
                         if let version = line.components(separatedBy: "=").last {
-                            ytDlpVersion = version.trimmingCharacters(in: .whitespacesAndNewlines)
+                            status.ytVersion = version.trimmingCharacters(in: .whitespacesAndNewlines)
                         }
                     } else if line.starts(with: "FFMPEG_INSTALLED=") {
-                        isFfmpegInstalled = line.contains("true")
+                        status.ffmpegInstalled = line.contains("true")
                     } else if line.starts(with: "FFMPEG_VERSION=") {
                         if let version = line.components(separatedBy: "=").last {
-                            ffmpegVersion = version.trimmingCharacters(in: .whitespacesAndNewlines)
+                            status.ffmpegVersion = version.trimmingCharacters(in: .whitespacesAndNewlines)
                         }
                     }
-                }
-                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    self.updateVersionInfo()
                 }
             }
         } catch {
             print("Error checking dependencies: \(error)")
-            // If script execution fails, try alternative method
-            checkDependenciesWithDirectCommands()
+            status = checkDependenciesWithDirectCommands()
+            applyDependencyStatus(status)
+            return
+        }
+
+        applyDependencyStatus(status)
+    }
+
+    private func applyDependencyStatus(_ status: DependencyStatus) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.isYtDlpInstalled = status.ytInstalled
+            self.ytDlpVersion = status.ytVersion
+            self.isFfmpegInstalled = status.ffmpegInstalled
+            self.ffmpegVersion = status.ffmpegVersion
+            self.updateVersionInfo()
         }
     }
-    
-    private func checkDependenciesWithDirectCommands() {
-        checkYtDlp()
-        checkFfmpeg()
+
+    private func checkDependenciesWithDirectCommands() -> DependencyStatus {
+        let ytStatus = checkYtDlp()
+        let ffmpegStatus = checkFfmpeg()
+        return DependencyStatus(
+            ytInstalled: ytStatus.installed,
+            ytVersion: ytStatus.version,
+            ffmpegInstalled: ffmpegStatus.installed,
+            ffmpegVersion: ffmpegStatus.version
+        )
     }
-    
-    private func checkYtDlp() {
+
+    private func checkYtDlp() -> (installed: Bool, version: String) {
         let task = Process()
         task.launchPath = "/usr/bin/env"
         task.arguments = ["which", "yt-dlp"]
-        
+
         let pipe = Pipe()
         task.standardOutput = pipe
-        
+
+        var installed = false
+        var versionResult = ""
+
         do {
             try task.run()
             task.waitUntilExit()
-            
+
             if task.terminationStatus == 0 {
-                isYtDlpInstalled = true
-                
+                installed = true
+
                 // Get version
                 let versionTask = Process()
                 versionTask.launchPath = "/usr/bin/env"
@@ -555,85 +589,74 @@ class DownloadViewController: NSViewController {
                 
                 try versionTask.run()
                 versionTask.waitUntilExit()
-                
+
                 if versionTask.terminationStatus == 0 {
                     let data = versionPipe.fileHandleForReading.readDataToEndOfFile()
                     if let version = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) {
-                        ytDlpVersion = version
+                        versionResult = version
                     } else {
-                        ytDlpVersion = "已安装"
+                        versionResult = "已安装"
                     }
                 } else {
-                    ytDlpVersion = "已安装"
+                    versionResult = "已安装"
                 }
-            }
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.updateVersionInfo()
             }
         } catch {
             print("Error checking yt-dlp: \(error)")
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.updateVersionInfo()
-            }
         }
+
+        return (installed, versionResult)
     }
-    
-    private func checkFfmpeg() {
+
+    private func checkFfmpeg() -> (installed: Bool, version: String) {
         let task = Process()
         task.launchPath = "/usr/bin/env"
         task.arguments = ["which", "ffmpeg"]
-        
+
         let pipe = Pipe()
         task.standardOutput = pipe
-        
+
+        var installed = false
+        var versionResult = ""
+
         do {
             try task.run()
             task.waitUntilExit()
-            
+
             if task.terminationStatus == 0 {
-                isFfmpegInstalled = true
-                
+                installed = true
+
                 let versionTask = Process()
                 versionTask.launchPath = "/usr/bin/env"
                 versionTask.arguments = ["ffmpeg", "-version"]
-                
+
                 let versionPipe = Pipe()
                 versionTask.standardOutput = versionPipe
                 
                 try versionTask.run()
                 versionTask.waitUntilExit()
-                
+
                 if versionTask.terminationStatus == 0 {
                     let data = versionPipe.fileHandleForReading.readDataToEndOfFile()
                     if let output = String(data: data, encoding: .utf8) {
                         if let versionLine = output.components(separatedBy: "\n").first,
                            let version = versionLine.components(separatedBy: " version ").last?.components(separatedBy: " ").first {
-                            ffmpegVersion = version
+                            versionResult = version
                         } else {
-                            ffmpegVersion = "已安装"
+                            versionResult = "已安装"
                         }
                     } else {
-                        ffmpegVersion = "已安装"
+                        versionResult = "已安装"
                     }
                 } else {
-                    ffmpegVersion = "已安装"
+                    versionResult = "已安装"
                 }
-            }
-            
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.updateVersionInfo()
             }
         } catch {
             print("Error checking ffmpeg: \(error)")
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.updateVersionInfo()
-            }
         }
+
+        return (installed, versionResult)
     }
     
     private func updateVersionInfo() {
