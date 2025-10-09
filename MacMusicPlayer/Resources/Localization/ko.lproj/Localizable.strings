@@ -145,22 +145,6 @@
 "Playlist download completed" = "재생목록 다운로드 완료";
 "Playlist download failed: %@" = "재생목록 다운로드 실패: %@";
 
-// Equalizer
-"Equalizer" = "음향 조정기";
-"Enable Equalizer" = "음향 조정기 활성화";
-"Bass" = "베이스";
-"Mid" = "미드";
-"Treble" = "트렐라";
-"Reset Equalizer" = "음향 조정기 초기화";
-"Presets" = "프리셋";
-"Flat" = "플랫";
-"Classical" = "클래식";
-"Rock" = "록";
-"Pop" = "팝";
-"Jazz" = "재즈";
-"Electronic" = "전자";
-"Hip-Hop" = "힙합";
-
 // Song Picker Window Status
 "search_songs_placeholder" = "곡 검색...";
 "song_count_format" = "%d 곡";

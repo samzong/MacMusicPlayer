@@ -145,22 +145,6 @@
 "Playlist download completed" = "播放列表下載完成";
 "Playlist download failed: %@" = "播放列表下載失敗：%@";
 
-// Equalizer
-"Equalizer" = "均衡器";
-"Enable Equalizer" = "啟用均衡器";
-"Bass" = "低音";
-"Mid" = "中音";
-"Treble" = "高音";
-"Reset Equalizer" = "重置均衡器";
-"Presets" = "預設";
-"Flat" = "平衡";
-"Classical" = "古典";
-"Rock" = "搖滾";
-"Pop" = "流行";
-"Jazz" = "爵士";
-"Electronic" = "電子";
-"Hip-Hop" = "嘻哈";
-
 // Song Picker Window Status
 "search_songs_placeholder" = "搜尋歌曲...";
 "song_count_format" = "%d 首歌曲";

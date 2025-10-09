@@ -7,8 +7,6 @@
 
 import Cocoa
 import MediaPlayer
-import SwiftUI
-import AVFoundation
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
@@ -111,48 +109,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         playModeItem.submenu = playModeMenu
         menu.addItem(playModeItem)
 
-        let equalizerMenu = NSMenu()
-        let equalizerItem = NSMenuItem(title: NSLocalizedString("Equalizer", comment: ""), action: nil, keyEquivalent: "")
-        
-        let enableEqualizerItem = NSMenuItem(title: NSLocalizedString("Enable Equalizer", comment: ""), action: #selector(toggleEqualizer), keyEquivalent: "")
-        enableEqualizerItem.state = playerManager.equalizerEnabled ? .on : .off
-        equalizerMenu.addItem(enableEqualizerItem)
-        
-        equalizerMenu.addItem(NSMenuItem.separator())
-        
-        let presetsMenu = NSMenu()
-        let presetsItem = NSMenuItem(title: NSLocalizedString("Presets", comment: ""), action: nil, keyEquivalent: "")
-        
-        for preset in PlayerManager.EqualizerPreset.allCases {
-            let presetItem = NSMenuItem(title: preset.localizedString, action: #selector(selectEqualizerPreset(_:)), keyEquivalent: "")
-            presetItem.representedObject = preset.rawValue
-            presetItem.state = playerManager.currentPreset == preset ? .on : .off
-            presetsMenu.addItem(presetItem)
-        }
-        
-        presetsItem.submenu = presetsMenu
-        equalizerMenu.addItem(presetsItem)
-        
-        equalizerMenu.addItem(NSMenuItem.separator())
-        
-        let bassItem = NSMenuItem(title: NSLocalizedString("Bass", comment: ""), action: nil, keyEquivalent: "")
-        bassItem.view = createSliderView(title: NSLocalizedString("Bass", comment: ""), value: playerManager.bassGain, action: #selector(bassSliderChanged(_:)))
-        equalizerMenu.addItem(bassItem)
-        
-        let midItem = NSMenuItem(title: NSLocalizedString("Mid", comment: ""), action: nil, keyEquivalent: "")
-        midItem.view = createSliderView(title: NSLocalizedString("Mid", comment: ""), value: playerManager.midGain, action: #selector(midSliderChanged(_:)))
-        equalizerMenu.addItem(midItem)
-        
-        let trebleItem = NSMenuItem(title: NSLocalizedString("Treble", comment: ""), action: nil, keyEquivalent: "")
-        trebleItem.view = createSliderView(title: NSLocalizedString("Treble", comment: ""), value: playerManager.trebleGain, action: #selector(trebleSliderChanged(_:)))
-        equalizerMenu.addItem(trebleItem)
-        
-        equalizerMenu.addItem(NSMenuItem.separator())
-        equalizerMenu.addItem(NSMenuItem(title: NSLocalizedString("Reset Equalizer", comment: ""), action: #selector(resetEqualizer), keyEquivalent: ""))
-        
-        equalizerItem.submenu = equalizerMenu
-        menu.addItem(equalizerItem)
-        
         let libraryMenu = NSMenu()
         let libraryMenuItem = NSMenuItem(title: NSLocalizedString("Music Libraries", comment: "Menu item for music libraries"), action: nil, keyEquivalent: "")
         
@@ -204,30 +160,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         statusItem?.menu = menu
-    }
-    
-    private func createSliderView(title: String, value: Float, action: Selector) -> NSView {
-        let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 180, height: 40))
-        
-        let titleLabel = NSTextField(frame: NSRect(x: 10, y: 20, width: 160, height: 16))
-        titleLabel.stringValue = title
-        titleLabel.isEditable = false
-        titleLabel.isBordered = false
-        titleLabel.backgroundColor = .clear
-        titleLabel.font = NSFont.systemFont(ofSize: 12)
-        
-        let slider = NSSlider(frame: NSRect(x: 10, y: 0, width: 160, height: 20))
-        slider.minValue = -12.0
-        slider.maxValue = 12.0
-        slider.doubleValue = Double(value)
-        slider.target = self
-        slider.action = action
-        slider.isContinuous = true
-        
-        containerView.addSubview(titleLabel)
-        containerView.addSubview(slider)
-        
-        return containerView
     }
     
     func setupRemoteCommandCenter() {
@@ -418,86 +350,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let launchAtLoginItem = menu.items.first(where: { $0.title == NSLocalizedString("Launch at Login", comment: "") }) {
             launchAtLoginItem.state = launchManager.launchAtLogin ? .on : .off
         }
-    }
-    
-    @objc func toggleEqualizer() {
-        playerManager.equalizerEnabled.toggle()
-        if let equalizerItem = menu.items.first(where: { $0.title == NSLocalizedString("Equalizer", comment: "") }),
-           let submenu = equalizerItem.submenu,
-           let enableItem = submenu.items.first(where: { $0.title == NSLocalizedString("Enable Equalizer", comment: "") }) {
-            enableItem.state = playerManager.equalizerEnabled ? .on : .off
-        }
-    }
-    
-    @objc func bassSliderChanged(_ sender: NSSlider) {
-        playerManager.bassGain = Float(sender.doubleValue)
-    }
-    
-    @objc func midSliderChanged(_ sender: NSSlider) {
-        playerManager.midGain = Float(sender.doubleValue)
-    }
-    
-    @objc func trebleSliderChanged(_ sender: NSSlider) {
-        playerManager.trebleGain = Float(sender.doubleValue)
-    }
-    
-    @objc func selectEqualizerPreset(_ sender: NSMenuItem) {
-        if let presetString = sender.representedObject as? String,
-           let preset = PlayerManager.EqualizerPreset(rawValue: presetString) {
-            playerManager.currentPreset = preset
-            
-            // Update the selected state of the preset menu item
-            if let equalizerItem = menu.items.first(where: { $0.title == NSLocalizedString("Equalizer", comment: "") }),
-               let equalizerMenu = equalizerItem.submenu,
-               let presetsItem = equalizerMenu.items.first(where: { $0.title == NSLocalizedString("Presets", comment: "") }),
-               let presetsMenu = presetsItem.submenu {
-                for item in presetsMenu.items {
-                    if let itemPresetString = item.representedObject as? String {
-                        item.state = (itemPresetString == presetString) ? .on : .off
-                    }
-                }
-            }
-            
-            updateEqualizerSliders()
-        }
-    }
-    
-    private func updateEqualizerSliders() {
-        if let equalizerItem = menu.items.first(where: { $0.title == NSLocalizedString("Equalizer", comment: "") }),
-           let equalizerMenu = equalizerItem.submenu {
-            
-            if let bassItem = equalizerMenu.items.first(where: { $0.title == NSLocalizedString("Bass", comment: "") }),
-               let bassSlider = bassItem.view?.subviews.last as? NSSlider {
-                bassSlider.doubleValue = Double(playerManager.bassGain)
-            }
-            
-            if let midItem = equalizerMenu.items.first(where: { $0.title == NSLocalizedString("Mid", comment: "") }),
-               let midSlider = midItem.view?.subviews.last as? NSSlider {
-                midSlider.doubleValue = Double(playerManager.midGain)
-            }
-            
-            if let trebleItem = equalizerMenu.items.first(where: { $0.title == NSLocalizedString("Treble", comment: "") }),
-               let trebleSlider = trebleItem.view?.subviews.last as? NSSlider {
-                trebleSlider.doubleValue = Double(playerManager.trebleGain)
-            }
-        }
-    }
-    
-    @objc func resetEqualizer() {
-        playerManager.currentPreset = .flat
-        
-        if let equalizerItem = menu.items.first(where: { $0.title == NSLocalizedString("Equalizer", comment: "") }),
-           let equalizerMenu = equalizerItem.submenu,
-           let presetsItem = equalizerMenu.items.first(where: { $0.title == NSLocalizedString("Presets", comment: "") }),
-           let presetsMenu = presetsItem.submenu {
-            for item in presetsMenu.items {
-                if let itemPresetString = item.representedObject as? String {
-                    item.state = (itemPresetString == PlayerManager.EqualizerPreset.flat.rawValue) ? .on : .off
-                }
-            }
-        }
-        
-        updateEqualizerSliders()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
