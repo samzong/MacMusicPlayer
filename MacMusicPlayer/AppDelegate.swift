@@ -18,6 +18,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var launchManager: LaunchManager!
     var libraryManager: LibraryManager!
     var menu: NSMenu!
+
+    private let statusBarSymbolConfiguration = NSImage.SymbolConfiguration(pointSize: 18, weight: .medium, scale: .medium)
     
     // Strong reference to the window
     private var downloadWindow: NSWindow?
@@ -36,12 +38,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             playerManager.requestMusicFolderAccess()
         }
         
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         
         if let button = statusItem?.button {
             button.target = self
             button.action = #selector(toggleMenu)
-            button.imagePosition = .imageLeft
             updateStatusBarIcon()
         }
         
@@ -336,12 +337,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     private func updateStatusBarIcon() {
-        if let button = statusItem?.button {
-            let configuration = NSImage.SymbolConfiguration(pointSize: 16, weight: .regular)
-            let symbolName = playerManager.isPlaying ? "headphones.circle.fill" : "headphones.circle"
-            let icon = NSImage(systemSymbolName: symbolName, accessibilityDescription: "Music")?.withSymbolConfiguration(configuration)
-            button.image = icon
+        guard let button = statusItem?.button else { return }
+        let symbolName = playerManager.isPlaying ? "headphones.circle.fill" : "headphones.circle"
+        guard let icon = makeStatusBarImage(symbolName: symbolName, accessibilityDescription: "Music") else {
+            button.image = nil
+            return
         }
+
+        button.image = icon
+        button.imageScaling = .scaleProportionallyDown
+        button.contentTintColor = nil
+    }
+
+    private func makeStatusBarImage(symbolName: String, accessibilityDescription: String) -> NSImage? {
+        guard let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: accessibilityDescription)?.withSymbolConfiguration(statusBarSymbolConfiguration) else {
+            return nil
+        }
+
+        image.isTemplate = true
+        return image
     }
     
     @objc func togglePlayPause() {
@@ -584,13 +598,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
         
-        if let button = statusItem?.button {
-            _ = button.image
-            button.image = NSImage(systemSymbolName: "arrow.clockwise", accessibilityDescription: "Refreshing")
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.updateStatusBarIcon()
-            }
+        if let button = statusItem?.button,
+           let refreshingIcon = makeStatusBarImage(symbolName: "arrow.clockwise", accessibilityDescription: "Refreshing") {
+            button.image = refreshingIcon
+            button.contentTintColor = nil
+            button.imageScaling = .scaleProportionallyDown
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.updateStatusBarIcon()
         }
     }
     
