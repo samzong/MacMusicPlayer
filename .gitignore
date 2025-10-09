@@ -47,6 +47,7 @@ playground.xcworkspace
 .swiftpm
 
 .build/
+.clangModuleCache/
 
 # CocoaPods
 #
@@ -91,4 +92,3 @@ iOSInjectionProject/
 
 # macOS
 .DS_Store
-TODO.md
