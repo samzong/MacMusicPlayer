@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: '指定要更新的版本号（不含v前缀）'
+        description: 'Specify the version to update (without the v prefix)'
         required: true
         type: string
   repository_dispatch:

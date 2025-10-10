@@ -24,8 +24,8 @@ APP_PASSWORD =
 
 # Version information
 GIT_COMMIT = $(shell git rev-parse --short HEAD)
-# If CI_BUILD is set (for release), use git tag; otherwise use commit hash for dev build
-VERSION ?= $(if $(CI_BUILD),$(shell git describe --tags --always),Dev-$(shell git rev-parse --short HEAD))
+# Prefer tagged versions; fall back to the nearest tag or commit hash automatically.
+VERSION ?= $(shell git describe --tags --always)
 CLEAN_VERSION = $(shell echo $(VERSION) | sed 's/^v//')
 
 # Homebrew related variables
