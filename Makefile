@@ -26,7 +26,16 @@ APP_PASSWORD =
 GIT_COMMIT = $(shell git rev-parse --short HEAD)
 # Prefer tagged versions; fall back to the nearest tag or commit hash automatically.
 VERSION ?= $(shell git describe --tags --always)
-CLEAN_VERSION = $(shell echo $(VERSION) | sed 's/^v//')
+MARKETING_SEMVER ?= $(shell \
+    VERSION_STR="$(VERSION)"; \
+    CLEAN=$$(echo $$VERSION_STR | sed -E 's/^v//; s/-.*//'); \
+    if echo $$CLEAN | grep -Eq '^[0-9]+(\.[0-9]+){0,2}$$'; then \
+        echo $$CLEAN; \
+    else \
+        echo 0.0.0; \
+    fi)
+BUILD_NUMBER ?= $(shell git rev-list --count HEAD)
+CLEAN_VERSION = $(MARKETING_SEMVER)
 
 # Homebrew related variables
 HOMEBREW_TAP_REPO = homebrew-tap
@@ -51,8 +60,8 @@ build:
 		CODE_SIGN_STYLE=Manual \
 		CODE_SIGN_IDENTITY="-" \
 		DEVELOPMENT_TEAM="" \
-		CURRENT_PROJECT_VERSION=$(VERSION) \
-		MARKETING_VERSION=$(VERSION)
+		CURRENT_PROJECT_VERSION=$(BUILD_NUMBER) \
+		MARKETING_VERSION=$(MARKETING_SEMVER)
 	@echo "✅ Build completed!"
 	@echo "📍 Application location: $(BUILT_APP_PATH)"
 
@@ -103,8 +112,8 @@ build-x86_64:
 		CODE_SIGN_STYLE=Manual \
 		CODE_SIGN_IDENTITY="-" \
 		DEVELOPMENT_TEAM="" \
-		CURRENT_PROJECT_VERSION=$(VERSION) \
-		MARKETING_VERSION=$(VERSION) \
+		CURRENT_PROJECT_VERSION=$(BUILD_NUMBER) \
+		MARKETING_VERSION=$(MARKETING_SEMVER) \
 		ARCHS="x86_64" \
 		OTHER_CODE_SIGN_FLAGS="--options=runtime"
 
@@ -119,8 +128,8 @@ build-arm64:
 		CODE_SIGN_STYLE=Manual \
 		CODE_SIGN_IDENTITY="-" \
 		DEVELOPMENT_TEAM="" \
-		CURRENT_PROJECT_VERSION=$(VERSION) \
-		MARKETING_VERSION=$(VERSION) \
+		CURRENT_PROJECT_VERSION=$(BUILD_NUMBER) \
+		MARKETING_VERSION=$(MARKETING_SEMVER) \
 		ARCHS="arm64" \
 		OTHER_CODE_SIGN_FLAGS="--options=runtime"
 
@@ -224,6 +233,8 @@ check-arch:
 version:
 	@echo "Version:     $(VERSION)"
 	@echo "Git Commit:  $(GIT_COMMIT)"
+	@echo "Marketing:   $(MARKETING_SEMVER)"
+	@echo "Build Number: $(BUILD_NUMBER)"
 
 # Update Homebrew Cask
 update-homebrew:
