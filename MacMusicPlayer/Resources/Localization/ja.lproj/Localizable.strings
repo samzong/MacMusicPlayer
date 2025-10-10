@@ -10,7 +10,7 @@
 "Random" = "シャッフル";
 "Set Music Source" = "音楽フォルダを選択";
 "Download Music" = "音楽をダウンロードする";
-"Browse Songs..." = "曲を選択...";
+"Browse Songs" = "曲を選択";
 "Prevent Mac Sleep" = "システムのスリープを防止";
 "Launch at Login" = "ログイン時に起動";
 "Settings" = "設定";

@@ -90,7 +90,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: NSLocalizedString("Next", comment: ""), action: #selector(playNext), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
 
-        menu.addItem(NSMenuItem(title: NSLocalizedString("Browse Songs...", comment: "Menu item for browsing and selecting songs"), action: #selector(showSongPickerWindow), keyEquivalent: "f"))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Browse Songs", comment: "Menu item for browsing and selecting songs"), action: #selector(showSongPickerWindow), keyEquivalent: "f"))
 
         let playModeMenu = NSMenu()
         let playModeItem = NSMenuItem(title: NSLocalizedString("Playback Mode", comment: ""), action: nil, keyEquivalent: "")
