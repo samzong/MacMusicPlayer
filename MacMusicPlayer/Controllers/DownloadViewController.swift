@@ -17,7 +17,6 @@ class DownloadViewController: NSViewController {
     private let progressIndicator = NSProgressIndicator()
     private let versionInfoLabel = NSTextField()
     private let githubLinkButton = NSButton()
-    private let backgroundView = NSVisualEffectView()
     private let tableBackgroundView = NSVisualEffectView()
     private let libraryPopup = NSPopUpButton()
     private let libraryLabel = NSTextField()
@@ -28,7 +27,6 @@ class DownloadViewController: NSViewController {
     
     // MARK: - Properties
     private var formats: [DownloadManager.DownloadFormat] = []
-    private var selectedFormat: DownloadManager.DownloadFormat?
     private var ytDlpVersion: String = ""
     private var ffmpegVersion: String = ""
     private var isYtDlpInstalled: Bool = false

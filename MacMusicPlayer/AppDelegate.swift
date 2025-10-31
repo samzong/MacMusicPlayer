@@ -10,7 +10,6 @@ import MediaPlayer
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
-    var popover: NSPopover?
     var playerManager: PlayerManager!
     var sleepManager: SleepManager!
     var launchManager: LaunchManager!
@@ -304,10 +303,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @objc func playNext() {
         playerManager.playNext()
-    }
-    
-    @objc func reconfigureFolder() {
-        addNewLibrary()
     }
     
     @objc func quit() {

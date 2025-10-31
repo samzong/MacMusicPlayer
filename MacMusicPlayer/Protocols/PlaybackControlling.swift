@@ -22,7 +22,6 @@ protocol PlaybackControlling {
 
     func setQueue(_ tracks: [Track], startingAt index: Int)
     func advanceToNext() -> Bool
-    func goToPrevious() -> Bool
 
     var onTrackChanged: ((Track?) -> Void)? { get set }
     var onPlaybackStateChanged: ((Bool) -> Void)? { get set }

@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftUI
+import Combine
 
 class LibraryManager: ObservableObject {
     @Published var libraries: [MusicLibrary] = []
