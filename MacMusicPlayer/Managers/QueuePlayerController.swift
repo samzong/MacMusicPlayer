@@ -157,15 +157,6 @@ class QueuePlayerController: NSObject, PlaybackControlling {
         return true
     }
 
-    func goToPrevious() -> Bool {
-        // AVQueuePlayer doesn't support going backwards, so we need to rebuild the queue
-        guard currentTrackIndex > 0 else { return false }
-
-        let newIndex = currentTrackIndex - 1
-        setQueue(tracks, startingAt: newIndex)
-        return true
-    }
-
     private func createPlayerItem(from track: Track) -> AVPlayerItem {
         return AVPlayerItem(url: track.url)
     }

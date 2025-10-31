@@ -6,7 +6,8 @@
 //
 
 import Foundation
-import SwiftUI
+import Combine
+import AppKit
 import MediaPlayer
 
 class PlayerManager: NSObject, ObservableObject {
