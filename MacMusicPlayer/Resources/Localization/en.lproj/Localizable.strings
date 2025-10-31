@@ -93,6 +93,7 @@
 
 // New UI Strings
 "Not installed" = "Not installed";
+"Installed" = "Installed";
 "Please install missing dependencies" = "Please install missing dependencies";
 "Please select a format to download" = "Please select a format to download";
 "Enter video URL" = "Enter video URL";
@@ -149,3 +150,21 @@
 "search_songs_placeholder" = "Search songs...";
 "song_count_format" = "%d Song";
 "operation_hints" = "Tab to switch, Enter to play, Esc to close";
+
+// Configuration Settings
+"Configure Search Service" = "Configure Search Service";
+"API Key:" = "API Key:";
+"Enter API Key" = "Enter API Key";
+"API URL:" = "API URL:";
+"Enter API URL" = "Enter API URL";
+"Save" = "Save";
+"What is yt-search-api?" = "What is yt-search-api?";
+"Please enter API Key" = "Please enter API Key";
+"Please enter API URL" = "Please enter API URL";
+"Configuration saved" = "Configuration saved";
+
+// API Error Messages
+"API configuration not completed" = "API configuration not completed";
+"API URL not configured" = "API URL not configured";
+"No data received" = "No data received";
+"Server Error: %@" = "Server Error: %@";

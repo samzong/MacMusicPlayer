@@ -15,23 +15,23 @@ class LibraryManager: ObservableObject {
     init() {
         loadLibraries()
         
-        // 如果没有音乐库，尝试迁移现有的单一音乐库
+        // If no music library exists, try migrating existing single music library
         if libraries.isEmpty {
             migrateExistingSingleLibrary()
         }
         
-        // 如果有音乐库，加载最近访问的那个
+        // If there are music libraries, load the most recently accessed one
         if let lastUsedId = UserDefaults.standard.string(forKey: "LastUsedLibraryID"),
            let uuid = UUID(uuidString: lastUsedId),
            let library = libraries.first(where: { $0.id == uuid }) {
             currentLibrary = library
         } else {
-            // 否则使用第一个
+            // Otherwise use the first one
             currentLibrary = libraries.first
         }
     }
     
-    // 添加新音乐库
+    // Add new music library
     func addLibrary(name: String, path: String) {
         let newLibrary = MusicLibrary(
             name: name,
@@ -41,35 +41,35 @@ class LibraryManager: ObservableObject {
         libraries.append(newLibrary)
         saveLibraries()
         
-        // 自动切换到新添加的音乐库
+        // Automatically switch to newly added music library
         switchLibrary(id: newLibrary.id)
     }
     
-    // 移除音乐库
+    // Remove music library
     func removeLibrary(id: UUID) {
-        // 防止删除最后一个音乐库
+        // Prevent deleting the last music library
         guard libraries.count > 1 else { return }
         
         libraries.removeAll { $0.id == id }
         
-        // 如果删除的是当前音乐库，切换到第一个
+        // If the deleted library is the current one, switch to the first one
         if currentLibrary?.id == id {
             currentLibrary = libraries.first
-            // 通知刷新音乐库
+            // Notify to refresh music library
             NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
         }
         
         saveLibraries()
     }
     
-    // 切换音乐库
+    // Switch music library
     func switchLibrary(id: UUID) {
         guard currentLibrary?.id != id,
               let newLibrary = libraries.first(where: { $0.id == id }) else {
             return
         }
         
-        // 更新lastAccessed时间
+        // Update lastAccessed time
         var updatedLibrary = newLibrary
         updatedLibrary.lastAccessed = Date()
         
@@ -79,15 +79,15 @@ class LibraryManager: ObservableObject {
         
         currentLibrary = updatedLibrary
         
-        // 保存最后使用的音乐库ID
+        // Save last used library ID
         UserDefaults.standard.set(id.uuidString, forKey: "LastUsedLibraryID")
         saveLibraries()
         
-        // 通知刷新音乐库
+        // Notify to refresh music library
         NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
     }
     
-    // 重命名音乐库
+    // Rename music library
     func renameLibrary(id: UUID, newName: String) {
         guard let index = libraries.firstIndex(where: { $0.id == id }) else {
             return
@@ -104,7 +104,7 @@ class LibraryManager: ObservableObject {
         saveLibraries()
     }
     
-    // 保存音乐库信息
+    // Save music library information
     func saveLibraries() {
         do {
             let data = try JSONEncoder().encode(libraries)
@@ -114,7 +114,7 @@ class LibraryManager: ObservableObject {
         }
     }
     
-    // 加载保存的音乐库信息
+    // Load saved music library information
     func loadLibraries() {
         guard let data = UserDefaults.standard.data(forKey: "MusicLibraries") else {
             return
@@ -127,7 +127,7 @@ class LibraryManager: ObservableObject {
         }
     }
     
-    // 迁移现有的单一音乐库
+    // Migrate existing single music library
     private func migrateExistingSingleLibrary() {
         if let savedPath = UserDefaults.standard.string(forKey: "MusicFolderPath") {
             let defaultLibrary = MusicLibrary(

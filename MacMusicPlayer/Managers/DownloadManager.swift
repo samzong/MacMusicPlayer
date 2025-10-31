@@ -14,11 +14,11 @@ public class DownloadManager {
     private var libraryManager: LibraryManager
     
     private init() {
-        // 使用共享的LibraryManager实例，确保与UI保持同步
+        // Use shared LibraryManager instance to keep in sync with UI
         if let appDelegate = NSApp.delegate as? AppDelegate {
             self.libraryManager = appDelegate.libraryManager
         } else {
-            // 备用方案：创建新实例
+            // Fallback: create new instance
             self.libraryManager = LibraryManager()
         }
     }
@@ -640,14 +640,14 @@ public class DownloadManager {
             
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                    // 检查是否是playlist条目
+                    // Check if it's a playlist entry
                     if let entryType = json["_type"] as? String, entryType == "url" {
                         let videoId = json["id"] as? String ?? ""
                         let title = json["title"] as? String ?? "Unknown Title"
                         let videoUrl = json["url"] as? String ?? ""
                         let duration = json["duration_string"] as? String ?? ""
                         
-                        // 构建缩略图URL
+                        // Build thumbnail URL
                         let thumbnailUrl = "https://img.youtube.com/vi/\(videoId)/default.jpg"
                         
                         let item = PlaylistItem(
@@ -659,7 +659,7 @@ public class DownloadManager {
                         )
                         items.append(item)
                     }
-                    // 检查是否包含playlist信息
+                    // Check if it contains playlist information
                     else if json["_type"] == nil || json["_type"] as? String == "playlist" {
                         if let title = json["title"] as? String {
                             playlistTitle = title
@@ -694,10 +694,10 @@ public class DownloadManager {
     }
     
     private func extractPlaylistId(from url: String) -> String {
-        // 提取playlist ID
+        // Extract playlist ID
         if let range = url.range(of: "list=([^&]+)", options: .regularExpression) {
             let listPart = String(url[range])
-            return String(listPart.dropFirst(5)) // 去掉 "list="
+            return String(listPart.dropFirst(5)) // Remove "list="
         }
         return "unknown"
     }
@@ -721,13 +721,13 @@ public class DownloadManager {
                 failed: failed
             )
             
-            // 更新进度
+            // Update progress
             await MainActor.run {
                 progressCallback(progress)
             }
             
             do {
-                // 使用 bestaudio 格式下载
+                // Download using bestaudio format
                 try await downloadAudio(from: item.url, formatId: "bestaudio")
                 completed += 1
                 print(NSLocalizedString("Successfully downloaded: %@", comment: "Log message when item downloaded successfully"), item.title)
@@ -737,7 +737,7 @@ public class DownloadManager {
             }
         }
         
-        // 最终进度
+        // Final progress
         let finalProgress = PlaylistDownloadProgress(
             currentIndex: playlistInfo.videoCount,
             totalCount: playlistInfo.videoCount,

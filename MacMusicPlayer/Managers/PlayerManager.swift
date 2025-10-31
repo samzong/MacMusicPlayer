@@ -106,7 +106,7 @@ class PlayerManager: NSObject, ObservableObject {
     }
 
     private func loadSavedMusicFolder() {
-        // 什么都不做，现在由LibraryManager控制
+        // Do nothing, now controlled by LibraryManager
     }
 
     func requestMusicFolderAccess() {
@@ -121,7 +121,7 @@ class PlayerManager: NSObject, ObservableObject {
                 if let url = openPanel.url {
                     let name = url.lastPathComponent
                     
-                    // 创建新的音乐库
+                    // Create new music library
                     NotificationCenter.default.post(
                         name: NSNotification.Name("AddNewLibrary"),
                         object: nil,
@@ -162,14 +162,14 @@ class PlayerManager: NSObject, ObservableObject {
         // Legacy playlist for backward compatibility during migration
         playlist = []
 
-        // 加载新音乐库的音乐文件
+        // Load music files from new music library
         loadTracksFromMusicFolder(URL(fileURLWithPath: library.path))
     }
     
     func loadTracksFromMusicFolder(_ folderURL: URL) {
         let fileManager = FileManager.default
         
-        // 获取文件夹的所有内容
+        // Get all contents of the folder
         guard let enumerator = fileManager.enumerator(at: folderURL,
                                                     includingPropertiesForKeys: [.isRegularFileKey],
                                                     options: [.skipsHiddenFiles, .skipsPackageDescendants]) else {
@@ -180,11 +180,11 @@ class PlayerManager: NSObject, ObservableObject {
         var newPlaylist: [Track] = []
         
         for case let fileURL as URL in enumerator {
-            // 检查文件类型是否为音频文件
+            // Check if file type is audio file
             if isAudioFile(fileURL) {
                 let fileName = fileURL.deletingPathExtension().lastPathComponent
                 
-                // 简单处理：使用文件名作为标题，如果有 " - " 则分为艺术家和标题
+                // Simple handling: use filename as title, split by " - " into artist and title if present
                 var title = fileName
                 var artist = NSLocalizedString("Unknown Artist", comment: "Default artist name when parsing filenames")
                 
@@ -198,9 +198,9 @@ class PlayerManager: NSObject, ObservableObject {
             }
         }
         
-        // 更新播放列表
+        // Update playlist
         DispatchQueue.main.async {
-            // 排序播放列表（按标题）
+            // Sort playlist by title
             let sortedTracks = newPlaylist.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
 
             // Update PlaylistStore (new architecture)
@@ -209,7 +209,7 @@ class PlayerManager: NSObject, ObservableObject {
             // Legacy playlist for backward compatibility
             self.playlist = sortedTracks
 
-            // 如果有歌曲则设置第一首为当前歌曲
+            // If there are songs, set the first one as current track
             if !sortedTracks.isEmpty {
                 self.currentIndex = 0
                 self.currentTrack = sortedTracks[0]
@@ -340,7 +340,7 @@ class PlayerManager: NSObject, ObservableObject {
 
 
     @objc func refreshMusicLibrary() {
-        // 判断是否有当前库
+        // Check if there is a current library
         if let library = (NSApplication.shared.delegate as? AppDelegate)?.libraryManager.currentLibrary {
             loadLibrary(library)
         } else {

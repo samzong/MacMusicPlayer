@@ -20,7 +20,7 @@ class ConfigManager {
     
     private init() {}
     
-    // API Key 相关方法
+    // API Key related methods
     var apiKey: String {
         get {
             return userDefaults.string(forKey: Keys.apiKey) ?? ""
@@ -30,7 +30,7 @@ class ConfigManager {
         }
     }
     
-    // API URL 相关方法
+    // API URL related methods
     var apiUrl: String {
         get {
             return userDefaults.string(forKey: Keys.apiUrl) ?? ""
@@ -40,18 +40,18 @@ class ConfigManager {
         }
     }
     
-    // 判断配置是否有效
+    // Check if configuration is valid
     var isConfigValid: Bool {
         return !apiKey.isEmpty && !apiUrl.isEmpty
     }
     
-    // 重置配置
+    // Reset configuration
     func resetConfig() {
         userDefaults.removeObject(forKey: Keys.apiKey)
         userDefaults.removeObject(forKey: Keys.apiUrl)
     }
     
-    // 保存配置
+    // Save configuration
     func saveConfig(apiKey: String, apiUrl: String) {
         self.apiKey = apiKey
         self.apiUrl = apiUrl

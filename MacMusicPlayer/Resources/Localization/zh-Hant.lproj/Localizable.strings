@@ -93,6 +93,7 @@
 
 // New UI Strings
 "Not installed" = "未安裝";
+"Installed" = "已安裝";
 "Please install missing dependencies" = "請安裝缺少的依賴";
 "Please select a format to download" = "請選擇要下載的格式";
 "Enter video URL" = "輸入視頻URL";
@@ -149,3 +150,21 @@
 "search_songs_placeholder" = "搜尋歌曲...";
 "song_count_format" = "%d 首歌曲";
 "operation_hints" = "Tab 切換，回車播放，Esc 關閉";
+
+// Configuration Settings
+"Configure Search Service" = "配置搜索服務";
+"API Key:" = "API Key:";
+"Enter API Key" = "輸入API密鑰";
+"API URL:" = "API URL:";
+"Enter API URL" = "輸入API地址";
+"Save" = "保存";
+"What is yt-search-api?" = "什麼是 yt-search-api？";
+"Please enter API Key" = "請輸入API密鑰";
+"Please enter API URL" = "請輸入API地址";
+"Configuration saved" = "配置已保存";
+
+// API Error Messages
+"API configuration not completed" = "API配置未完成";
+"API URL not configured" = "API URL未配置";
+"No data received" = "未接收到數據";
+"Server Error: %@" = "伺服器錯誤: %@";

@@ -21,7 +21,7 @@ class DownloadViewController: NSViewController {
     private let libraryPopup = NSPopUpButton()
     private let libraryLabel = NSTextField()
     
-    // 添加分页按钮
+    // Pagination buttons
     private let nextPageButton = NSButton()
     private let downloadAllButton = NSButton()
     
@@ -42,28 +42,28 @@ class DownloadViewController: NSViewController {
     }
     private var libraryManager: LibraryManager!
     
-    // Playlist相关属性
+    // Playlist-related properties
     private var currentPlaylist: DownloadManager.PlaylistInfo?
     private var isPlaylistMode: Bool = false
     private var isDownloading: Bool = false
     private var downloadTask: Task<Void, Never>?
     
-    // 搜索相关属性
+    // Search-related properties
     private var searchResults: [YTSearchManager.SearchResult.VideoItem] = []
     private var isSearchMode: Bool = false
     private var currentNextPageToken: String? = nil
-    private var lastSearchKeyword: String = ""  // 保存最后一次搜索关键词
+    private var lastSearchKeyword: String = ""  // Save last search keyword
     private let ytSearchManager = YTSearchManager.shared
     private let configManager = ConfigManager.shared
     
-    // UI相关约束
+    // UI-related constraints
     private var nextPageButtonLeadingConstraint: NSLayoutConstraint?
     
-    // 添加一个新的属性来跟踪哪个视频行处于展开状态
+    // Track which video row is expanded
     private var expandedVideoRow: Int? = nil
     private var formatOptions: [FormatOption] = []
     
-    // 格式选项结构
+    // Format option structure
     struct FormatOption {
         let title: String
         let formatId: String
@@ -79,7 +79,7 @@ class DownloadViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // 使用共享的LibraryManager实例
+        // Use shared LibraryManager instance
         if let appDelegate = NSApp.delegate as? AppDelegate {
             libraryManager = appDelegate.libraryManager
         } else {
@@ -88,7 +88,7 @@ class DownloadViewController: NSViewController {
         
         setupUI()
         
-        // 添加文本框变化事件监听
+        // Add text field change event listener
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(textFieldDidChange(_:)),
@@ -96,7 +96,7 @@ class DownloadViewController: NSViewController {
             object: urlTextField
         )
         
-        // 添加配置更新的通知监听
+        // Add configuration update notification listener
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleConfigUpdated),
@@ -196,9 +196,9 @@ class DownloadViewController: NSViewController {
         nextPageButton.action = #selector(loadNextPage)
         nextPageButton.font = NSFont.systemFont(ofSize: 12)
         nextPageButton.contentTintColor = NSColor.linkColor
-        nextPageButton.isHidden = true // 初始状态隐藏
+        nextPageButton.isHidden = true // Hide initially
         
-        // 添加鼠标悬停效果
+        // Add mouse hover effect
         let trackingArea = NSTrackingArea(
             rect: NSRect.zero,
             options: [.inVisibleRect, .activeAlways, .mouseEnteredAndExited],
@@ -209,7 +209,7 @@ class DownloadViewController: NSViewController {
         
         view.addSubview(nextPageButton)
         
-        // 修改为右对齐，不再使用相对于statusLabel的位置
+        // Right-align, no longer using position relative to statusLabel
         nextPageButtonLeadingConstraint = nil
         
         NSLayoutConstraint.activate([
@@ -227,7 +227,7 @@ class DownloadViewController: NSViewController {
         downloadAllButton.target = self
         downloadAllButton.action = #selector(downloadAllButtonTapped)
         downloadAllButton.contentTintColor = NSColor.white
-        downloadAllButton.isHidden = true // 初始状态隐藏
+        downloadAllButton.isHidden = true // Hide initially
         
         if #available(macOS 11.0, *) {
             downloadAllButton.bezelColor = NSColor.controlAccentColor
@@ -593,10 +593,10 @@ class DownloadViewController: NSViewController {
                     if let version = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) {
                         versionResult = version
                     } else {
-                        versionResult = "已安装"
+                        versionResult = NSLocalizedString("Installed", comment: "Status when dependency is installed but version cannot be determined")
                     }
                 } else {
-                    versionResult = "已安装"
+                    versionResult = NSLocalizedString("Installed", comment: "Status when dependency is installed but version cannot be determined")
                 }
             }
         } catch {
@@ -641,13 +641,13 @@ class DownloadViewController: NSViewController {
                            let version = versionLine.components(separatedBy: " version ").last?.components(separatedBy: " ").first {
                             versionResult = version
                         } else {
-                            versionResult = "已安装"
+                            versionResult = NSLocalizedString("Installed", comment: "Status when dependency is installed but version cannot be determined")
                         }
                     } else {
-                        versionResult = "已安装"
+                        versionResult = NSLocalizedString("Installed", comment: "Status when dependency is installed but version cannot be determined")
                     }
                 } else {
-                    versionResult = "已安装"
+                    versionResult = NSLocalizedString("Installed", comment: "Status when dependency is installed but version cannot be determined")
                 }
             }
         } catch {
@@ -695,9 +695,9 @@ class DownloadViewController: NSViewController {
     private func updateButtonBasedOnInput() {
         let text = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // 检查URL类型
+        // Check URL type
         if text.hasPrefix("http://") || text.hasPrefix("https://") {
-            // 检查是否是playlist URL
+            // Check if it's a playlist URL
             if DownloadManager.shared.isPlaylistURL(text) {
                 detectButton.title = NSLocalizedString("Load Playlist", comment: "")
                 isSearchMode = false
@@ -716,7 +716,7 @@ class DownloadViewController: NSViewController {
     
     // MARK: - Config Updated
     @objc private func handleConfigUpdated() {
-        // 当配置更新时，可以在这里做一些事情，例如清除之前的搜索结果
+        // When configuration is updated, can do something here, e.g., clear previous search results
         searchResults = []
         if isSearchMode {
             tableView.reloadData()
@@ -743,16 +743,16 @@ class DownloadViewController: NSViewController {
     }
     
     private func performSearch(keyword: String, pageToken: String? = nil) {
-        // 验证配置
+        // Validate configuration
         if !configManager.isConfigValid {
             showConfigRequiredPrompt()
             return
         }
         
-        // 更新最后搜索的关键词
+        // Update last search keyword
         lastSearchKeyword = keyword
         
-        // 开始搜索前的UI准备
+        // UI preparation before starting search
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.3
             progressIndicator.isHidden = false
@@ -763,16 +763,16 @@ class DownloadViewController: NSViewController {
             statusLabel.textColor = NSColor.secondaryLabelColor
         })
         
-        // 如果是新搜索(没有pageToken)，清空旧结果和上一次的pageToken
+        // If it's a new search (no pageToken), clear old results and previous pageToken
         if pageToken == nil {
             searchResults = []
-            currentNextPageToken = nil  // 重置token
-            nextPageButton.isHidden = true  // 隐藏下一页按钮直到确认有更多结果
-            downloadAllButton.isHidden = true  // 隐藏下载全部按钮
+            currentNextPageToken = nil  // Reset token
+            nextPageButton.isHidden = true  // Hide next page button until more results are confirmed
+            downloadAllButton.isHidden = true  // Hide download all button
             tableView.reloadData()
         }
         
-        // 执行搜索
+        // Execute search
         ytSearchManager.search(keyword: keyword, pageToken: pageToken) { [weak self] result in
             guard let self = self else { return }
             
@@ -781,14 +781,14 @@ class DownloadViewController: NSViewController {
                 
                 switch result {
                 case .success(let searchResult):
-                    // 保存或追加搜索结果
+                    // Save or append search results
                     if pageToken == nil {
                         self.searchResults = searchResult.items
                     } else {
                         self.searchResults.append(contentsOf: searchResult.items)
                     }
                     
-                    // 保存nextPageToken用于下一页加载，确保空字符串被视为nil
+                    // Save nextPageToken for next page loading, ensure empty string is treated as nil
                     let hasNextPage: Bool
                     if let token = searchResult.nextPageToken, !token.isEmpty {
                         self.currentNextPageToken = token
@@ -798,24 +798,24 @@ class DownloadViewController: NSViewController {
                         hasNextPage = false
                     }
                     
-                    // 更新UI
+                    // Update UI
                     if !self.searchResults.isEmpty {
                         self.tableBackgroundView.isHidden = false
                         self.scrollView.isHidden = false
                         self.updateSearchStatus(totalResults: searchResult.totalResults, hasNextPage: hasNextPage)
                         
-                        // 更新nextPageToken和分页按钮 - 明确检查是否有下一页
+                        // Update nextPageToken and pagination button - explicitly check if there's a next page
                         self.nextPageButton.isHidden = !hasNextPage
                         
-                        // 根据是否有下一页调整nextPageButton的位置
+                        // Adjust nextPageButton position based on whether there's a next page
                         if hasNextPage {
-                            // 动态调整nextPageButton位置，放在文字后面
+                            // Dynamically adjust nextPageButton position, place it after text
                             let textWidth = self.statusLabel.attributedStringValue.size().width
                             self.nextPageButtonLeadingConstraint?.constant = textWidth + 10
                             self.view.layoutSubtreeIfNeeded()
                         }
                         
-                        // 调整窗口大小
+                        // Adjust window size
                         if let window = self.view.window {
                             let expandedHeight: CGFloat = min(540, 140 + CGFloat(min(8, self.searchResults.count)) * 40 + 60)
                             let newFrame = NSRect(
@@ -837,7 +837,7 @@ class DownloadViewController: NSViewController {
                     self.statusLabel.stringValue = String(format: NSLocalizedString("Search Error: %@", comment: ""), error.localizedDescription)
                     self.statusLabel.textColor = NSColor.systemRed
                     
-                    // 提供更详细的错误信息和建议
+                    // Provide more detailed error information and suggestions
                     if let nsError = error as NSError? {
                         if nsError.domain == "YTSearchManager" && nsError.code == 1001 {
                             self.statusLabel.stringValue = NSLocalizedString("Search error: API configuration not completed, please set API URL and API Key", comment: "")
@@ -850,15 +850,15 @@ class DownloadViewController: NSViewController {
                         }
                     }
                     
-                    // 添加复制错误信息的按钮
+                    // Add copy error button
                     let copyButton = NSButton(frame: NSRect(x: 0, y: 0, width: 80, height: 20))
                     copyButton.title = NSLocalizedString("Copy error", comment: "")
                     copyButton.bezelStyle = .inline
                     copyButton.target = self
                     copyButton.action = #selector(self.copyErrorMessage)
-                    copyButton.tag = 100 // 用于标识
+                    copyButton.tag = 100 // For identification
                     
-                    // 移除已有的复制按钮
+                    // Remove existing copy button
                     for subview in self.view.subviews {
                         if let button = subview as? NSButton, button.tag == 100 {
                             button.removeFromSuperview()
@@ -879,20 +879,20 @@ class DownloadViewController: NSViewController {
     }
     
     @objc private func loadNextPage() {
-        // 检查是否有下一页的令牌
+        // Check if there's a next page token
         guard let token = currentNextPageToken, !token.isEmpty else {
-            // 如果没有下一页，隐藏按钮
+            // If no next page, hide button
             nextPageButton.isHidden = true
             return
         }
         
-        // 保存当前的滚动位置
+        // Save current scroll position
         let scrollPosition = tableView.enclosingScrollView?.contentView.bounds.origin.y ?? 0
         
-        // 使用上一次的搜索关键词和当前的令牌加载下一页
+        // Use previous search keyword and current token to load next page
         performSearch(keyword: lastSearchKeyword, pageToken: token)
         
-        // 在加载完成后恢复滚动位置（需要在主线程中执行）
+        // Restore scroll position after loading completes (needs to be executed on main thread)
         DispatchQueue.main.async { [weak self] in
             self?.tableView.enclosingScrollView?.contentView.scroll(to: NSPoint(x: 0, y: scrollPosition))
         }
@@ -903,7 +903,7 @@ class DownloadViewController: NSViewController {
         pasteboard.clearContents()
         pasteboard.setString(statusLabel.stringValue, forType: .string)
         
-        // 显示复制成功的临时提示
+        // Show temporary success message
         let originalText = statusLabel.stringValue
         statusLabel.stringValue = NSLocalizedString("Copied to clipboard", comment: "")
         statusLabel.textColor = NSColor.systemGreen
@@ -918,15 +918,15 @@ class DownloadViewController: NSViewController {
         statusLabel.stringValue = NSLocalizedString("Please configure the search service API (API URL and API Key)", comment: "")
         statusLabel.textColor = NSColor.systemRed
         
-        // 添加前往设置的按钮
+        // Add go to settings button
         let goToConfigButton = NSButton(frame: NSRect(x: 0, y: 0, width: 80, height: 20))
         goToConfigButton.title = NSLocalizedString("Go to settings", comment: "")
         goToConfigButton.bezelStyle = .inline
         goToConfigButton.target = self
         goToConfigButton.action = #selector(openConfigWindow)
-        goToConfigButton.tag = 101 // 用于标识
+        goToConfigButton.tag = 101 // For identification
         
-        // 移除已有的按钮
+        // Remove existing button
         for subview in self.view.subviews {
             if let button = subview as? NSButton, button.tag == 101 {
                 button.removeFromSuperview()
@@ -958,7 +958,7 @@ class DownloadViewController: NSViewController {
             return
         }
         
-        // 开始加载状态
+        // Start loading state
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.3
             progressIndicator.isHidden = false
@@ -967,7 +967,7 @@ class DownloadViewController: NSViewController {
             statusLabel.textColor = NSColor.secondaryLabelColor
         })
         
-        // 清空之前的数据
+        // Clear previous data
         formats = []
         searchResults = []
         currentPlaylist = nil
@@ -975,7 +975,7 @@ class DownloadViewController: NSViewController {
         nextPageButton.isHidden = true
         downloadAllButton.isHidden = true
         
-        // 执行playlist加载
+        // Execute playlist loading
         Task {
             do {
                 if !self.isYtDlpInstalled {
@@ -1009,7 +1009,7 @@ class DownloadViewController: NSViewController {
                             self.scrollView.isHidden = false
                             self.downloadAllButton.isHidden = false
                             
-                            // 限制状态文本长度，避免覆盖按钮
+                            // Limit status text length to avoid covering button
                             let maxLength = 40
                             let truncatedTitle = playlistInfo.title.count > maxLength ? 
                                 String(playlistInfo.title.prefix(maxLength)) + "..." : 
@@ -1020,7 +1020,7 @@ class DownloadViewController: NSViewController {
                         }, completionHandler: {
                             self.tableView.reloadData()
                             
-                            // 调整窗口大小
+                            // Adjust window size
                             if let window = self.view.window {
                                 let expandedHeight: CGFloat = min(540, 140 + CGFloat(min(8, playlistInfo.items.count)) * 40 + 60)
                                 let newFrame = NSRect(
@@ -1148,13 +1148,13 @@ class DownloadViewController: NSViewController {
         progressIndicator.stopAnimation(nil)
     }
     
-    // 搜索完成时的状态显示
+    // Status display when search completes
     private func updateSearchStatus(totalResults: Int, hasNextPage: Bool) {
         let statusText = String(format: NSLocalizedString("Found %d results", comment: ""), totalResults)
         statusLabel.stringValue = statusText
         statusLabel.textColor = NSColor.secondaryLabelColor
         
-        // 控制下一页按钮的可见性
+        // Control next page button visibility
         nextPageButton.isHidden = !hasNextPage
     }
     
@@ -1232,7 +1232,7 @@ class DownloadViewController: NSViewController {
 extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
     func numberOfRows(in tableView: NSTableView) -> Int {
         if isSearchMode {
-            // 如果有展开的行，则添加格式选项数量
+            // If there's an expanded row, add format option count
             if let expandedRow = expandedVideoRow, expandedRow < searchResults.count {
                 return searchResults.count + formatOptions.count
             }
@@ -1246,12 +1246,12 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         if isSearchMode {
-            // 判断是否是格式选项行
+            // Check if it's a format option row
             if let expandedRow = expandedVideoRow, row > expandedRow && row <= expandedRow + formatOptions.count {
                 return getFormatOptionCellView(for: row - expandedRow - 1)
             }
             
-            // 正常搜索结果行
+            // Normal search result row
             let actualRow = row > expandedVideoRow ?? -1 ? row - formatOptions.count : row
             return getSearchResultCellView(for: actualRow)
         } else if isPlaylistMode {
@@ -1282,14 +1282,14 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 containerView.bottomAnchor.constraint(equalTo: cell!.bottomAnchor)
             ])
             
-            // 缩略图
+            // Thumbnail
             let thumbnailView = NSImageView()
             thumbnailView.identifier = NSUserInterfaceItemIdentifier("ThumbnailView")
             thumbnailView.translatesAutoresizingMaskIntoConstraints = false
             thumbnailView.imageScaling = .scaleProportionallyUpOrDown
             containerView.addSubview(thumbnailView)
             
-            // 标题文本
+            // Title text
             let titleField = NSTextField()
             titleField.identifier = NSUserInterfaceItemIdentifier("TitleField")
             titleField.translatesAutoresizingMaskIntoConstraints = false
@@ -1301,7 +1301,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             titleField.lineBreakMode = .byTruncatingTail
             containerView.addSubview(titleField)
             
-            // 详情按钮
+            // Detail button
             let detailButton = NSButton()
             detailButton.identifier = NSUserInterfaceItemIdentifier("DetailButton")
             detailButton.translatesAutoresizingMaskIntoConstraints = false
@@ -1312,7 +1312,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             detailButton.action = #selector(openVideoDetail(sender:))
             containerView.addSubview(detailButton)
             
-            // 检测按钮
+            // Detect button
             let detectButton = NSButton()
             detectButton.identifier = NSUserInterfaceItemIdentifier("VideoDetectButton")
             detectButton.translatesAutoresizingMaskIntoConstraints = false
@@ -1353,9 +1353,9 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             ])
         }
         
-        // 更新缩略图
+        // Update thumbnail
         if let thumbnailView = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "ThumbnailView" }) as? NSImageView {
-            // 异步加载缩略图
+            // Asynchronously load thumbnail
             DispatchQueue.global().async {
                 if let url = URL(string: video.thumbnailUrl),
                    let imageData = try? Data(contentsOf: url),
@@ -1371,12 +1371,12 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             }
         }
         
-        // 更新标题
+        // Update title
         if let titleField = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "TitleField" }) as? NSTextField {
             titleField.stringValue = video.title
         }
         
-        // 更新按钮标签
+        // Update button tags
         if let detailButton = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "DetailButton" }) as? NSButton {
             detailButton.tag = row
         }
@@ -1498,25 +1498,25 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
         
         let video = searchResults[row]
         
-        // 检查是否需要折叠当前展开的行
+        // Check if need to collapse currently expanded row
         if expandedVideoRow == row {
-            // 如果点击的是当前已展开的行，则收起
+            // If clicking the currently expanded row, collapse it
             expandedVideoRow = nil
             formatOptions = []
             tableView.reloadData()
             return
         } else if expandedVideoRow != nil {
-            // 如果有其他行已展开，先收起
+            // If another row is expanded, collapse it first
             expandedVideoRow = nil
             formatOptions = []
         }
         
-        // 显示加载状态
+        // Show loading state
         expandedVideoRow = row
         formatOptions = []
         tableView.reloadData()
         
-        // 开始加载按钮的状态更新
+        // Start loading button state update
         if let videoCell = tableView.rowView(atRow: row, makeIfNecessary: false),
            let cellContent = videoCell.view(atColumn: 0) as? NSView,
            let detectBtn = cellContent.subviews.first?.subviews.first(where: { ($0 as? NSButton)?.action == #selector(detectVideoFormats(sender:)) }) as? NSButton {
@@ -1527,21 +1527,21 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             })
         }
         
-        // 创建一个加载中的选项
+        // Create a loading option
         let loadingOption = FormatOption(title: NSLocalizedString("Loading formats...", comment: ""), formatId: "", videoItem: video)
         formatOptions = [loadingOption]
         tableView.reloadData()
         
-        // 实际执行格式检测
+        // Actually execute format detection
         Task {
             do {
                 let detectedFormats = try await DownloadManager.shared.fetchAvailableFormats(from: video.videoUrl)
                 
-                // 在主线程更新UI
+                // Update UI on main thread
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self, self.expandedVideoRow == row else { return }
                     
-                    // 转换检测到的格式为选项
+                    // Convert detected formats to options
                     self.formatOptions = detectedFormats.map { format in
                         return FormatOption(
                             title: format.description,
@@ -1550,7 +1550,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                         )
                     }
                     
-                    // 重新启用检测按钮
+                    // Re-enable detect button
                     if let videoCell = self.tableView.rowView(atRow: row, makeIfNecessary: false),
                        let cellContent = videoCell.view(atColumn: 0) as? NSView,
                        let detectBtn = cellContent.subviews.first?.subviews.first(where: { ($0 as? NSButton)?.action == #selector(self.detectVideoFormats(sender:)) }) as? NSButton {
@@ -1561,15 +1561,15 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                         })
                     }
                     
-                    // 刷新表格以显示实际格式
+                    // Refresh table to show actual formats
                     self.tableView.reloadData()
                 }
             } catch {
-                // 处理错误
+                // Handle error
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self, self.expandedVideoRow == row else { return }
                     
-                    // 显示错误信息
+                    // Show error message
                     self.formatOptions = [
                         FormatOption(
                             title: String(format: NSLocalizedString("Error: %@", comment: ""), error.localizedDescription),
@@ -1578,7 +1578,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                         )
                     ]
                     
-                    // 重新启用检测按钮
+                    // Re-enable detect button
                     if let videoCell = self.tableView.rowView(atRow: row, makeIfNecessary: false),
                        let cellContent = videoCell.view(atColumn: 0) as? NSView,
                        let detectBtn = cellContent.subviews.first?.subviews.first(where: { ($0 as? NSButton)?.action == #selector(self.detectVideoFormats(sender:)) }) as? NSButton {
@@ -1589,7 +1589,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                         })
                     }
                     
-                    // 刷新表格以显示错误信息
+                    // Refresh table to show error message
                     self.tableView.reloadData()
                 }
             }
@@ -1602,15 +1602,15 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
         
         let option = formatOptions[optionIndex]
         
-        // 检查是否有有效的formatId
+        // Check if there's a valid formatId
         if option.formatId.isEmpty {
-            return // 跳过无效的选项（如加载中或错误信息）
+            return // Skip invalid options (e.g., loading or error messages)
         }
         
-        // 直接下载指定的格式
+        // Directly download specified format
         downloadSpecificFormat(video: option.videoItem, formatId: option.formatId, formatName: option.title)
         
-        // 收起展开的行
+        // Collapse expanded row
         expandedVideoRow = nil
         formatOptions = []
         tableView.reloadData()
@@ -1628,7 +1628,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
         return rowView
     }
     
-    // 添加获取格式选项行视图的方法
+    // Add method to get format option row view
     private func getFormatOptionCellView(for optionIndex: Int) -> NSView? {
         guard optionIndex >= 0 && optionIndex < formatOptions.count else { return nil }
         
@@ -1652,7 +1652,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 containerView.bottomAnchor.constraint(equalTo: cell!.bottomAnchor)
             ])
             
-            // 格式选项显示的文本
+            // Format option display text
             let formatLabel = NSTextField()
             formatLabel.identifier = NSUserInterfaceItemIdentifier("FormatOptionLabel")
             formatLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -1664,7 +1664,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             formatLabel.lineBreakMode = .byTruncatingTail
             containerView.addSubview(formatLabel)
             
-            // 下载按钮
+            // Download button
             let downloadButton = NSButton()
             downloadButton.identifier = NSUserInterfaceItemIdentifier("FormatOptionDownloadButton")
             downloadButton.translatesAutoresizingMaskIntoConstraints = false
@@ -1695,7 +1695,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             ])
         }
         
-        // 更新文本和按钮
+        // Update text and button
         if let label = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "FormatOptionLabel" }) as? NSTextField {
             label.stringValue = option.title
         }
@@ -1703,7 +1703,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
         if let button = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "FormatOptionDownloadButton" }) as? NSButton {
             button.tag = optionIndex
             
-            // 根据选项是否有效来控制按钮状态
+            // Control button state based on whether option is valid
             if option.formatId.isEmpty {
                 button.isEnabled = false
                 button.isHidden = option.title.starts(with: "Error") ? true : false
@@ -1739,7 +1739,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 containerView.bottomAnchor.constraint(equalTo: cell!.bottomAnchor)
             ])
             
-            // 序号标签
+            // Index label
             let numberLabel = NSTextField()
             numberLabel.identifier = NSUserInterfaceItemIdentifier("NumberLabel")
             numberLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -1752,7 +1752,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             numberLabel.alignment = .center
             containerView.addSubview(numberLabel)
             
-            // 标题文本
+            // Title text
             let titleField = NSTextField()
             titleField.identifier = NSUserInterfaceItemIdentifier("PlaylistTitleField")
             titleField.translatesAutoresizingMaskIntoConstraints = false
@@ -1764,7 +1764,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             titleField.lineBreakMode = .byTruncatingTail
             containerView.addSubview(titleField)
             
-            // 时长标签
+            // Duration label
             let durationLabel = NSTextField()
             durationLabel.identifier = NSUserInterfaceItemIdentifier("DurationLabel")
             durationLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -1792,7 +1792,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             ])
         }
         
-        // 更新内容
+        // Update content
         if let numberLabel = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "NumberLabel" }) as? NSTextField {
             numberLabel.stringValue = "\(row + 1)"
         }
@@ -1817,12 +1817,12 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
     }
     
     private func stopDownload() {
-        // 取消下载任务
+        // Cancel download task
         downloadTask?.cancel()
         downloadTask = nil
         isDownloading = false
         
-        // 恢复UI状态
+        // Restore UI state
         hideProgressIndicator()
         downloadAllButton.title = NSLocalizedString("Download All", comment: "")
         downloadAllButton.contentTintColor = NSColor.white
@@ -1840,10 +1840,10 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
     private func startDownload() {        
         let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // 更新下载状态
+        // Update download status
         isDownloading = true
         
-        // 更改按钮为停止按钮
+        // Change button to stop button
         downloadAllButton.title = NSLocalizedString("Stop", comment: "")
         downloadAllButton.contentTintColor = NSColor.white
         
@@ -1864,7 +1864,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                     DispatchQueue.main.async {
                         guard let self = self else { return }
                         
-                        // 限制当前歌曲名长度，避免覆盖按钮
+                        // Limit current song name length to avoid covering button
                         let maxTitleLength = 25
                         let truncatedCurrentTitle = progress.currentTitle.count > maxTitleLength ? 
                             String(progress.currentTitle.prefix(maxTitleLength)) + "..." : 
@@ -1880,7 +1880,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 }
                 
                 DispatchQueue.main.async {
-                    // 检查任务是否被取消
+                    // Check if task was cancelled
                     guard !Task.isCancelled else { return }
                     
                     self.isDownloading = false
@@ -1890,7 +1890,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                     self.statusLabel.stringValue = NSLocalizedString("Playlist download completed", comment: "")
                     self.statusLabel.textColor = NSColor.systemGreen
                     
-                    // 恢复下载按钮
+                    // Restore download button
                     self.downloadAllButton.title = NSLocalizedString("Download All", comment: "")
                     self.downloadAllButton.contentTintColor = NSColor.white
                     
@@ -1900,14 +1900,14 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                         self.downloadAllButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
                     }
                     
-                    // 通知播放器刷新音乐库
+                    // Notify player to refresh music library
                     NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
                 }
             } catch {
                 DispatchQueue.main.async {
-                    // 检查是否为取消错误
+                    // Check if it's a cancellation error
                     if error is CancellationError {
-                        return // 取消时不显示错误，由stopDownload处理
+                        return // Don't show error when cancelled, handled by stopDownload
                     }
                     
                     self.isDownloading = false
@@ -1917,7 +1917,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                     self.statusLabel.stringValue = String(format: NSLocalizedString("Playlist download failed: %@", comment: ""), error.localizedDescription)
                     self.statusLabel.textColor = NSColor.systemRed
                     
-                    // 恢复下载按钮
+                    // Restore download button
                     self.downloadAllButton.title = NSLocalizedString("Download All", comment: "")
                     self.downloadAllButton.contentTintColor = NSColor.white
                     
@@ -1932,7 +1932,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
     }
     
     private func downloadSpecificFormat(video: YTSearchManager.SearchResult.VideoItem, formatId: String, formatName: String) {
-        // 显示下载进度
+        // Show download progress
         progressIndicator.isHidden = false
         progressIndicator.startAnimation(nil)
         statusLabel.stringValue = String(format: NSLocalizedString("Downloading %@...", comment: ""), formatName)
@@ -1946,7 +1946,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                     self.statusLabel.stringValue = NSLocalizedString("Download completed", comment: "")
                     self.statusLabel.textColor = NSColor.systemGreen
                     
-                    // 通知播放器刷新音乐库
+                    // Notify player to refresh music library
                     NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
                 }
             } catch {
