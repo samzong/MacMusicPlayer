@@ -93,6 +93,7 @@
 
 // New UI Strings
 "Not installed" = "インストールされていません";
+"Installed" = "インストール済み";
 "Please install missing dependencies" = "不足している依存関係をインストールしてください";
 "Please select a format to download" = "ダウンロードするフォーマットを選択してください";
 "Enter video URL" = "動画URLを入力";
@@ -149,3 +150,21 @@
 "search_songs_placeholder" = "曲を検索...";
 "song_count_format" = "%d 曲";
 "operation_hints" = "Tab切替，Enter再生，Esc閉じる";
+
+// Configuration Settings
+"Configure Search Service" = "検索サービスの設定";
+"API Key:" = "API Key:";
+"Enter API Key" = "APIキーを入力";
+"API URL:" = "API URL:";
+"Enter API URL" = "API URLを入力";
+"Save" = "保存";
+"What is yt-search-api?" = "yt-search-apiとは？";
+"Please enter API Key" = "APIキーを入力してください";
+"Please enter API URL" = "API URLを入力してください";
+"Configuration saved" = "設定を保存しました";
+
+// API Error Messages
+"API configuration not completed" = "API設定が完了していません";
+"API URL not configured" = "API URLが設定されていません";
+"No data received" = "データが受信されませんでした";
+"Server Error: %@" = "サーバーエラー: %@";

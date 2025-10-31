@@ -7,7 +7,7 @@
 
 import Cocoa
 
-/// 自定义表格行视图，添加分隔线和悬停效果
+/// Custom table row view with separator line and hover effects
 class CustomTableRowView: NSTableRowView {
     override func drawSelection(in dirtyRect: NSRect) {
         if self.selectionHighlightStyle != .none {
@@ -18,7 +18,7 @@ class CustomTableRowView: NSTableRowView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         
-        // 绘制底部分隔线
+        // Draw bottom separator line
         let bottomLine = NSBezierPath()
         NSColor.separatorColor.withAlphaComponent(0.2).setStroke()
         bottomLine.lineWidth = 0.5
@@ -27,7 +27,7 @@ class CustomTableRowView: NSTableRowView {
         bottomLine.stroke()
     }
     
-    // 添加鼠标悬停效果
+    // Add mouse hover effect
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         
@@ -44,7 +44,7 @@ class CustomTableRowView: NSTableRowView {
         super.mouseEntered(with: event)
         self.wantsLayer = true
         
-        // 使用系统强调色的淡化版本作为悬停效果
+        // Use a faded version of system accent color for hover effect
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.2
             self.animator().layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.1).cgColor

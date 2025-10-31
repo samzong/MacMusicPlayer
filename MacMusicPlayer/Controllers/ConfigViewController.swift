@@ -8,7 +8,7 @@
 import Cocoa
 
 class ConfigViewController: NSViewController {
-    // MARK: - UI组件
+    // MARK: - UI Components
     private let githubLinkButton = NSButton()
     private let apiUrlLabel = NSTextField()
     private let apiUrlTextField = NSTextField()
@@ -18,11 +18,11 @@ class ConfigViewController: NSViewController {
     private let cancelButton = NSButton()
     private let statusLabel = NSTextField()
     
-    // MARK: - 属性
+    // MARK: - Properties
     private let configManager = ConfigManager.shared
     private var saveCallback: (() -> Void)?
     
-    // MARK: - 初始化
+    // MARK: - Initialization
     init(saveCallback: (() -> Void)? = nil) {
         self.saveCallback = saveCallback
         super.init(nibName: nil, bundle: nil)
@@ -32,7 +32,7 @@ class ConfigViewController: NSViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - 生命周期
+    // MARK: - Lifecycle
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 400, height: 280))
     }
@@ -47,12 +47,12 @@ class ConfigViewController: NSViewController {
         loadCurrentConfig()
     }
     
-    // MARK: - UI设置
+    // MARK: - UI Setup
     private func setupUI() {
         view.wantsLayer = true
         
         if let window = view.window {
-            window.title = NSLocalizedString("配置搜索服务", comment: "")
+            window.title = NSLocalizedString("Configure Search Service", comment: "Settings window title")
             window.titleVisibility = .visible
         }
         
@@ -65,7 +65,7 @@ class ConfigViewController: NSViewController {
     
     private func setupApiKeyUI() {
         apiKeyLabel.translatesAutoresizingMaskIntoConstraints = false
-        apiKeyLabel.stringValue = NSLocalizedString("API Key:", comment: "")
+        apiKeyLabel.stringValue = NSLocalizedString("API Key:", comment: "API Key label")
         apiKeyLabel.isEditable = false
         apiKeyLabel.isBordered = false
         apiKeyLabel.backgroundColor = .clear
@@ -75,7 +75,7 @@ class ConfigViewController: NSViewController {
         view.addSubview(apiKeyLabel)
         
         apiKeyTextField.translatesAutoresizingMaskIntoConstraints = false
-        apiKeyTextField.placeholderString = NSLocalizedString("输入API密钥", comment: "")
+        apiKeyTextField.placeholderString = NSLocalizedString("Enter API Key", comment: "API Key placeholder")
         apiKeyTextField.font = NSFont.systemFont(ofSize: 13)
         apiKeyTextField.bezelStyle = .roundedBezel
         apiKeyTextField.focusRingType = .exterior
@@ -96,7 +96,7 @@ class ConfigViewController: NSViewController {
     
     private func setupApiUrlUI() {
         apiUrlLabel.translatesAutoresizingMaskIntoConstraints = false
-        apiUrlLabel.stringValue = NSLocalizedString("API URL:", comment: "")
+        apiUrlLabel.stringValue = NSLocalizedString("API URL:", comment: "API URL label")
         apiUrlLabel.isEditable = false
         apiUrlLabel.isBordered = false
         apiUrlLabel.backgroundColor = .clear
@@ -106,7 +106,7 @@ class ConfigViewController: NSViewController {
         view.addSubview(apiUrlLabel)
         
         apiUrlTextField.translatesAutoresizingMaskIntoConstraints = false
-        apiUrlTextField.placeholderString = NSLocalizedString("输入API地址", comment: "")
+        apiUrlTextField.placeholderString = NSLocalizedString("Enter API URL", comment: "API URL placeholder")
         apiUrlTextField.font = NSFont.systemFont(ofSize: 13)
         apiUrlTextField.bezelStyle = .roundedBezel
         apiUrlTextField.focusRingType = .exterior
@@ -127,7 +127,7 @@ class ConfigViewController: NSViewController {
     
     private func setupButtons() {
         saveButton.translatesAutoresizingMaskIntoConstraints = false
-        saveButton.title = NSLocalizedString("保存", comment: "")
+        saveButton.title = NSLocalizedString("Save", comment: "Save button")
         saveButton.bezelStyle = .rounded
         saveButton.target = self
         saveButton.action = #selector(saveConfig)
@@ -144,7 +144,7 @@ class ConfigViewController: NSViewController {
         view.addSubview(saveButton)
         
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
-        cancelButton.title = NSLocalizedString("取消", comment: "")
+        cancelButton.title = NSLocalizedString("Cancel", comment: "Cancel button")
         cancelButton.bezelStyle = .rounded
         cancelButton.target = self
         cancelButton.action = #selector(cancelConfig)
@@ -166,7 +166,7 @@ class ConfigViewController: NSViewController {
     
     private func setupGithubLink() {
         githubLinkButton.translatesAutoresizingMaskIntoConstraints = false
-        githubLinkButton.title = NSLocalizedString("什么是 yt-search-api ？", comment: "")
+        githubLinkButton.title = NSLocalizedString("What is yt-search-api?", comment: "Link to yt-search-api documentation")
         githubLinkButton.bezelStyle = .inline
         githubLinkButton.target = self
         githubLinkButton.action = #selector(openGithubLink)
@@ -200,7 +200,7 @@ class ConfigViewController: NSViewController {
         ])
     }
     
-    // MARK: - 功能实现
+    // MARK: - Functionality
     private func loadCurrentConfig() {
         apiKeyTextField.stringValue = configManager.apiKey
         apiUrlTextField.stringValue = configManager.apiUrl
@@ -210,30 +210,30 @@ class ConfigViewController: NSViewController {
         let apiKey = apiKeyTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         var apiUrl = apiUrlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // 确保URL格式正确
+        // Ensure URL format is correct
         if !apiUrl.isEmpty && !apiUrl.hasPrefix("http") {
             apiUrl = "https://" + apiUrl
         }
         
-        // 验证输入
+        // Validate input
         if apiKey.isEmpty {
-            showStatus(NSLocalizedString("请输入API密钥", comment: ""), isError: true)
+            showStatus(NSLocalizedString("Please enter API Key", comment: "Error message when API Key is empty"), isError: true)
             return
         }
         
         if apiUrl.isEmpty {
-            showStatus(NSLocalizedString("请输入API地址", comment: ""), isError: true)
+            showStatus(NSLocalizedString("Please enter API URL", comment: "Error message when API URL is empty"), isError: true)
             return
         }
         
-        // 保存配置
+        // Save configuration
         configManager.saveConfig(apiKey: apiKey, apiUrl: apiUrl)
-        showStatus(NSLocalizedString("配置已保存", comment: ""), isError: false)
+        showStatus(NSLocalizedString("Configuration saved", comment: "Success message when configuration is saved"), isError: false)
         
-        // 调用回调函数
+        // Call callback function
         saveCallback?()
         
-        // 延迟关闭窗口
+        // Delay window closing
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             self?.dismiss(nil)
         }
