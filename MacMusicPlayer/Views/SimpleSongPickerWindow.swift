@@ -6,6 +6,7 @@
 //
 
 import Cocoa
+import Combine
 
 class SimpleSongPickerWindow: NSPanel {
     private weak var playerManager: PlayerManager?
@@ -17,6 +18,7 @@ class SimpleSongPickerWindow: NSPanel {
     private var allTracks: [Track] = []
     private var filteredTracks: [Track] = []
     private var filterWorkItem: DispatchWorkItem?
+    private var playlistCancellable: AnyCancellable?
 
     private let windowWidth: CGFloat = 600
     private let windowHeight: CGFloat = 400
@@ -36,24 +38,33 @@ class SimpleSongPickerWindow: NSPanel {
         setupViews()
         loadTracks()
         
-        // Listen for music library refresh notification
+        // Listen for playlist updates
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(handleRefreshMusicLibrary),
-            name: NSNotification.Name("RefreshMusicLibrary"),
+            selector: #selector(handlePlaylistUpdated),
+            name: NSNotification.Name("PlaylistUpdated"),
             object: nil
         )
+
+        if let playerManager = self.playerManager {
+            playlistCancellable = playerManager.$playlist
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in
+                    self?.loadTracks()
+                }
+        }
     }
 
     override var canBecomeKey: Bool { true }
 
     deinit {
         filterWorkItem?.cancel()
+        playlistCancellable?.cancel()
         NotificationCenter.default.removeObserver(self)
     }
     
-    @objc private func handleRefreshMusicLibrary() {
-        // Reload tracks when music library is refreshed
+    @objc private func handlePlaylistUpdated() {
+        // Reload tracks when playlist is updated
         loadTracks()
     }
 
