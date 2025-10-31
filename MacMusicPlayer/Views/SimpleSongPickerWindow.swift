@@ -12,6 +12,7 @@ class SimpleSongPickerWindow: NSPanel {
     private var searchField: NSSearchField!
     private var tableView: NSTableView!
     private var statusLabel: NSTextField!
+    private var backgroundView: NSVisualEffectView!
 
     private var allTracks: [Track] = []
     private var filteredTracks: [Track] = []
@@ -34,12 +35,26 @@ class SimpleSongPickerWindow: NSPanel {
         setupWindow()
         setupViews()
         loadTracks()
+        
+        // Listen for music library refresh notification
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRefreshMusicLibrary),
+            name: NSNotification.Name("RefreshMusicLibrary"),
+            object: nil
+        )
     }
 
     override var canBecomeKey: Bool { true }
 
     deinit {
         filterWorkItem?.cancel()
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func handleRefreshMusicLibrary() {
+        // Reload tracks when music library is refreshed
+        loadTracks()
     }
 
     private func setupWindow() {
@@ -54,10 +69,12 @@ class SimpleSongPickerWindow: NSPanel {
     private func setupViews() {
         guard let contentView = contentView else { return }
 
-        // Background view with rounded corners
-        let backgroundView = NSView()
+        // Background view with rounded corners and visual effect for dark mode support
+        backgroundView = NSVisualEffectView()
+        backgroundView.material = .sidebar
+        backgroundView.blendingMode = .behindWindow
+        backgroundView.state = .active
         backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
         backgroundView.layer?.cornerRadius = 20
         backgroundView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(backgroundView)
