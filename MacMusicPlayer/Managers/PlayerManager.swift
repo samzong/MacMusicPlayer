@@ -209,13 +209,19 @@ class PlayerManager: NSObject, ObservableObject {
             // Legacy playlist for backward compatibility
             self.playlist = sortedTracks
 
-            // If there are songs, set the first one as current track
+            // Set first track as current if available
             if !sortedTracks.isEmpty {
                 self.currentIndex = 0
                 self.currentTrack = sortedTracks[0]
-                // Set up queue with all tracks starting at index 0
+                self.playlistStore.setCurrentIndex(0)
                 self.queueController.setQueue(sortedTracks, startingAt: 0)
+            } else {
+                self.currentTrack = nil
+                self.currentIndex = 0
             }
+            
+            // Notify that playlist has been updated
+            NotificationCenter.default.post(name: NSNotification.Name("PlaylistUpdated"), object: nil)
         }
     }
     
@@ -340,7 +346,7 @@ class PlayerManager: NSObject, ObservableObject {
 
 
     @objc func refreshMusicLibrary() {
-        // Check if there is a current library
+        // Simply reload the current library, same as startup
         if let library = (NSApplication.shared.delegate as? AppDelegate)?.libraryManager.currentLibrary {
             loadLibrary(library)
         } else {

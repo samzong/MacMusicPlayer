@@ -155,7 +155,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if oldMenu == nil {
             NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("TrackChanged"), object: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("PlaybackStateChanged"), object: nil)
-            NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(updateMenuItems), name: NSNotification.Name("PlaylistUpdated"), object: nil)
         }
         
         statusItem?.menu = menu
@@ -441,9 +441,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func refreshCurrentLibrary() {
-        guard libraryManager.currentLibrary != nil else { return }
+        guard let currentLibrary = libraryManager.currentLibrary else { return }
         
-        NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
+        // Simply reload the library, same as startup
+        playerManager.loadLibrary(currentLibrary)
         
         if let button = statusItem?.button,
            let refreshingIcon = makeStatusBarImage(symbolName: "arrow.clockwise", accessibilityDescription: "Refreshing") {

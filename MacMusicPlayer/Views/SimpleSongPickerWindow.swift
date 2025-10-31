@@ -6,16 +6,19 @@
 //
 
 import Cocoa
+import Combine
 
 class SimpleSongPickerWindow: NSPanel {
     private weak var playerManager: PlayerManager?
     private var searchField: NSSearchField!
     private var tableView: NSTableView!
     private var statusLabel: NSTextField!
+    private var backgroundView: NSVisualEffectView!
 
     private var allTracks: [Track] = []
     private var filteredTracks: [Track] = []
     private var filterWorkItem: DispatchWorkItem?
+    private var playlistCancellable: AnyCancellable?
 
     private let windowWidth: CGFloat = 600
     private let windowHeight: CGFloat = 400
@@ -34,12 +37,22 @@ class SimpleSongPickerWindow: NSPanel {
         setupWindow()
         setupViews()
         loadTracks()
+        
+        // Listen for playlist updates via Combine
+        if let playerManager = self.playerManager {
+            playlistCancellable = playerManager.$playlist
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in
+                    self?.loadTracks()
+                }
+        }
     }
 
     override var canBecomeKey: Bool { true }
 
     deinit {
         filterWorkItem?.cancel()
+        playlistCancellable?.cancel()
     }
 
     private func setupWindow() {
@@ -54,10 +67,12 @@ class SimpleSongPickerWindow: NSPanel {
     private func setupViews() {
         guard let contentView = contentView else { return }
 
-        // Background view with rounded corners
-        let backgroundView = NSView()
+        // Background view with rounded corners and visual effect for dark mode support
+        backgroundView = NSVisualEffectView()
+        backgroundView.material = .sidebar
+        backgroundView.blendingMode = .behindWindow
+        backgroundView.state = .active
         backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
         backgroundView.layer?.cornerRadius = 20
         backgroundView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(backgroundView)
