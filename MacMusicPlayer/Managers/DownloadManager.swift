@@ -10,17 +10,17 @@ import AppKit
 
 public class DownloadManager {
     public static let shared = DownloadManager()
-    
+
     private var libraryManager: LibraryManager
-    
+
     private init() {
-        // Use shared LibraryManager instance to keep in sync with UI
-        if let appDelegate = NSApp.delegate as? AppDelegate {
-            self.libraryManager = appDelegate.libraryManager
-        } else {
-            // Fallback: create new instance
-            self.libraryManager = LibraryManager()
-        }
+        // Default to a standalone LibraryManager until the app delegate binds the shared instance.
+        self.libraryManager = LibraryManager()
+    }
+
+    @MainActor
+    func updateLibraryManager(_ libraryManager: LibraryManager) {
+        self.libraryManager = libraryManager
     }
     
     public struct DownloadFormat {
