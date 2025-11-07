@@ -226,11 +226,22 @@ final class StatusMenuController: NSObject {
         launchAtLoginItem?.state = launchManager.launchAtLogin ? .on : .off
     }
 
-    private func updateStatusBarIcon() {
+    func updateStatusBarIcon() {
         guard let button = statusItem?.button else { return }
         let symbolName = playerManager.isPlaying ? "headphones.circle.fill" : "headphones.circle"
         guard let icon = makeStatusBarImage(symbolName: symbolName, accessibilityDescription: "Music") else {
             button.image = nil
+            return
+        }
+
+        button.image = icon
+        button.imageScaling = .scaleProportionallyDown
+        button.contentTintColor = nil
+    }
+
+    func showTemporaryRefreshingIcon() {
+        guard let button = statusItem?.button else { return }
+        guard let icon = makeStatusBarImage(symbolName: "arrow.clockwise", accessibilityDescription: "Refreshing") else {
             return
         }
 

@@ -17,8 +17,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var libraryManager: LibraryManager!
     var statusMenuController: StatusMenuController!
 
-    private let statusBarSymbolConfiguration = NSImage.SymbolConfiguration(pointSize: 18, weight: .medium, scale: .medium)
-    
     // Strong reference to the window
     private var downloadWindow: NSWindow?
     private var configWindow: NSWindow?
@@ -235,28 +233,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func refreshCurrentLibrary() {
         guard let currentLibrary = libraryManager.currentLibrary else { return }
 
-        // Simply reload the library, same as startup
         playerManager.loadLibrary(currentLibrary)
-
-        if let button = statusItem?.button,
-           let refreshingIcon = makeStatusBarImage(symbolName: "arrow.clockwise", accessibilityDescription: "Refreshing") {
-            button.image = refreshingIcon
-            button.contentTintColor = nil
-            button.imageScaling = .scaleProportionallyDown
-        }
+        statusMenuController.showTemporaryRefreshingIcon()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.statusMenuController.refresh()
+            self.statusMenuController.updateStatusBarIcon()
         }
-    }
-
-    private func makeStatusBarImage(symbolName: String, accessibilityDescription: String) -> NSImage? {
-        guard let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: accessibilityDescription)?.withSymbolConfiguration(statusBarSymbolConfiguration) else {
-            return nil
-        }
-
-        image.isTemplate = true
-        return image
     }
     
     @objc func renameCurrentLibrary() {
