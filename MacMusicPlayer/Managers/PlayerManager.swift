@@ -345,6 +345,7 @@ class PlayerManager: NSObject, ObservableObject {
     }
 
 
+    @MainActor
     @objc func refreshMusicLibrary() {
         // Simply reload the current library, same as startup
         if let library = (NSApplication.shared.delegate as? AppDelegate)?.libraryManager.currentLibrary {

@@ -29,6 +29,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         sleepManager = SleepManager()
         launchManager = LaunchManager()
         libraryManager = LibraryManager()
+        DownloadManager.shared.updateLibraryManager(libraryManager)
         
         if let currentLibrary = libraryManager.currentLibrary {
             playerManager.loadLibrary(currentLibrary)
