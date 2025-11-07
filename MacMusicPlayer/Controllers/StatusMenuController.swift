@@ -136,7 +136,6 @@ final class StatusMenuController: NSObject {
         let libraryMenuItem = NSMenuItem(title: NSLocalizedString("Music Libraries", comment: "Menu item for music libraries"), action: nil, keyEquivalent: "")
         libraryMenuItem.submenu = libraryMenu
         self.libraryMenu = libraryMenu
-        rebuildLibraryMenu()
         return libraryMenuItem
     }
 
