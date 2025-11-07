@@ -51,7 +51,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         if let statusItem = statusItem {
-            statusMenuController.configureStatusItem(statusItem)
+            statusMenuController.configureStatusItem(statusItem, target: self)
         }
         setupRemoteCommandCenter()
         

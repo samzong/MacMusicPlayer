@@ -15,13 +15,10 @@ final class StatusMenuController: NSObject {
     private weak var preventSleepItem: NSMenuItem?
     private weak var launchAtLoginItem: NSMenuItem?
     private weak var playModeMenu: NSMenu?
+    private weak var actionTarget: AppDelegate?
 
     private let statusBarSymbolConfiguration = NSImage.SymbolConfiguration(pointSize: 18, weight: .medium, scale: .medium)
     private var observersRegistered = false
-
-    private var actionTarget: AnyObject? {
-        NSApp.delegate as AnyObject?
-    }
 
     init(playerManager: PlayerManager,
          sleepManager: SleepManager,
@@ -34,8 +31,9 @@ final class StatusMenuController: NSObject {
         super.init()
     }
 
-    func configureStatusItem(_ statusItem: NSStatusItem) {
+    func configureStatusItem(_ statusItem: NSStatusItem, target: AppDelegate) {
         self.statusItem = statusItem
+        self.actionTarget = target
 
         let menu = NSMenu()
         menu.minimumWidth = 200
