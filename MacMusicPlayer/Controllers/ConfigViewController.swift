@@ -9,7 +9,7 @@ import Cocoa
 
 class ConfigViewController: NSViewController {
     // MARK: - UI Components
-    private let githubLinkButton = NSButton()
+    
     private let apiUrlLabel = NSTextField()
     private let apiUrlTextField = NSTextField()
     private let apiKeyLabel = NSTextField()
@@ -17,6 +17,10 @@ class ConfigViewController: NSViewController {
     private let saveButton = NSButton()
     private let cancelButton = NSButton()
     private let statusLabel = NSTextField()
+    private let statusIconView = NSImageView()
+    private let songPickerCheckbox = NSButton()
+    private var statusStackView: NSStackView?
+    private var hideStatusWorkItem: DispatchWorkItem?
     
     // MARK: - Properties
     private let configManager = ConfigManager.shared
@@ -51,16 +55,12 @@ class ConfigViewController: NSViewController {
     private func setupUI() {
         view.wantsLayer = true
         
-        if let window = view.window {
-            window.title = NSLocalizedString("Configure Search Service", comment: "Settings window title")
-            window.titleVisibility = .visible
-        }
-        
         setupApiKeyUI()
         setupApiUrlUI()
-        setupButtons()
-        setupGithubLink()
+        setupSongPickerPreference()
         setupStatusLabel()
+        setupFormGrid()
+        setupButtons()
     }
     
     private func setupApiKeyUI() {
@@ -72,26 +72,12 @@ class ConfigViewController: NSViewController {
         apiKeyLabel.alignment = .right
         apiKeyLabel.font = NSFont.systemFont(ofSize: 13)
         apiKeyLabel.textColor = NSColor.labelColor
-        view.addSubview(apiKeyLabel)
         
         apiKeyTextField.translatesAutoresizingMaskIntoConstraints = false
         apiKeyTextField.placeholderString = NSLocalizedString("Enter API Key", comment: "API Key placeholder")
         apiKeyTextField.font = NSFont.systemFont(ofSize: 13)
         apiKeyTextField.bezelStyle = .roundedBezel
         apiKeyTextField.focusRingType = .exterior
-        view.addSubview(apiKeyTextField)
-        
-        NSLayoutConstraint.activate([
-            apiKeyLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 30),
-            apiKeyLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            apiKeyLabel.widthAnchor.constraint(equalToConstant: 80),
-            apiKeyLabel.heightAnchor.constraint(equalToConstant: 24),
-            
-            apiKeyTextField.topAnchor.constraint(equalTo: apiKeyLabel.topAnchor),
-            apiKeyTextField.leadingAnchor.constraint(equalTo: apiKeyLabel.trailingAnchor, constant: 10),
-            apiKeyTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            apiKeyTextField.heightAnchor.constraint(equalToConstant: 24)
-        ])
     }
     
     private func setupApiUrlUI() {
@@ -103,26 +89,12 @@ class ConfigViewController: NSViewController {
         apiUrlLabel.alignment = .right
         apiUrlLabel.font = NSFont.systemFont(ofSize: 13)
         apiUrlLabel.textColor = NSColor.labelColor
-        view.addSubview(apiUrlLabel)
         
         apiUrlTextField.translatesAutoresizingMaskIntoConstraints = false
         apiUrlTextField.placeholderString = NSLocalizedString("Enter API URL", comment: "API URL placeholder")
         apiUrlTextField.font = NSFont.systemFont(ofSize: 13)
         apiUrlTextField.bezelStyle = .roundedBezel
         apiUrlTextField.focusRingType = .exterior
-        view.addSubview(apiUrlTextField)
-        
-        NSLayoutConstraint.activate([
-            apiUrlLabel.topAnchor.constraint(equalTo: apiKeyLabel.bottomAnchor, constant: 20),
-            apiUrlLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            apiUrlLabel.widthAnchor.constraint(equalToConstant: 80),
-            apiUrlLabel.heightAnchor.constraint(equalToConstant: 24),
-            
-            apiUrlTextField.topAnchor.constraint(equalTo: apiUrlLabel.topAnchor),
-            apiUrlTextField.leadingAnchor.constraint(equalTo: apiUrlLabel.trailingAnchor, constant: 10),
-            apiUrlTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            apiUrlTextField.heightAnchor.constraint(equalToConstant: 24)
-        ])
     }
     
     private func setupButtons() {
@@ -132,125 +104,201 @@ class ConfigViewController: NSViewController {
         saveButton.target = self
         saveButton.action = #selector(saveConfig)
         saveButton.font = NSFont.systemFont(ofSize: 13, weight: .medium)
-        saveButton.contentTintColor = .white
-        saveButton.wantsLayer = true
-        
-        if #available(macOS 11.0, *) {
-            saveButton.bezelColor = NSColor.controlAccentColor
-        } else {
-            saveButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
-        }
-        
-        view.addSubview(saveButton)
-        
+        saveButton.keyEquivalent = "\r"
+
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
-        cancelButton.title = NSLocalizedString("Cancel", comment: "Cancel button")
+        cancelButton.title = NSLocalizedString("Reset", comment: "Reset button")
         cancelButton.bezelStyle = .rounded
         cancelButton.target = self
         cancelButton.action = #selector(cancelConfig)
         cancelButton.font = NSFont.systemFont(ofSize: 13)
-        view.addSubview(cancelButton)
-        
+
+        let buttonStack = NSStackView(views: [saveButton, cancelButton])
+        buttonStack.orientation = .horizontal
+        buttonStack.spacing = 12
+        buttonStack.alignment = .centerY
+        buttonStack.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(buttonStack)
+
         NSLayoutConstraint.activate([
-            saveButton.topAnchor.constraint(equalTo: apiUrlTextField.bottomAnchor, constant: 30),
-            saveButton.trailingAnchor.constraint(equalTo: view.centerXAnchor, constant: -10),
-            saveButton.widthAnchor.constraint(equalToConstant: 80),
-            saveButton.heightAnchor.constraint(equalToConstant: 28),
-            
-            cancelButton.topAnchor.constraint(equalTo: saveButton.topAnchor),
-            cancelButton.leadingAnchor.constraint(equalTo: view.centerXAnchor, constant: 10),
-            cancelButton.widthAnchor.constraint(equalToConstant: 80),
-            cancelButton.heightAnchor.constraint(equalToConstant: 28)
+            buttonStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            buttonStack.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20)
         ])
     }
     
-    private func setupGithubLink() {
-        githubLinkButton.translatesAutoresizingMaskIntoConstraints = false
-        githubLinkButton.title = NSLocalizedString("What is yt-search-api?", comment: "Link to yt-search-api documentation")
-        githubLinkButton.bezelStyle = .inline
-        githubLinkButton.target = self
-        githubLinkButton.action = #selector(openGithubLink)
-        githubLinkButton.font = NSFont.systemFont(ofSize: 12)
-        githubLinkButton.contentTintColor = NSColor.linkColor
-        view.addSubview(githubLinkButton)
-        
-        NSLayoutConstraint.activate([
-            githubLinkButton.topAnchor.constraint(equalTo: saveButton.bottomAnchor, constant: 30),
-            githubLinkButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            githubLinkButton.heightAnchor.constraint(equalToConstant: 20)
-        ])
-    }
+    
     
     private func setupStatusLabel() {
+        statusIconView.translatesAutoresizingMaskIntoConstraints = false
+        statusIconView.isHidden = true
+        if #available(macOS 11.0, *) {
+            statusIconView.symbolConfiguration = NSImage.SymbolConfiguration(pointSize: 14, weight: .medium)
+        }
+        statusIconView.contentTintColor = NSColor.systemGreen
+        statusIconView.setContentCompressionResistancePriority(.required, for: .horizontal)
+        statusIconView.setContentHuggingPriority(.required, for: .horizontal)
+        
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
         statusLabel.stringValue = ""
         statusLabel.isEditable = false
         statusLabel.isBordered = false
         statusLabel.backgroundColor = .clear
-        statusLabel.alignment = .center
+        statusLabel.alignment = .left
         statusLabel.font = NSFont.systemFont(ofSize: 12)
         statusLabel.textColor = NSColor.secondaryLabelColor
-        view.addSubview(statusLabel)
+        statusLabel.isHidden = true
+        statusLabel.lineBreakMode = .byWordWrapping
         
-        NSLayoutConstraint.activate([
-            statusLabel.topAnchor.constraint(equalTo: githubLinkButton.bottomAnchor, constant: 20),
-            statusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            statusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            statusLabel.heightAnchor.constraint(equalToConstant: 20)
+        let stackView = NSStackView()
+        stackView.orientation = .horizontal
+        stackView.alignment = .centerY
+        stackView.spacing = 8
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.addArrangedSubview(statusIconView)
+        stackView.addArrangedSubview(statusLabel)
+        stackView.isHidden = true
+        stackView.alphaValue = 0
+        statusStackView = stackView
+    }
+
+    private func setupFormGrid() {
+        let grid = NSGridView(views: [
+            [apiKeyLabel, apiKeyTextField],
+            [apiUrlLabel, apiUrlTextField]
         ])
+        grid.translatesAutoresizingMaskIntoConstraints = false
+        grid.rowSpacing = 12
+        grid.columnSpacing = 8
+        grid.xPlacement = .leading
+        grid.yPlacement = .top
+
+        grid.addRow(with: [NSView(), songPickerCheckbox])
+        if let statusStack = statusStackView {
+            grid.addRow(with: [NSView(), statusStack])
+        }
+
+        if grid.numberOfColumns >= 2 {
+            grid.column(at: 0).xPlacement = .trailing
+            grid.column(at: 0).width = 100
+            grid.column(at: 1).xPlacement = .leading
+        }
+        if grid.numberOfRows >= 2 {
+            grid.row(at: 0).yPlacement = .center
+            grid.row(at: 1).yPlacement = .center
+        }
+
+        view.addSubview(grid)
+
+        NSLayoutConstraint.activate([
+            grid.topAnchor.constraint(equalTo: view.topAnchor, constant: 24),
+            grid.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            grid.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
+        ])
+    }
+    
+    private func setupSongPickerPreference() {
+        songPickerCheckbox.translatesAutoresizingMaskIntoConstraints = false
+        songPickerCheckbox.setButtonType(.switch)
+        songPickerCheckbox.title = NSLocalizedString("Show song picker on launch", comment: "Checkbox label for showing song picker on launch")
+        songPickerCheckbox.font = NSFont.systemFont(ofSize: 13)
+        songPickerCheckbox.state = configManager.showSongPickerOnLaunch ? .on : .off
     }
     
     // MARK: - Functionality
     private func loadCurrentConfig() {
         apiKeyTextField.stringValue = configManager.apiKey
         apiUrlTextField.stringValue = configManager.apiUrl
+        songPickerCheckbox.state = configManager.showSongPickerOnLaunch ? .on : .off
     }
     
     @objc private func saveConfig() {
         let apiKey = apiKeyTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         var apiUrl = apiUrlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let currentApiKey = configManager.apiKey
+        let currentApiUrl = configManager.apiUrl
+        let apiKeyChanged = apiKey != currentApiKey
+        let apiUrlChanged = apiUrl != currentApiUrl
         
         // Ensure URL format is correct
         if !apiUrl.isEmpty && !apiUrl.hasPrefix("http") {
             apiUrl = "https://" + apiUrl
         }
+        // Validate URL format
+        if !apiUrl.isEmpty {
+            if URLComponents(string: apiUrl) == nil {
+                showStatus(NSLocalizedString("API URL is invalid", comment: "Error message when API URL is invalid"), isError: true)
+                return
+            }
+        }
         
         // Validate input
-        if apiKey.isEmpty {
+        if apiKeyChanged && apiKey.isEmpty {
             showStatus(NSLocalizedString("Please enter API Key", comment: "Error message when API Key is empty"), isError: true)
             return
         }
         
-        if apiUrl.isEmpty {
+        if apiUrlChanged && apiUrl.isEmpty {
             showStatus(NSLocalizedString("Please enter API URL", comment: "Error message when API URL is empty"), isError: true)
             return
         }
         
         // Save configuration
-        configManager.saveConfig(apiKey: apiKey, apiUrl: apiUrl)
+        let shouldShowSongPicker = (songPickerCheckbox.state == .on)
+        
+        configManager.saveConfig(apiKey: apiKey, apiUrl: apiUrl, showSongPickerOnLaunch: shouldShowSongPicker)
         showStatus(NSLocalizedString("Configuration saved", comment: "Success message when configuration is saved"), isError: false)
         
         // Call callback function
         saveCallback?()
-        
-        // Delay window closing
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            self?.dismiss(nil)
-        }
     }
     
     @objc private func cancelConfig() {
-        dismiss(nil)
+        configManager.resetConfig()
+        loadCurrentConfig()
+        showStatus(NSLocalizedString("Reset to defaults", comment: "Success message when configuration is reset"), isError: false)
     }
     
-    @objc private func openGithubLink() {
-        if let url = URL(string: "https://github.com/samzong/yt-search-api") {
-            NSWorkspace.shared.open(url)
-        }
-    }
     
     private func showStatus(_ message: String, isError: Bool) {
+        hideStatusWorkItem?.cancel()
+        
+        let textColor: NSColor = isError ? .systemRed : .systemGreen
         statusLabel.stringValue = message
-        statusLabel.textColor = isError ? NSColor.systemRed : NSColor.secondaryLabelColor
+        statusLabel.textColor = textColor
+        statusLabel.isHidden = false
+        
+        if #available(macOS 11.0, *) {
+            let symbolName = isError ? "exclamationmark.triangle.fill" : "checkmark.circle.fill"
+            statusIconView.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)
+        } else {
+            statusIconView.image = isError ? NSImage(named: NSImage.cautionName) : NSImage(named: NSImage.statusAvailableName)
+        }
+        statusIconView.contentTintColor = textColor
+        statusIconView.isHidden = false
+        
+        if let stack = statusStackView {
+            stack.isHidden = false
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.15
+                stack.animator().alphaValue = 1
+            }
+        }
+        
+        if !isError {
+            let workItem = DispatchWorkItem { [weak self] in
+                guard let self = self, let stack = self.statusStackView else { return }
+                NSAnimationContext.runAnimationGroup({ context in
+                    context.duration = 0.25
+                    stack.animator().alphaValue = 0
+                }, completionHandler: {
+                    stack.isHidden = true
+                    self.hideStatusWorkItem = nil
+                })
+            }
+            hideStatusWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: workItem)
+        } else {
+            hideStatusWorkItem = nil
+        }
     }
-} 
+}

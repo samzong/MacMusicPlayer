@@ -7,6 +7,7 @@
 
 import Cocoa
 import MediaPlayer
+import CoreServices
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -15,6 +16,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var sleepManager: SleepManager!
     var launchManager: LaunchManager!
     var libraryManager: LibraryManager!
+    var configManager: ConfigManager!
     var statusMenuController: StatusMenuController!
 
     // Strong reference to the window
@@ -27,6 +29,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         sleepManager = SleepManager()
         launchManager = LaunchManager()
         libraryManager = LibraryManager()
+        configManager = ConfigManager.shared
         DownloadManager.shared.updateLibraryManager(libraryManager)
         
         if let currentLibrary = libraryManager.currentLibrary {
@@ -60,6 +63,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             name: NSNotification.Name("AddNewLibrary"),
             object: nil
         )
+
+        NSAppleEventManager.shared().setEventHandler(
+            self,
+            andSelector: #selector(handleApplicationReopen(_:withReplyEvent:)),
+            forEventClass: AEEventClass(kCoreEventClass),
+            andEventID: AEEventID(kAEReopenApplication)
+        )
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.showSongPickerIfPreferred()
+        }
     }
     
     func setupRemoteCommandCenter() {
@@ -149,6 +163,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationWillTerminate(_ aNotification: Notification) {
         sleepManager.cleanupResourcesOnly()
+        NSAppleEventManager.shared().removeEventHandler(
+            forEventClass: AEEventClass(kCoreEventClass),
+            andEventID: AEEventID(kAEReopenApplication)
+        )
+    }
+    
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showSongPickerIfPreferred()
+        return true
     }
     
     @objc func showDownloadWindow() {
@@ -309,6 +332,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         songPickerWindow.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    private func showSongPickerIfPreferred() {
+        guard configManager.showSongPickerOnLaunch else { return }
+        showSongPickerWindow()
+    }
+    
+    @objc private func handleApplicationReopen(_ event: NSAppleEventDescriptor?, withReplyEvent replyEvent: NSAppleEventDescriptor?) {
+        showSongPickerIfPreferred()
     }
 }
 

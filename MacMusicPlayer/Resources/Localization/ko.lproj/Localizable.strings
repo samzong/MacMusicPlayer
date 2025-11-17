@@ -152,16 +152,15 @@
 "operation_hints" = "Tab 전환，Enter 재생，Esc 닫기";
 
 // Configuration Settings
-"Configure Search Service" = "검색 서비스 설정";
 "API Key:" = "API Key:";
 "Enter API Key" = "API 키 입력";
 "API URL:" = "API URL:";
 "Enter API URL" = "API URL 입력";
 "Save" = "저장";
-"What is yt-search-api?" = "yt-search-api란 무엇인가요?";
 "Please enter API Key" = "API 키를 입력하세요";
 "Please enter API URL" = "API URL을 입력하세요";
 "Configuration saved" = "설정이 저장되었습니다";
+"Show song picker on launch" = "실행 시 곡 검색 창 열기";
 
 // API Error Messages
 "API configuration not completed" = "API 구성이 완료되지 않았습니다";

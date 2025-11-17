@@ -152,16 +152,15 @@
 "operation_hints" = "Tab 切換，回車播放，Esc 關閉";
 
 // Configuration Settings
-"Configure Search Service" = "配置搜索服務";
 "API Key:" = "API Key:";
 "Enter API Key" = "輸入API密鑰";
 "API URL:" = "API URL:";
 "Enter API URL" = "輸入API地址";
 "Save" = "保存";
-"What is yt-search-api?" = "什麼是 yt-search-api？";
 "Please enter API Key" = "請輸入API密鑰";
 "Please enter API URL" = "請輸入API地址";
 "Configuration saved" = "配置已保存";
+"Show song picker on launch" = "啟動時開啟歌曲搜尋視窗";
 
 // API Error Messages
 "API configuration not completed" = "API配置未完成";
