@@ -224,7 +224,7 @@ class ConfigViewController: NSViewController {
             apiUrl = "https://" + apiUrl
         }
         // Validate URL format
-        if !apiUrl.isEmpty {
+        if apiUrlChanged && !apiUrl.isEmpty {
             if URLComponents(string: apiUrl) == nil {
                 showStatus(NSLocalizedString("API URL is invalid", comment: "Error message when API URL is invalid"), isError: true)
                 return
