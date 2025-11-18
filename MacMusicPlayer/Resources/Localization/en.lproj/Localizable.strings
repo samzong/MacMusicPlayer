@@ -152,19 +152,21 @@
 "operation_hints" = "Tab to switch, Enter to play, Esc to close";
 
 // Configuration Settings
-"Configure Search Service" = "Configure Search Service";
 "API Key:" = "API Key:";
 "Enter API Key" = "Enter API Key";
 "API URL:" = "API URL:";
 "Enter API URL" = "Enter API URL";
 "Save" = "Save";
-"What is yt-search-api?" = "What is yt-search-api?";
 "Please enter API Key" = "Please enter API Key";
 "Please enter API URL" = "Please enter API URL";
 "Configuration saved" = "Configuration saved";
+"Show song picker on launch" = "Show song picker on launch";
 
 // API Error Messages
 "API configuration not completed" = "API configuration not completed";
 "API URL not configured" = "API URL not configured";
 "No data received" = "No data received";
 "Server Error: %@" = "Server Error: %@";
+"Reset" = "Reset";
+"Reset to defaults" = "Reset to defaults";
+"API URL is invalid" = "API URL is invalid";
