@@ -167,3 +167,6 @@
 "API URL not configured" = "API URL未配置";
 "No data received" = "未接收到數據";
 "Server Error: %@" = "伺服器錯誤: %@";
+"Reset" = "重置";
+"Reset to defaults" = "已重置為預設值";
+"API URL is invalid" = "API 位址無效";

@@ -167,3 +167,6 @@
 "API URL not configured" = "API URLが設定されていません";
 "No data received" = "データが受信されませんでした";
 "Server Error: %@" = "サーバーエラー: %@";
+"Reset" = "リセット";
+"Reset to defaults" = "デフォルトにリセットしました";
+"API URL is invalid" = "API URLが無効です";

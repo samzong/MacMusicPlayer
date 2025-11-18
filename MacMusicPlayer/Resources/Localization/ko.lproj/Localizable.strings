@@ -167,3 +167,6 @@
 "API URL not configured" = "API URL이 구성되지 않았습니다";
 "No data received" = "데이터를 받지 못했습니다";
 "Server Error: %@" = "서버 오류: %@";
+"Reset" = "초기화";
+"Reset to defaults" = "기본값으로 초기화되었습니다";
+"API URL is invalid" = "API URL이 유효하지 않습니다";

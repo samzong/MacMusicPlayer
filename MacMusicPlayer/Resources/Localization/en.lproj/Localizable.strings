@@ -167,3 +167,6 @@
 "API URL not configured" = "API URL not configured";
 "No data received" = "No data received";
 "Server Error: %@" = "Server Error: %@";
+"Reset" = "Reset";
+"Reset to defaults" = "Reset to defaults";
+"API URL is invalid" = "API URL is invalid";

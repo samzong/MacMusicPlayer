@@ -7,7 +7,7 @@
 
 import Cocoa
 import MediaPlayer
-import CoreServices
+ 
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -62,13 +62,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             selector: #selector(handleAddNewLibrary(_:)),
             name: NSNotification.Name("AddNewLibrary"),
             object: nil
-        )
-
-        NSAppleEventManager.shared().setEventHandler(
-            self,
-            andSelector: #selector(handleApplicationReopen(_:withReplyEvent:)),
-            forEventClass: AEEventClass(kCoreEventClass),
-            andEventID: AEEventID(kAEReopenApplication)
         )
         
         DispatchQueue.main.async { [weak self] in
@@ -163,10 +156,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationWillTerminate(_ aNotification: Notification) {
         sleepManager.cleanupResourcesOnly()
-        NSAppleEventManager.shared().removeEventHandler(
-            forEventClass: AEEventClass(kCoreEventClass),
-            andEventID: AEEventID(kAEReopenApplication)
-        )
     }
     
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -339,9 +328,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         showSongPickerWindow()
     }
     
-    @objc private func handleApplicationReopen(_ event: NSAppleEventDescriptor?, withReplyEvent replyEvent: NSAppleEventDescriptor?) {
-        showSongPickerIfPreferred()
-    }
+    
 }
 
 extension AppDelegate: NSWindowDelegate {
