@@ -47,7 +47,7 @@ Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/
 
 ## Configuration & Tips
 
-- Install dependencies for downloads: `brew install yt-dlp ffmpeg`.
+- Download dependencies (yt-dlp, ffmpeg) are installed automatically in the app; manual install is optional (`brew install yt-dlp ffmpeg`) if you prefer managing them yourself.
 - Configure API URL and API Key in **Settings** to enable the built-in YouTube search service.
 - Pick the destination library in the Download window; use **Download All** for playlists or **Refresh Current Library** to rescan music quickly.
 
