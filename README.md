@@ -38,10 +38,18 @@ Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/
 - 🔎 Command+F song picker with instant filename filtering
 - 🎧 Audio format support (mp3, m4a, wav, flac, aac, aiff, etc.)
 - 🔄 Multiple playback modes (Sequential, Single Loop, Random)
-- 📥 Download music from online sources (YouTube, SoundCloud, etc.)
+- 📚 Multiple music libraries with quick switch/refresh/rename
+- 📥 Built-in YouTube search & playlist downloads with format selection (requires yt-dlp + ffmpeg)
 - 💾 Smart memory of last music folder location
 - 🚀 Launch at login support
+- 🌙 Prevent-sleep toggle and configurable song picker on launch
 - ⌨️ Media key control support
+
+## Configuration & Tips
+
+- Download dependencies (yt-dlp, ffmpeg) are installed automatically in the app; manual install is optional (`brew install yt-dlp ffmpeg`) if you prefer managing them yourself.
+- Configure API URL and API Key in **Settings** to enable the built-in YouTube search service.
+- Pick the destination library in the Download window; use **Download All** for playlists or **Refresh Current Library** to rescan music quickly.
 
 ## Screenshots
 
