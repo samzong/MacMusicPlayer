@@ -37,13 +37,17 @@
         <div align="center">
           <img src="MacMusicPlayer/Assets.xcassets/AppIcon.appiconset/icon_256x256_2x.png" alt="MacMusicPlayer" width="128"><br>
           <div id="download-section" style="margin: 20px 0;"><a href="#" onclick="downloadLatest(); return false;" style="text-decoration: none;"><img src="https://img.shields.io/badge/⬇%20Download%20for%20Your%20System-28a745?style=for-the-badge&#x26;labelColor=28a745" alt="Download"></a></div>
-          <p>An elegant and minimalist music player for macOS, designed as a menu bar application to provide a seamless music playback experience.</p>
+          <p>An elegant and minimalist menu bar music player for macOS (no Dock icon), providing a seamless music playback experience.</p>
           <p>
             <a href="https://github.com/samzong/MacMusicPlayer/releases"><img src="https://img.shields.io/github/v/release/samzong/MacMusicPlayer" alt="Release"></a>
             <a href="https://github.com/samzong/MacMusicPlayer/blob/main/LICENSE"><img src="https://img.shields.io/github/license/samzong/MacMusicPlayer" alt="License"></a>
             <a href="https://deepwiki.com/samzong/MacMusicPlayer"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
           </p>
         </div>
+        <h2 id="requirements"><a aria-hidden="true" tabindex="-1" href="#requirements" class="anchor"><span class="icon icon-link"></span></a>Requirements</h2>
+        <ul>
+          <li>macOS 12.0 (Monterey) or later</li>
+        </ul>
         <h2 id="installation"><a aria-hidden="true" tabindex="-1" href="#installation" class="anchor"><span class="icon icon-link"></span></a>Installation</h2>
         <h3 id="homebrew-recommended"><a aria-hidden="true" tabindex="-1" href="#homebrew-recommended" class="anchor"><span class="icon icon-link"></span></a>Homebrew (Recommended)</h3>
         <pre class="language-bash"><code class="language-bash code-highlight"><span class="code-line line-number" line="1">brew <span class="token function">install</span> samzong/tap/mac-music-player
@@ -58,22 +62,23 @@
         <ul>
           <li>🎵 Lightweight menu bar player for instant music control</li>
           <li>🎨 Native macOS interface with perfect light/dark theme support</li>
-          <li>🌍 Multi-language support (English, Chinese, Japanese, Korean)</li>
-          <li>🔎 Command+F song picker with instant filename filtering</li>
-          <li>🎧 Audio format support (mp3, m4a, wav, flac, aac, aiff, etc.)</li>
+          <li>🌍 Multi-language support (English, Simplified Chinese, Traditional Chinese, Japanese, Korean)</li>
+          <li>🔎 Song picker (⌘F in menu) with instant filename filtering</li>
+          <li>🎧 Audio format support (mp3, m4a, wav, flac, aac, ogg, aiff)</li>
           <li>🔄 Multiple playback modes (Sequential, Single Loop, Random)</li>
-          <li>📚 Multiple music libraries with quick switch/refresh/rename</li>
-          <li>📥 Built-in YouTube search &#x26; playlist downloads with format selection (requires yt-dlp + ffmpeg)</li>
-          <li>💾 Smart memory of last music folder location</li>
-          <li>🚀 Launch at login support</li>
-          <li>🌙 Prevent-sleep toggle and configurable song picker on launch</li>
-          <li>⌨️ Media key control support</li>
+          <li>📚 Multiple music libraries with quick switch (⌘R to refresh)</li>
+          <li>📥 Built-in YouTube/SoundCloud search &#x26; playlist downloads with format selection (requires yt-dlp + ffmpeg)</li>
+          <li>💾 Smart memory of last music folder location and volume</li>
+          <li>🚀 Launch at login (enabled by default)</li>
+          <li>🌙 Prevent-sleep toggle (enabled by default) and configurable song picker on launch</li>
+          <li>⌨️ Media key control and keyboard shortcuts (⌘D Download, ⌘S Settings)</li>
         </ul>
         <h2 id="configuration--tips"><a aria-hidden="true" tabindex="-1" href="#configuration--tips" class="anchor"><span class="icon icon-link"></span></a>Configuration &#x26; Tips</h2>
         <ul>
-          <li>Download dependencies (yt-dlp, ffmpeg) are installed automatically in the app; manual install is optional (<code>brew install yt-dlp ffmpeg</code>) if you prefer managing them yourself.</li>
-          <li>Configure API URL and API Key in <strong>Settings</strong> to enable the built-in YouTube search service.</li>
-          <li>Pick the destination library in the Download window; use <strong>Download All</strong> for playlists or <strong>Refresh Current Library</strong> to rescan music quickly.</li>
+          <li>Download dependencies (yt-dlp, ffmpeg) are installed automatically via Homebrew; manual install (<code>brew install yt-dlp ffmpeg</code>) is required for DMG users.</li>
+          <li>Configure API URL and API Key in <strong>Settings</strong> to enable YouTube search (requires a custom search proxy service).</li>
+          <li>Pick the destination library in the Download window; use <strong>Download All</strong> button to download entire playlists, or <strong>Refresh Current Library</strong> to rescan music quickly.</li>
+          <li>For best metadata display, name your files as <code>Artist - Title.mp3</code> format.</li>
         </ul>
         <h2 id="screenshots"><a aria-hidden="true" tabindex="-1" href="#screenshots" class="anchor"><span class="icon icon-link"></span></a>Screenshots</h2>
         <h3 id="menu-items"><a aria-hidden="true" tabindex="-1" href="#menu-items" class="anchor"><span class="icon icon-link"></span></a>Menu Items</h3>
