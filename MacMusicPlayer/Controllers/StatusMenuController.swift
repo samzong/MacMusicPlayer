@@ -15,6 +15,7 @@ final class StatusMenuController: NSObject {
     private weak var preventSleepItem: NSMenuItem?
     private weak var launchAtLoginItem: NSMenuItem?
     private weak var playModeMenu: NSMenu?
+    private weak var feelingLuckyItem: NSMenuItem?
     private weak var actionTarget: AppDelegate?
 
     private let statusBarSymbolConfiguration = NSImage.SymbolConfiguration(pointSize: 18, weight: .medium, scale: .medium)
@@ -40,6 +41,7 @@ final class StatusMenuController: NSObject {
 
         addTrackInfoSection(to: menu)
         menu.addItem(NSMenuItem.separator())
+        menu.addItem(makeFeelingLuckyItem())
         addPlaybackSection(to: menu)
         menu.addItem(NSMenuItem.separator())
         menu.addItem(makeBrowseItem())
@@ -62,6 +64,7 @@ final class StatusMenuController: NSObject {
     func refresh() {
         updateTrackInfo()
         updatePlayPauseTitle()
+        updateFeelingLuckyState()
         rebuildLibraryMenu()
         updateToggleStates()
         updateStatusBarIcon()
@@ -97,6 +100,13 @@ final class StatusMenuController: NSObject {
         let nextItem = NSMenuItem(title: NSLocalizedString("Next", comment: ""), action: #selector(AppDelegate.playNext), keyEquivalent: "")
         nextItem.target = actionTarget
         menu.addItem(nextItem)
+    }
+
+    private func makeFeelingLuckyItem() -> NSMenuItem {
+        let item = NSMenuItem(title: NSLocalizedString("Feeling Lucky", comment: "Menu item for randomly playing a song"), action: #selector(AppDelegate.feelingLucky), keyEquivalent: "l")
+        item.target = actionTarget
+        feelingLuckyItem = item
+        return item
     }
 
     private func makeBrowseItem() -> NSMenuItem {
@@ -185,6 +195,10 @@ final class StatusMenuController: NSObject {
 
     private func updatePlayPauseTitle() {
         playPauseItem?.title = playerManager.isPlaying ? NSLocalizedString("Pause", comment: "") : NSLocalizedString("Play", comment: "")
+    }
+
+    private func updateFeelingLuckyState() {
+        feelingLuckyItem?.isEnabled = playerManager.hasPlaylist
     }
 
     private func rebuildLibraryMenu() {
