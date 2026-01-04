@@ -27,6 +27,9 @@ class PlayerManager: NSObject, ObservableObject {
     private let queueController: QueuePlayerController
     private let playlistStore: PlaylistStore
 
+    /// Whether the playlist has any tracks
+    var hasPlaylist: Bool { !playlistStore.isEmpty }
+
     // Legacy currentIndex for backward compatibility during transition
     private var currentIndex = 0
     // Direct volume control - no temporary caches
@@ -353,6 +356,22 @@ class PlayerManager: NSObject, ObservableObject {
         } else {
             loadSavedMusicFolder()
         }
+    }
+
+
+    /// Randomly select and play a track - "Feeling Lucky" feature
+    func feelingLucky() {
+        guard !playlistStore.isEmpty else { return }
+
+        // Generate random index, avoiding current track for variety
+        var randomIndex = Int.random(in: 0..<playlistStore.count)
+        if playlistStore.count > 1 {
+            while randomIndex == playlistStore.currentIndex {
+                randomIndex = Int.random(in: 0..<playlistStore.count)
+            }
+        }
+
+        playTrack(at: randomIndex)
     }
 
     private func handleAutomaticTrackCompletion(_ finishedTrack: Track?) {

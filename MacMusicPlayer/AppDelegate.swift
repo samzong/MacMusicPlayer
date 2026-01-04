@@ -124,6 +124,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func playNext() {
         playerManager.playNext()
     }
+
+    @objc func feelingLucky() {
+        playerManager.feelingLucky()
+    }
     
     @objc func quit() {
         NSApplication.shared.terminate(self)
