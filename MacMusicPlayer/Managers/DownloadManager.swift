@@ -125,6 +125,109 @@ public class DownloadManager {
         }
     }
     
+    private struct ProcessResult {
+        let terminationStatus: Int32
+        let standardOutput: String
+        let standardError: String
+    }
+
+    private final class CancellableProcessBox: @unchecked Sendable {
+        private let lock = NSLock()
+        private var process: Process?
+        private var cancelled = false
+
+        func setProcess(_ process: Process) {
+            lock.lock()
+            self.process = process
+            let shouldTerminate = cancelled
+            lock.unlock()
+
+            if shouldTerminate {
+                terminate()
+            }
+        }
+
+        func cancel() {
+            lock.lock()
+            cancelled = true
+            let process = self.process
+            lock.unlock()
+
+            if process?.isRunning == true {
+                process?.terminate()
+            }
+        }
+
+        var isCancelled: Bool {
+            lock.lock()
+            defer { lock.unlock() }
+            return cancelled
+        }
+
+        private func terminate() {
+            lock.lock()
+            let process = self.process
+            lock.unlock()
+
+            if process?.isRunning == true {
+                process?.terminate()
+            }
+        }
+    }
+
+    private func runCancellableProcess(
+        executablePath: String,
+        arguments: [String]
+    ) async throws -> ProcessResult {
+        let processBox = CancellableProcessBox()
+
+        return try await withTaskCancellationHandler {
+            try Task.checkCancellation()
+
+            let task = Process()
+            task.executableURL = URL(fileURLWithPath: executablePath)
+            task.arguments = arguments
+
+            let outputPipe = Pipe()
+            let errorPipe = Pipe()
+            task.standardOutput = outputPipe
+            task.standardError = errorPipe
+
+            processBox.setProcess(task)
+
+            let outputReader = Task.detached(priority: .background) {
+                outputPipe.fileHandleForReading.readDataToEndOfFile()
+            }
+            let errorReader = Task.detached(priority: .background) {
+                errorPipe.fileHandleForReading.readDataToEndOfFile()
+            }
+
+            try Task.checkCancellation()
+            try task.run()
+
+            if processBox.isCancelled && task.isRunning {
+                task.terminate()
+            }
+
+            task.waitUntilExit()
+
+            let outputData = await outputReader.value
+            let errorData = await errorReader.value
+
+            if Task.isCancelled || processBox.isCancelled {
+                throw CancellationError()
+            }
+
+            return ProcessResult(
+                terminationStatus: task.terminationStatus,
+                standardOutput: String(data: outputData, encoding: .utf8) ?? "",
+                standardError: String(data: errorData, encoding: .utf8) ?? ""
+            )
+        } onCancel: {
+            processBox.cancel()
+        }
+    }
+
     private struct FormatDescriptionProperties {
         let fileExtension: String
         let bitrate: String
@@ -211,31 +314,26 @@ public class DownloadManager {
     }
     
     private func getVideoTitle(from url: String, ytDlpPath: String) async throws -> String {
-        let task = Process()
-        task.launchPath = ytDlpPath
-        task.arguments = [
-            "--get-title",
-            url
-        ]
-        
-        let pipe = Pipe()
-        task.standardOutput = pipe
-        
         do {
-            task.launch()
-            task.waitUntilExit()
-            
-            if task.terminationStatus == 0 {
-                let data = pipe.fileHandleForReading.readDataToEndOfFile()
-                if let title = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                   !title.isEmpty {
+            let result = try await runCancellableProcess(
+                executablePath: ytDlpPath,
+                arguments: [
+                    "--get-title",
+                    url
+                ]
+            )
+
+            if result.terminationStatus == 0 {
+                let title = result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !title.isEmpty {
                     let invalidChars = CharacterSet(charactersIn: "\\/:*?\"<>|")
-                    let safeTitle = title.components(separatedBy: invalidChars).joined(separator: "_")
-                    return safeTitle
+                    return title.components(separatedBy: invalidChars).joined(separator: "_")
                 }
             }
-            
+
             throw DownloadError.titleFetchFailed
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             print(NSLocalizedString("Error getting video title: %@", comment: "Log message when getting video title fails"), error)
             throw DownloadError.titleFetchFailed
@@ -487,75 +585,64 @@ public class DownloadManager {
     
     public func downloadAudio(from url: String, formatId: String) async throws {
         print(NSLocalizedString("Starting audio download, URL: %@, Format ID: %@", comment: "Log message when starting download"), url, formatId)
-        
+
         guard URL(string: url) != nil else {
             throw DownloadError.invalidURL
         }
-        
+
+        try Task.checkCancellation()
+
         let ytDlpPath = try checkYtDlpAvailability()
         let ffmpegPath = try checkFFmpegAvailability()
-        
+
         let videoTitle = try await getVideoTitle(from: url, ytDlpPath: ytDlpPath)
+        try Task.checkCancellation()
         print(NSLocalizedString("Video title: %@", comment: "Log message showing video title"), videoTitle)
-        
+
         guard let currentLibrary = libraryManager.currentLibrary else {
             throw DownloadError.downloadFailed("No music library selected")
         }
-        
+
         let musicPath = currentLibrary.path
         let outputFile = "\(musicPath)/\(videoTitle).%(ext)s"
         print(NSLocalizedString("Downloading to file: %@", comment: "Log message showing output file"), outputFile)
-        
-        let task = Process()
-        task.launchPath = ytDlpPath
-        task.arguments = [
-            "--ffmpeg-location", ffmpegPath,
-            "-f", formatId,
-            "--extract-audio",
-            "--audio-format", "mp3",
-            "--audio-quality", "0",
-            "-o", outputFile,
-            url
-        ]
-        
-        let pipe = Pipe()
-        task.standardOutput = pipe
-        let errorPipe = Pipe()
-        task.standardError = errorPipe
-        
+
         do {
             print(NSLocalizedString("Executing download command...", comment: "Log message when executing download command"))
-            task.launch()
-            
-            var errorOutput = ""
-            
-            DispatchQueue.global(qos: .background).async {
-                let outputData = pipe.fileHandleForReading.readDataToEndOfFile()
-                let output = String(data: outputData, encoding: .utf8)
-                if let output = output, !output.isEmpty {
-                    print(NSLocalizedString("Download output: %@", comment: "Log message showing download output"), output)
-                }
-                
-                let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-                if let error = String(data: errorData, encoding: .utf8), !error.isEmpty {
-                    errorOutput = error
-                    print(NSLocalizedString("Download error output: %@", comment: "Log message showing download error"), error)
-                }
+
+            let result = try await runCancellableProcess(
+                executablePath: ytDlpPath,
+                arguments: [
+                    "--ffmpeg-location", ffmpegPath,
+                    "-f", formatId,
+                    "--extract-audio",
+                    "--audio-format", "mp3",
+                    "--audio-quality", "0",
+                    "-o", outputFile,
+                    url
+                ]
+            )
+
+            if !result.standardOutput.isEmpty {
+                print(NSLocalizedString("Download output: %@", comment: "Log message showing download output"), result.standardOutput)
             }
-            
-            print(NSLocalizedString("Waiting for download to complete...", comment: "Log message when waiting for download"))
-            task.waitUntilExit()
-            
-            if task.terminationStatus == 0 {
+
+            if !result.standardError.isEmpty {
+                print(NSLocalizedString("Download error output: %@", comment: "Log message showing download error"), result.standardError)
+            }
+
+            if result.terminationStatus == 0 {
                 print(NSLocalizedString("Download successful", comment: "Log message when download succeeds"))
-                
+
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
                 }
             } else {
-                print(NSLocalizedString("Download failed, exit status: %d", comment: "Log message when download fails"), task.terminationStatus)
-                throw DownloadError.downloadFailed(errorOutput)
+                print(NSLocalizedString("Download failed, exit status: %d", comment: "Log message when download fails"), result.terminationStatus)
+                throw DownloadError.downloadFailed(result.standardError)
             }
+        } catch is CancellationError {
+            throw CancellationError()
         } catch let error as DownloadError {
             throw error
         } catch {
@@ -583,43 +670,35 @@ public class DownloadManager {
     
     public func fetchPlaylistInfo(from url: String) async throws -> PlaylistInfo {
         print(NSLocalizedString("Getting playlist information, URL: %@", comment: "Log message when fetching playlist info"), url)
-        
+
         guard URL(string: url) != nil else {
             throw DownloadError.invalidURL
         }
-        
+
+        try Task.checkCancellation()
+
         let ytDlpPath = try checkYtDlpAvailability()
         let ffmpegPath = try checkFFmpegAvailability()
-        
-        let task = Process()
-        task.launchPath = ytDlpPath
-        task.arguments = [
-            "--ffmpeg-location", ffmpegPath,
-            "--flat-playlist",
-            "--dump-json",
-            url
-        ]
-        
-        let pipe = Pipe()
-        task.standardOutput = pipe
-        let errorPipe = Pipe()
-        task.standardError = errorPipe
-        
+
         do {
-            task.launch()
-            task.waitUntilExit()
-            
-            if task.terminationStatus == 0 {
-                let data = pipe.fileHandleForReading.readDataToEndOfFile()
-                let output = String(data: data, encoding: .utf8) ?? ""
-                
-                return try parsePlaylistFromOutput(output, originalURL: url)
+            let result = try await runCancellableProcess(
+                executablePath: ytDlpPath,
+                arguments: [
+                    "--ffmpeg-location", ffmpegPath,
+                    "--flat-playlist",
+                    "--dump-json",
+                    url
+                ]
+            )
+
+            if result.terminationStatus == 0 {
+                return try parsePlaylistFromOutput(result.standardOutput, originalURL: url)
             } else {
-                let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-                let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
-                print(NSLocalizedString("Failed to get playlist info: %@", comment: "Log message when playlist fetching fails"), errorOutput)
+                print(NSLocalizedString("Failed to get playlist info: %@", comment: "Log message when playlist fetching fails"), result.standardError)
                 throw DownloadError.playlistFetchFailed
             }
+        } catch is CancellationError {
+            throw CancellationError()
         } catch let error as DownloadError {
             throw error
         } catch {
@@ -703,16 +782,19 @@ public class DownloadManager {
     }
     
     public func downloadPlaylist(
-        from url: String, 
+        from url: String,
         progressCallback: @escaping (PlaylistDownloadProgress) -> Void
     ) async throws {
         print(NSLocalizedString("Starting playlist download, URL: %@", comment: "Log message when starting playlist download"), url)
-        
+
+        try Task.checkCancellation()
         let playlistInfo = try await fetchPlaylistInfo(from: url)
         var completed = 0
         var failed = 0
-        
+
         for (index, item) in playlistInfo.items.enumerated() {
+            try Task.checkCancellation()
+
             let progress = PlaylistDownloadProgress(
                 currentIndex: index + 1,
                 totalCount: playlistInfo.videoCount,
@@ -720,24 +802,25 @@ public class DownloadManager {
                 completed: completed,
                 failed: failed
             )
-            
-            // Update progress
+
             await MainActor.run {
                 progressCallback(progress)
             }
-            
+            try Task.checkCancellation()
+
             do {
-                // Download using bestaudio format
                 try await downloadAudio(from: item.url, formatId: "bestaudio")
                 completed += 1
                 print(NSLocalizedString("Successfully downloaded: %@", comment: "Log message when item downloaded successfully"), item.title)
+            } catch is CancellationError {
+                throw CancellationError()
             } catch {
                 failed += 1
                 print(NSLocalizedString("Failed to download: %@ - Error: %@", comment: "Log message when item download fails"), item.title, error.localizedDescription)
             }
         }
-        
-        // Final progress
+
+        try Task.checkCancellation()
         let finalProgress = PlaylistDownloadProgress(
             currentIndex: playlistInfo.videoCount,
             totalCount: playlistInfo.videoCount,
@@ -745,15 +828,15 @@ public class DownloadManager {
             completed: completed,
             failed: failed
         )
-        
+
         await MainActor.run {
             progressCallback(finalProgress)
         }
-        
+
         if failed > 0 && completed == 0 {
             throw DownloadError.playlistDownloadFailed(NSLocalizedString("All downloads failed", comment: "Error when all playlist downloads fail"))
         }
-        
+
         print(NSLocalizedString("Playlist download completed: %d successful, %d failed", comment: "Log message when playlist download completes"), completed, failed)
     }
 } 

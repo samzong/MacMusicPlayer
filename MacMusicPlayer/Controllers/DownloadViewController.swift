@@ -47,6 +47,7 @@ class DownloadViewController: NSViewController {
     private var isPlaylistMode: Bool = false
     private var isDownloading: Bool = false
     private var downloadTask: Task<Void, Never>?
+    private weak var activeDownloadButton: NSButton?
     
     // Search-related properties
     private var searchResults: [YTSearchManager.SearchResult.VideoItem] = []
@@ -1159,54 +1160,87 @@ class DownloadViewController: NSViewController {
     }
     
     @objc private func downloadAudio(sender: NSButton) {
+        if isDownloading {
+            sender.title = NSLocalizedString("Download", comment: "")
+            sender.contentTintColor = NSColor.white
+
+            if #available(macOS 11.0, *) {
+                sender.bezelColor = NSColor.controlAccentColor
+            } else {
+                sender.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+            }
+
+            stopDownload()
+            return
+        }
+
         let row = sender.tag
         guard row >= 0 && row < formats.count else { return }
-        
+
         let format = formats[row]
         let videoUrl = urlTextField.stringValue
-        
-        sender.isEnabled = false
-        
-        NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.2
-            sender.animator().alphaValue = 0.6
-        })
-        
+
+        isDownloading = true
+        activeDownloadButton = sender
+        sender.title = NSLocalizedString("Stop", comment: "")
+        sender.contentTintColor = NSColor.white
+
+        if #available(macOS 11.0, *) {
+            sender.bezelColor = NSColor.systemRed
+        } else {
+            sender.layer?.backgroundColor = NSColor.systemRed.cgColor
+        }
+
         progressIndicator.isHidden = false
         progressIndicator.startAnimation(nil)
         statusLabel.stringValue = NSLocalizedString("Starting download...", comment: "")
-        
-        Task {
+
+        downloadTask = Task {
             do {
                 try await DownloadManager.shared.downloadAudio(from: videoUrl, formatId: format.formatId)
-                
+
                 DispatchQueue.main.async {
+                    guard !Task.isCancelled else { return }
+
+                    self.isDownloading = false
+                    self.downloadTask = nil
+                    self.activeDownloadButton = nil
                     self.hideProgressIndicator()
                     self.statusLabel.stringValue = NSLocalizedString("Download completed successfully", comment: "")
                     self.statusLabel.textColor = NSColor.systemGreen
-                    
-                    NSAnimationContext.runAnimationGroup({ context in
-                        context.duration = 0.2
-                        sender.animator().alphaValue = 1.0
-                    }, completionHandler: {
-                        sender.isEnabled = true
-                    })
-                    
-                    // Notify player to refresh music library
+
+                    sender.title = NSLocalizedString("Download", comment: "")
+                    sender.contentTintColor = NSColor.white
+
+                    if #available(macOS 11.0, *) {
+                        sender.bezelColor = NSColor.controlAccentColor
+                    } else {
+                        sender.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+                    }
+
                     NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
                 }
             } catch {
                 DispatchQueue.main.async {
+                    if error is CancellationError {
+                        return
+                    }
+
+                    self.isDownloading = false
+                    self.downloadTask = nil
+                    self.activeDownloadButton = nil
                     self.hideProgressIndicator()
                     self.statusLabel.stringValue = String(format: NSLocalizedString("Download failed: %@", comment: ""), error.localizedDescription)
                     self.statusLabel.textColor = NSColor.systemRed
-                    
-                    NSAnimationContext.runAnimationGroup({ context in
-                        context.duration = 0.2
-                        sender.animator().alphaValue = 1.0
-                    }, completionHandler: {
-                        sender.isEnabled = true
-                    })
+
+                    sender.title = NSLocalizedString("Download", comment: "")
+                    sender.contentTintColor = NSColor.white
+
+                    if #available(macOS 11.0, *) {
+                        sender.bezelColor = NSColor.controlAccentColor
+                    } else {
+                        sender.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+                    }
                 }
             }
         }
@@ -1817,16 +1851,28 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
     }
     
     private func stopDownload() {
-        // Cancel download task
         downloadTask?.cancel()
         downloadTask = nil
         isDownloading = false
-        
-        // Restore UI state
+
         hideProgressIndicator()
+
+        if let activeDownloadButton = activeDownloadButton {
+            activeDownloadButton.title = NSLocalizedString("Download", comment: "")
+            activeDownloadButton.contentTintColor = NSColor.white
+
+            if #available(macOS 11.0, *) {
+                activeDownloadButton.bezelColor = NSColor.controlAccentColor
+            } else {
+                activeDownloadButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+            }
+
+            self.activeDownloadButton = nil
+        }
+
         downloadAllButton.title = NSLocalizedString("Download All", comment: "")
         downloadAllButton.contentTintColor = NSColor.white
-        
+
         if #available(macOS 11.0, *) {
             downloadAllButton.bezelColor = NSColor.controlAccentColor
         } else {
@@ -1863,7 +1909,8 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 try await DownloadManager.shared.downloadPlaylist(from: urlString) { [weak self] progress in
                     DispatchQueue.main.async {
                         guard let self = self else { return }
-                        
+                        guard self.isDownloading else { return }
+
                         // Limit current song name length to avoid covering button
                         let maxTitleLength = 25
                         let truncatedCurrentTitle = progress.currentTitle.count > maxTitleLength ? 
@@ -1885,7 +1932,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                     
                     self.isDownloading = false
                     self.downloadTask = nil
-                    
+                    self.activeDownloadButton = nil
                     self.hideProgressIndicator()
                     self.statusLabel.stringValue = NSLocalizedString("Playlist download completed", comment: "")
                     self.statusLabel.textColor = NSColor.systemGreen
@@ -1912,7 +1959,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                     
                     self.isDownloading = false
                     self.downloadTask = nil
-                    
+                    self.activeDownloadButton = nil
                     self.hideProgressIndicator()
                     self.statusLabel.stringValue = String(format: NSLocalizedString("Playlist download failed: %@", comment: ""), error.localizedDescription)
                     self.statusLabel.textColor = NSColor.systemRed
