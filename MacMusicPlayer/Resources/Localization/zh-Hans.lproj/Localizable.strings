@@ -122,6 +122,8 @@
 "Details" = "详情";
 "Load Playlist" = "加载播放列表";
 "Download All" = "全部下载";
+"Download %d" = "下载 %d 项";
+"Download Selected" = "下载选中项";
 "Stop" = "停止";
 "Download stopped" = "下载已停止";
 
@@ -143,9 +145,12 @@
 "Playlist is empty" = "播放列表为空";
 "Failed to load playlist: %@" = "加载播放列表失败：%@";
 "Starting playlist download..." = "开始下载播放列表...";
+"Starting selected downloads..." = "开始下载选中项...";
 "Downloading (%d/%d) - %@" = "正在下载 (%d/%d) - %@";
 "Playlist download completed" = "播放列表下载完成";
+"Selected downloads completed" = "选中项下载完成";
 "Playlist download failed: %@" = "播放列表下载失败：%@";
+"Selected downloads failed: %@" = "选中项下载失败：%@";
 
 // Song Picker Window Status
 "search_songs_placeholder" = "搜索歌曲...";

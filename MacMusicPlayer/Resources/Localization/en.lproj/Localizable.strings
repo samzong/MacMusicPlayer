@@ -122,6 +122,8 @@
 "Details" = "Details";
 "Load Playlist" = "Load Playlist";
 "Download All" = "Download All";
+"Download %d" = "Download %d";
+"Download Selected" = "Download Selected";
 "Stop" = "Stop";
 "Download stopped" = "Download stopped";
 
@@ -143,9 +145,12 @@
 "Playlist is empty" = "Playlist is empty";
 "Failed to load playlist: %@" = "Failed to load playlist: %@";
 "Starting playlist download..." = "Starting playlist download...";
+"Starting selected downloads..." = "Starting selected downloads...";
 "Downloading (%d/%d) - %@" = "Downloading (%d/%d) - %@";
 "Playlist download completed" = "Playlist download completed";
+"Selected downloads completed" = "Selected downloads completed";
 "Playlist download failed: %@" = "Playlist download failed: %@";
+"Selected downloads failed: %@" = "Selected downloads failed: %@";
 
 // Song Picker Window Status
 "search_songs_placeholder" = "Search songs...";

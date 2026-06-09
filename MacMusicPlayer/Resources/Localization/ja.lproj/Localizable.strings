@@ -122,6 +122,8 @@
 "Details" = "詳細";
 "Load Playlist" = "プレイリスト読み込み";
 "Download All" = "すべてダウンロード";
+"Download %d" = "%d 件をダウンロード";
+"Download Selected" = "選択項目をダウンロード";
 "Stop" = "停止";
 "Download stopped" = "ダウンロード停止";
 
@@ -143,9 +145,12 @@
 "Playlist is empty" = "プレイリストが空です";
 "Failed to load playlist: %@" = "プレイリストの読み込みに失敗しました：%@";
 "Starting playlist download..." = "プレイリストダウンロードを開始...";
+"Starting selected downloads..." = "選択項目のダウンロードを開始...";
 "Downloading (%d/%d) - %@" = "ダウンロード中 (%d/%d) - %@";
 "Playlist download completed" = "プレイリストダウンロード完了";
+"Selected downloads completed" = "選択項目のダウンロード完了";
 "Playlist download failed: %@" = "プレイリストダウンロードに失敗しました：%@";
+"Selected downloads failed: %@" = "選択項目のダウンロードに失敗しました：%@";
 
 // Song Picker Window Status
 "search_songs_placeholder" = "曲を検索...";
