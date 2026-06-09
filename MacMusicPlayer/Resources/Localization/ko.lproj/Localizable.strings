@@ -122,6 +122,8 @@
 "Details" = "상세 정보";
 "Load Playlist" = "재생목록 로드";
 "Download All" = "모두 다운로드";
+"Download %d" = "%d개 다운로드";
+"Download Selected" = "선택 항목 다운로드";
 "Stop" = "중지";
 "Download stopped" = "다운로드 중지됨";
 
@@ -143,9 +145,12 @@
 "Playlist is empty" = "재생목록이 비어있습니다";
 "Failed to load playlist: %@" = "재생목록 로드 실패: %@";
 "Starting playlist download..." = "재생목록 다운로드 시작...";
+"Starting selected downloads..." = "선택 항목 다운로드 시작...";
 "Downloading (%d/%d) - %@" = "다운로드 중 (%d/%d) - %@";
 "Playlist download completed" = "재생목록 다운로드 완료";
+"Selected downloads completed" = "선택 항목 다운로드 완료";
 "Playlist download failed: %@" = "재생목록 다운로드 실패: %@";
+"Selected downloads failed: %@" = "선택 항목 다운로드 실패: %@";
 
 // Song Picker Window Status
 "search_songs_placeholder" = "곡 검색...";

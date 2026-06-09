@@ -318,8 +318,7 @@ public class DownloadManager {
             if result.terminationStatus == 0 {
                 let title = result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !title.isEmpty {
-                    let invalidChars = CharacterSet(charactersIn: "\\/:*?\"<>|")
-                    return title.components(separatedBy: invalidChars).joined(separator: "_")
+                    return sanitizedFileTitle(title)
                 }
             }
 
@@ -330,6 +329,13 @@ public class DownloadManager {
             print(NSLocalizedString("Error getting video title: %@", comment: "Log message when getting video title fails"), error)
             throw DownloadError.titleFetchFailed
         }
+    }
+
+    private func sanitizedFileTitle(_ title: String) -> String {
+        let invalidChars = CharacterSet(charactersIn: "\\/:*?\"<>|")
+        let sanitizedTitle = title.components(separatedBy: invalidChars).joined(separator: "_")
+        let trimmedTitle = sanitizedTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedTitle.isEmpty ? "Unknown Title" : trimmedTitle
     }
 
     public func fetchAvailableFormats(from url: String) async throws -> [DownloadFormat] {
@@ -575,7 +581,7 @@ public class DownloadManager {
         return uniqueFormats
     }
 
-    public func downloadAudio(from url: String, formatId: String) async throws {
+    public func downloadAudio(from url: String, formatId: String, outputTitle: String? = nil) async throws {
         print(NSLocalizedString("Starting audio download, URL: %@, Format ID: %@", comment: "Log message when starting download"), url, formatId)
 
         guard URL(string: url) != nil else {
@@ -587,7 +593,12 @@ public class DownloadManager {
         let ytDlpPath = try checkYtDlpAvailability()
         let ffmpegPath = try checkFFmpegAvailability()
 
-        let videoTitle = try await getVideoTitle(from: url, ytDlpPath: ytDlpPath)
+        let videoTitle: String
+        if let outputTitle = outputTitle {
+            videoTitle = sanitizedFileTitle(outputTitle)
+        } else {
+            videoTitle = try await getVideoTitle(from: url, ytDlpPath: ytDlpPath)
+        }
         try Task.checkCancellation()
         print(NSLocalizedString("Video title: %@", comment: "Log message showing video title"), videoTitle)
 
@@ -768,6 +779,33 @@ public class DownloadManager {
         return "unknown"
     }
 
+    private func outputTitles(forPlaylistItems items: [PlaylistItem]) -> [String] {
+        let baseTitles = items.map { sanitizedFileTitle($0.title) }
+        let titleCounts = Dictionary(grouping: baseTitles, by: { $0 }).mapValues(\.count)
+        var occurrences: [String: Int] = [:]
+        var usedTitles = Set<String>()
+
+        return baseTitles.map { title in
+            var candidate = title
+            var occurrence = occurrences[title] ?? 0
+
+            if titleCounts[title, default: 0] > 1 {
+                occurrence += 1
+                occurrences[title] = occurrence
+                candidate = "\(title) [\(occurrence)]"
+            }
+
+            while usedTitles.contains(candidate) {
+                occurrence += 1
+                candidate = "\(title) [\(occurrence)]"
+            }
+
+            occurrences[title] = occurrence
+            usedTitles.insert(candidate)
+            return candidate
+        }
+    }
+
     public func downloadPlaylist(
         from url: String,
         progressCallback: @escaping (PlaylistDownloadProgress) -> Void
@@ -776,41 +814,117 @@ public class DownloadManager {
 
         try Task.checkCancellation()
         let playlistInfo = try await fetchPlaylistInfo(from: url)
+        try await downloadPlaylistItems(playlistInfo.items, progressCallback: progressCallback)
+    }
+
+    public func downloadPlaylistItems(
+        _ items: [PlaylistItem],
+        maxConcurrentDownloads: Int = 3,
+        progressCallback: @escaping (PlaylistDownloadProgress) -> Void
+    ) async throws {
+        if items.isEmpty {
+            throw DownloadError.playlistDownloadFailed(NSLocalizedString("Playlist is empty", comment: "Error when playlist has no downloadable items"))
+        }
+
         var completed = 0
         var failed = 0
+        var started = 0
+        var nextIndex = 0
+        let totalCount = items.count
+        let concurrentLimit = max(1, min(maxConcurrentDownloads, totalCount))
+        let outputTitles = outputTitles(forPlaylistItems: items)
 
-        for (index, item) in playlistInfo.items.enumerated() {
-            try Task.checkCancellation()
+        try await withThrowingTaskGroup(of: (PlaylistItem, Bool).self) { group in
+            while nextIndex < concurrentLimit {
+                let item = items[nextIndex]
+                let outputTitle = outputTitles[nextIndex]
+                nextIndex += 1
+                started += 1
 
-            let progress = PlaylistDownloadProgress(
-                currentIndex: index + 1,
-                totalCount: playlistInfo.videoCount,
-                currentTitle: item.title,
-                completed: completed,
-                failed: failed
-            )
+                let progress = PlaylistDownloadProgress(
+                    currentIndex: started,
+                    totalCount: totalCount,
+                    currentTitle: item.title,
+                    completed: completed,
+                    failed: failed
+                )
 
-            await MainActor.run {
-                progressCallback(progress)
+                await MainActor.run {
+                    progressCallback(progress)
+                }
+
+                group.addTask {
+                    do {
+                        try await self.downloadAudio(from: item.url, formatId: "bestaudio", outputTitle: outputTitle)
+                        return (item, true)
+                    } catch is CancellationError {
+                        throw CancellationError()
+                    } catch {
+                        print(String(format: NSLocalizedString("Failed to download: %@ - Error: %@", comment: "Log message when item download fails"), item.title, error.localizedDescription))
+                        return (item, false)
+                    }
+                }
             }
-            try Task.checkCancellation()
 
-            do {
-                try await downloadAudio(from: item.url, formatId: "bestaudio")
-                completed += 1
-                print(NSLocalizedString("Successfully downloaded: %@", comment: "Log message when item downloaded successfully"), item.title)
-            } catch is CancellationError {
-                throw CancellationError()
-            } catch {
-                failed += 1
-                print(NSLocalizedString("Failed to download: %@ - Error: %@", comment: "Log message when item download fails"), item.title, error.localizedDescription)
+            while let (item, succeeded) = try await group.next() {
+                if succeeded {
+                    completed += 1
+                    print(String(format: NSLocalizedString("Successfully downloaded: %@", comment: "Log message when item downloaded successfully"), item.title))
+                } else {
+                    failed += 1
+                }
+
+                let progress = PlaylistDownloadProgress(
+                    currentIndex: min(started, totalCount),
+                    totalCount: totalCount,
+                    currentTitle: item.title,
+                    completed: completed,
+                    failed: failed
+                )
+
+                await MainActor.run {
+                    progressCallback(progress)
+                }
+
+                try Task.checkCancellation()
+
+                if nextIndex < totalCount {
+                    let nextItem = items[nextIndex]
+                    let nextOutputTitle = outputTitles[nextIndex]
+                    nextIndex += 1
+                    started += 1
+
+                    let nextProgress = PlaylistDownloadProgress(
+                        currentIndex: started,
+                        totalCount: totalCount,
+                        currentTitle: nextItem.title,
+                        completed: completed,
+                        failed: failed
+                    )
+
+                    await MainActor.run {
+                        progressCallback(nextProgress)
+                    }
+
+                    group.addTask {
+                        do {
+                            try await self.downloadAudio(from: nextItem.url, formatId: "bestaudio", outputTitle: nextOutputTitle)
+                            return (nextItem, true)
+                        } catch is CancellationError {
+                            throw CancellationError()
+                        } catch {
+                            print(String(format: NSLocalizedString("Failed to download: %@ - Error: %@", comment: "Log message when item download fails"), nextItem.title, error.localizedDescription))
+                            return (nextItem, false)
+                        }
+                    }
+                }
             }
         }
 
         try Task.checkCancellation()
         let finalProgress = PlaylistDownloadProgress(
-            currentIndex: playlistInfo.videoCount,
-            totalCount: playlistInfo.videoCount,
+            currentIndex: totalCount,
+            totalCount: totalCount,
             currentTitle: NSLocalizedString("Completed", comment: "Download completion status"),
             completed: completed,
             failed: failed
@@ -824,6 +938,6 @@ public class DownloadManager {
             throw DownloadError.playlistDownloadFailed(NSLocalizedString("All downloads failed", comment: "Error when all playlist downloads fail"))
         }
 
-        print(NSLocalizedString("Playlist download completed: %d successful, %d failed", comment: "Log message when playlist download completes"), completed, failed)
+        print(String(format: NSLocalizedString("Playlist download completed: %d successful, %d failed", comment: "Log message when playlist download completes"), completed, failed))
     }
 }

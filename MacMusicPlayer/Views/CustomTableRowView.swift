@@ -1,6 +1,14 @@
 import Cocoa
 
 class CustomTableRowView: NSTableRowView {
+    var isMarked = false {
+        didSet {
+            updateBackgroundColor(animated: false)
+        }
+    }
+
+    private var isHovering = false
+
     override func drawSelection(in dirtyRect: NSRect) {
         if self.selectionHighlightStyle != .none {
             super.drawSelection(in: dirtyRect)
@@ -32,20 +40,36 @@ class CustomTableRowView: NSTableRowView {
 
     override func mouseEntered(with event: NSEvent) {
         super.mouseEntered(with: event)
-        self.wantsLayer = true
-
-        NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.2
-            self.animator().layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.1).cgColor
-        })
+        isHovering = true
+        updateBackgroundColor(animated: true)
     }
 
     override func mouseExited(with event: NSEvent) {
         super.mouseExited(with: event)
+        isHovering = false
+        updateBackgroundColor(animated: true)
+    }
+
+    private func updateBackgroundColor(animated: Bool) {
+        wantsLayer = true
+
+        let alpha: CGFloat
+        if isMarked {
+            alpha = isHovering ? 0.24 : 0.18
+        } else {
+            alpha = isHovering ? 0.1 : 0
+        }
+
+        let color = NSColor.controlAccentColor.withAlphaComponent(alpha).cgColor
+
+        if !animated {
+            layer?.backgroundColor = color
+            return
+        }
 
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.2
-            self.animator().layer?.backgroundColor = NSColor.clear.cgColor
+            self.animator().layer?.backgroundColor = color
         })
     }
 }

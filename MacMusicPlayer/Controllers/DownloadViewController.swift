@@ -34,10 +34,16 @@ class DownloadViewController: NSViewController {
     private var libraryManager: LibraryManager!
 
     private var currentPlaylist: DownloadManager.PlaylistInfo?
+    private var currentPlaylistURL: String?
+    private var activePlaylistLoadID: UUID?
+    private var activePlaylistLoadURL: String?
+    private var selectedPlaylistRows = Set<Int>()
     private var isPlaylistMode: Bool = false
     private var isDownloading: Bool = false
     private var downloadTask: Task<Void, Never>?
     private weak var activeDownloadButton: NSButton?
+    private let maxConcurrentPlaylistDownloads = 3
+    private let actionButtonWidth: CGFloat = 116
 
     private var searchResults: [YTSearchManager.SearchResult.VideoItem] = []
     private var isSearchMode: Bool = false
@@ -135,7 +141,7 @@ class DownloadViewController: NSViewController {
         NSLayoutConstraint.activate([
             urlTextField.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
             urlTextField.leadingAnchor.constraint(equalTo: libraryPopup.trailingAnchor, constant: 8),
-            urlTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -110),
+            urlTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -(actionButtonWidth + 28)),
             urlTextField.heightAnchor.constraint(equalToConstant: 28)
         ])
     }
@@ -147,14 +153,7 @@ class DownloadViewController: NSViewController {
         detectButton.target = self
         detectButton.action = #selector(detectOrSearch)
         detectButton.font = NSFont.systemFont(ofSize: 13, weight: .medium)
-        detectButton.contentTintColor = .white
         detectButton.wantsLayer = true
-
-        if #available(macOS 11.0, *) {
-            detectButton.bezelColor = NSColor.controlAccentColor
-        } else {
-            detectButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
-        }
 
         view.addSubview(detectButton)
 
@@ -162,6 +161,7 @@ class DownloadViewController: NSViewController {
             detectButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
             detectButton.leadingAnchor.constraint(equalTo: urlTextField.trailingAnchor, constant: 8),
             detectButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            detectButton.widthAnchor.constraint(equalToConstant: actionButtonWidth),
             detectButton.heightAnchor.constraint(equalToConstant: 28)
         ])
     }
@@ -218,7 +218,7 @@ class DownloadViewController: NSViewController {
             downloadAllButton.centerYAnchor.constraint(equalTo: statusLabel.centerYAnchor),
             downloadAllButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             downloadAllButton.heightAnchor.constraint(equalToConstant: 26),
-            downloadAllButton.widthAnchor.constraint(equalToConstant: 100)
+            downloadAllButton.widthAnchor.constraint(equalToConstant: actionButtonWidth)
         ])
     }
 
@@ -657,6 +657,10 @@ class DownloadViewController: NSViewController {
 
     @objc private func textFieldDidChange(_ notification: Notification) {
         if let textField = notification.object as? NSTextField, textField == urlTextField {
+            if !isDownloading {
+                clearLoadedPlaylistIfInputChanged()
+                clearActivePlaylistLoadIfInputChanged()
+            }
             updateButtonBasedOnInput()
         }
     }
@@ -679,6 +683,78 @@ class DownloadViewController: NSViewController {
             isSearchMode = true
             isPlaylistMode = false
         }
+    }
+
+    private func clearPlaylistSelection() {
+        selectedPlaylistRows.removeAll()
+        updateDownloadAllButtonTitle()
+    }
+
+    private func clearLoadedPlaylist(resetStatus: Bool = true) {
+        currentPlaylist = nil
+        currentPlaylistURL = nil
+        clearPlaylistSelection()
+        downloadAllButton.isHidden = true
+        tableBackgroundView.isHidden = true
+        scrollView.isHidden = true
+        tableView.reloadData()
+
+        if resetStatus {
+            statusLabel.stringValue = ""
+            statusLabel.textColor = NSColor.secondaryLabelColor
+        }
+    }
+
+    private func clearLoadedPlaylistIfInputChanged(resetStatus: Bool = true) {
+        let text = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        if currentPlaylist != nil, currentPlaylistURL != text {
+            clearLoadedPlaylist(resetStatus: resetStatus)
+        }
+    }
+
+    private func clearActivePlaylistLoadIfInputChanged() {
+        let text = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        if activePlaylistLoadURL != nil, activePlaylistLoadURL != text {
+            activePlaylistLoadID = nil
+            activePlaylistLoadURL = nil
+            hideProgressIndicator()
+            statusLabel.stringValue = ""
+            statusLabel.textColor = NSColor.secondaryLabelColor
+        }
+    }
+
+    private func updateDownloadAllButtonTitle() {
+        guard !isDownloading else { return }
+        if selectedPlaylistRows.isEmpty {
+            downloadAllButton.title = NSLocalizedString("Download All", comment: "")
+        } else {
+            downloadAllButton.title = String(format: NSLocalizedString("Download %d", comment: ""), selectedPlaylistRows.count)
+        }
+    }
+
+    private func togglePlaylistSelection(at row: Int) {
+        guard isPlaylistMode, !isDownloading else { return }
+        guard let playlist = currentPlaylist, row >= 0, row < playlist.items.count else { return }
+
+        if selectedPlaylistRows.contains(row) {
+            selectedPlaylistRows.remove(row)
+        } else {
+            selectedPlaylistRows.insert(row)
+        }
+
+        updateDownloadAllButtonTitle()
+        tableView.reloadData(forRowIndexes: IndexSet(integer: row), columnIndexes: IndexSet(integer: 0))
+    }
+
+    private func playlistItemsForDownload() -> [DownloadManager.PlaylistItem] {
+        guard let playlist = currentPlaylist else { return [] }
+        let selectedRows = selectedPlaylistRows.sorted().filter { $0 >= 0 && $0 < playlist.items.count }
+
+        if selectedRows.isEmpty {
+            return playlist.items
+        }
+
+        return selectedRows.map { playlist.items[$0] }
     }
 
     @objc private func handleConfigUpdated() {
@@ -727,6 +803,7 @@ class DownloadViewController: NSViewController {
         if pageToken == nil {
             searchResults = []
             currentNextPageToken = nil
+            clearPlaylistSelection()
             nextPageButton.isHidden = true
             downloadAllButton.isHidden = true
             tableView.reloadData()
@@ -892,6 +969,7 @@ class DownloadViewController: NSViewController {
 
     private func loadPlaylist() {
         let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let loadID = UUID()
 
         if urlString.isEmpty {
             statusLabel.stringValue = NSLocalizedString("Please enter a valid playlist URL", comment: "")
@@ -910,6 +988,10 @@ class DownloadViewController: NSViewController {
         formats = []
         searchResults = []
         currentPlaylist = nil
+        currentPlaylistURL = nil
+        activePlaylistLoadID = loadID
+        activePlaylistLoadURL = urlString
+        clearPlaylistSelection()
         tableView.reloadData()
         nextPageButton.isHidden = true
         downloadAllButton.isHidden = true
@@ -918,6 +1000,10 @@ class DownloadViewController: NSViewController {
             do {
                 if !self.isYtDlpInstalled {
                     DispatchQueue.main.async {
+                        guard self.activePlaylistLoadID == loadID else { return }
+
+                        self.activePlaylistLoadID = nil
+                        self.activePlaylistLoadURL = nil
                         self.hideProgressIndicator()
                         self.statusLabel.stringValue = NSLocalizedString("yt-dlp not found, please make sure it's installed (brew install yt-dlp)", comment: "")
                         self.statusLabel.textColor = NSColor.systemRed
@@ -927,6 +1013,10 @@ class DownloadViewController: NSViewController {
 
                 if !self.isFfmpegInstalled {
                     DispatchQueue.main.async {
+                        guard self.activePlaylistLoadID == loadID else { return }
+
+                        self.activePlaylistLoadID = nil
+                        self.activePlaylistLoadURL = nil
                         self.hideProgressIndicator()
                         self.statusLabel.stringValue = NSLocalizedString("ffmpeg not found, please make sure it's installed (brew install ffmpeg)", comment: "")
                         self.statusLabel.textColor = NSColor.systemRed
@@ -937,7 +1027,19 @@ class DownloadViewController: NSViewController {
                 let playlistInfo = try await DownloadManager.shared.fetchPlaylistInfo(from: urlString)
 
                 DispatchQueue.main.async {
+                    guard self.activePlaylistLoadID == loadID else { return }
+
+                    guard self.urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines) == urlString else {
+                        self.activePlaylistLoadID = nil
+                        self.activePlaylistLoadURL = nil
+                        self.hideProgressIndicator()
+                        return
+                    }
+
+                    self.activePlaylistLoadID = nil
+                    self.activePlaylistLoadURL = nil
                     self.currentPlaylist = playlistInfo
+                    self.currentPlaylistURL = urlString
                     self.hideProgressIndicator()
 
                     if !playlistInfo.items.isEmpty {
@@ -946,6 +1048,7 @@ class DownloadViewController: NSViewController {
                             self.tableBackgroundView.isHidden = false
                             self.scrollView.isHidden = false
                             self.downloadAllButton.isHidden = false
+                            self.updateDownloadAllButtonTitle()
 
                             let maxLength = 40
                             let truncatedTitle = playlistInfo.title.count > maxLength ?
@@ -975,6 +1078,10 @@ class DownloadViewController: NSViewController {
                 }
             } catch {
                 DispatchQueue.main.async {
+                    guard self.activePlaylistLoadID == loadID else { return }
+
+                    self.activePlaylistLoadID = nil
+                    self.activePlaylistLoadURL = nil
                     self.hideProgressIndicator()
                     self.statusLabel.stringValue = String(format: NSLocalizedString("Failed to load playlist: %@", comment: ""), error.localizedDescription)
                     self.statusLabel.textColor = NSColor.systemRed
@@ -1002,6 +1109,7 @@ class DownloadViewController: NSViewController {
         })
 
         formats = []
+        clearPlaylistSelection()
         tableView.reloadData()
 
         nextPageButton.isHidden = true
@@ -1555,7 +1663,16 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             rowView?.identifier = identifier
         }
 
+        rowView?.isMarked = isPlaylistMode && selectedPlaylistRows.contains(row)
         return rowView
+    }
+
+    func tableView(_ tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
+        if isPlaylistMode {
+            togglePlaylistSelection(at: row)
+        }
+
+        return false
     }
 
     private func getFormatOptionCellView(for optionIndex: Int) -> NSView? {
@@ -1699,6 +1816,18 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             durationLabel.alignment = .right
             containerView.addSubview(durationLabel)
 
+            let selectionMarkLabel = NSTextField()
+            selectionMarkLabel.identifier = NSUserInterfaceItemIdentifier("SelectionMarkLabel")
+            selectionMarkLabel.translatesAutoresizingMaskIntoConstraints = false
+            selectionMarkLabel.isEditable = false
+            selectionMarkLabel.isBordered = false
+            selectionMarkLabel.backgroundColor = .clear
+            selectionMarkLabel.drawsBackground = false
+            selectionMarkLabel.font = NSFont.systemFont(ofSize: 16, weight: .semibold)
+            selectionMarkLabel.textColor = NSColor.controlAccentColor
+            selectionMarkLabel.alignment = .center
+            containerView.addSubview(selectionMarkLabel)
+
             NSLayoutConstraint.activate([
                 numberLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 5),
                 numberLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
@@ -1708,11 +1837,17 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 titleField.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 titleField.trailingAnchor.constraint(equalTo: durationLabel.leadingAnchor, constant: -10),
 
-                durationLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -5),
+                durationLabel.trailingAnchor.constraint(equalTo: selectionMarkLabel.leadingAnchor, constant: -8),
                 durationLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-                durationLabel.widthAnchor.constraint(equalToConstant: 60)
+                durationLabel.widthAnchor.constraint(equalToConstant: 60),
+
+                selectionMarkLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -5),
+                selectionMarkLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+                selectionMarkLabel.widthAnchor.constraint(equalToConstant: 18)
             ])
         }
+
+        let isSelected = selectedPlaylistRows.contains(row)
 
         if let numberLabel = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "NumberLabel" }) as? NSTextField {
             numberLabel.stringValue = "\(row + 1)"
@@ -1724,6 +1859,10 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
 
         if let durationLabel = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "DurationLabel" }) as? NSTextField {
             durationLabel.stringValue = item.duration.isEmpty ? "Unknown" : item.duration
+        }
+
+        if let selectionMarkLabel = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "SelectionMarkLabel" }) as? NSTextField {
+            selectionMarkLabel.stringValue = isSelected ? "\u{2713}" : ""
         }
 
         return cell
@@ -1757,7 +1896,8 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             self.activeDownloadButton = nil
         }
 
-        downloadAllButton.title = NSLocalizedString("Download All", comment: "")
+        clearLoadedPlaylistIfInputChanged(resetStatus: false)
+        updateDownloadAllButtonTitle()
         downloadAllButton.contentTintColor = NSColor.white
 
         if #available(macOS 11.0, *) {
@@ -1771,7 +1911,23 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
     }
 
     private func startDownload() {
-        let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let input = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard isPlaylistMode, currentPlaylistURL == input else {
+            clearLoadedPlaylist()
+            statusLabel.stringValue = NSLocalizedString("Please enter a valid playlist URL", comment: "")
+            statusLabel.textColor = NSColor.systemRed
+            return
+        }
+
+        let items = playlistItemsForDownload()
+        let downloadsSelectedItems = !selectedPlaylistRows.isEmpty
+
+        if items.isEmpty {
+            statusLabel.stringValue = NSLocalizedString("Playlist is empty", comment: "")
+            statusLabel.textColor = NSColor.secondaryLabelColor
+            return
+        }
 
         isDownloading = true
 
@@ -1786,12 +1942,12 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
 
         progressIndicator.isHidden = false
         progressIndicator.startAnimation(nil)
-        statusLabel.stringValue = NSLocalizedString("Starting playlist download...", comment: "")
+        statusLabel.stringValue = NSLocalizedString(downloadsSelectedItems ? "Starting selected downloads..." : "Starting playlist download...", comment: "")
         statusLabel.textColor = NSColor.secondaryLabelColor
 
         downloadTask = Task {
             do {
-                try await DownloadManager.shared.downloadPlaylist(from: urlString) { [weak self] progress in
+                try await DownloadManager.shared.downloadPlaylistItems(items, maxConcurrentDownloads: maxConcurrentPlaylistDownloads) { [weak self] progress in
                     DispatchQueue.main.async {
                         guard let self = self else { return }
                         guard self.isDownloading else { return }
@@ -1817,10 +1973,11 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                     self.downloadTask = nil
                     self.activeDownloadButton = nil
                     self.hideProgressIndicator()
-                    self.statusLabel.stringValue = NSLocalizedString("Playlist download completed", comment: "")
+                    self.statusLabel.stringValue = NSLocalizedString(downloadsSelectedItems ? "Selected downloads completed" : "Playlist download completed", comment: "")
                     self.statusLabel.textColor = NSColor.systemGreen
 
-                    self.downloadAllButton.title = NSLocalizedString("Download All", comment: "")
+                    self.clearLoadedPlaylistIfInputChanged(resetStatus: false)
+                    self.updateDownloadAllButtonTitle()
                     self.downloadAllButton.contentTintColor = NSColor.white
 
                     if #available(macOS 11.0, *) {
@@ -1841,10 +1998,12 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                     self.downloadTask = nil
                     self.activeDownloadButton = nil
                     self.hideProgressIndicator()
-                    self.statusLabel.stringValue = String(format: NSLocalizedString("Playlist download failed: %@", comment: ""), error.localizedDescription)
+                    let errorKey = downloadsSelectedItems ? "Selected downloads failed: %@" : "Playlist download failed: %@"
+                    self.statusLabel.stringValue = String(format: NSLocalizedString(errorKey, comment: ""), error.localizedDescription)
                     self.statusLabel.textColor = NSColor.systemRed
 
-                    self.downloadAllButton.title = NSLocalizedString("Download All", comment: "")
+                    self.clearLoadedPlaylistIfInputChanged(resetStatus: false)
+                    self.updateDownloadAllButtonTitle()
                     self.downloadAllButton.contentTintColor = NSColor.white
 
                     if #available(macOS 11.0, *) {
