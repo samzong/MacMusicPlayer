@@ -1,10 +1,3 @@
-//
-//  DownloadManager.swift
-//  MacMusicPlayer
-//
-//  Created by X on 2024/09/18.
-//
-
 import Foundation
 import AppKit
 
@@ -14,7 +7,6 @@ public class DownloadManager {
     private var libraryManager: LibraryManager
 
     private init() {
-        // Default to a standalone LibraryManager until the app delegate binds the shared instance.
         self.libraryManager = LibraryManager()
     }
 
@@ -22,7 +14,7 @@ public class DownloadManager {
     func updateLibraryManager(_ libraryManager: LibraryManager) {
         self.libraryManager = libraryManager
     }
-    
+
     public struct DownloadFormat {
         public let formatId: String
         public let fileExtension: String
@@ -31,7 +23,7 @@ public class DownloadManager {
         public let sampleRate: String
         public let channels: String
         public let fileSize: String
-        
+
         public init(formatId: String, fileExtension: String, description: String, bitrate: String = "", sampleRate: String = "", channels: String = "", fileSize: String = "") {
             self.formatId = formatId
             self.fileExtension = fileExtension
@@ -42,7 +34,7 @@ public class DownloadManager {
             self.fileSize = fileSize
         }
     }
-    
+
     public struct PlaylistInfo {
         public let id: String
         public let title: String
@@ -50,7 +42,7 @@ public class DownloadManager {
         public let uploader: String
         public let videoCount: Int
         public let items: [PlaylistItem]
-        
+
         public init(id: String, title: String, description: String, uploader: String, videoCount: Int, items: [PlaylistItem]) {
             self.id = id
             self.title = title
@@ -60,14 +52,14 @@ public class DownloadManager {
             self.items = items
         }
     }
-    
+
     public struct PlaylistItem {
         public let videoId: String
         public let title: String
         public let url: String
         public let duration: String
         public let thumbnailUrl: String
-        
+
         public init(videoId: String, title: String, url: String, duration: String, thumbnailUrl: String) {
             self.videoId = videoId
             self.title = title
@@ -76,14 +68,14 @@ public class DownloadManager {
             self.thumbnailUrl = thumbnailUrl
         }
     }
-    
+
     public struct PlaylistDownloadProgress {
         public let currentIndex: Int
         public let totalCount: Int
         public let currentTitle: String
         public let completed: Int
         public let failed: Int
-        
+
         public init(currentIndex: Int, totalCount: Int, currentTitle: String, completed: Int, failed: Int) {
             self.currentIndex = currentIndex
             self.totalCount = totalCount
@@ -92,7 +84,7 @@ public class DownloadManager {
             self.failed = failed
         }
     }
-    
+
     public enum DownloadError: Error {
         case formatFetchFailed
         case downloadFailed(String)
@@ -102,7 +94,7 @@ public class DownloadManager {
         case titleFetchFailed
         case playlistFetchFailed
         case playlistDownloadFailed(String)
-        
+
         var localizedDescription: String {
             switch self {
             case .formatFetchFailed:
@@ -124,7 +116,7 @@ public class DownloadManager {
             }
         }
     }
-    
+
     private struct ProcessResult {
         let terminationStatus: Int32
         let standardOutput: String
@@ -236,19 +228,19 @@ public class DownloadManager {
         let fileSize: String
         let codec: String
     }
-    
+
     private func checkFFmpegAvailability() throws -> String {
         let task = Process()
         task.launchPath = "/usr/bin/which"
         task.arguments = ["ffmpeg"]
-        
+
         let pipe = Pipe()
         task.standardOutput = pipe
-        
+
         do {
             task.launch()
             task.waitUntilExit()
-            
+
             if task.terminationStatus == 0 {
                 let data = pipe.fileHandleForReading.readDataToEndOfFile()
                 if let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -257,36 +249,36 @@ public class DownloadManager {
                     return path
                 }
             }
-            
+
             let commonPaths = [
                 "/usr/local/bin/ffmpeg",
                 "/opt/homebrew/bin/ffmpeg"
             ]
-            
+
             for path in commonPaths where FileManager.default.fileExists(atPath: path) {
                 print(NSLocalizedString("Found ffmpeg path: %@", comment: "Log message when ffmpeg is found"), path)
                 return path
             }
-            
+
             throw DownloadError.ffmpegNotFound
         } catch {
             print(NSLocalizedString("Error checking ffmpeg: %@", comment: "Log message when checking ffmpeg fails"), error)
             throw DownloadError.ffmpegNotFound
         }
     }
-    
+
     private func checkYtDlpAvailability() throws -> String {
         let task = Process()
         task.launchPath = "/usr/bin/which"
         task.arguments = ["yt-dlp"]
-        
+
         let pipe = Pipe()
         task.standardOutput = pipe
-        
+
         do {
             task.launch()
             task.waitUntilExit()
-            
+
             if task.terminationStatus == 0 {
                 let data = pipe.fileHandleForReading.readDataToEndOfFile()
                 if let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -295,24 +287,24 @@ public class DownloadManager {
                     return path
                 }
             }
-            
+
             let commonPaths = [
                 "/usr/local/bin/yt-dlp",
                 "/opt/homebrew/bin/yt-dlp"
             ]
-            
+
             for path in commonPaths where FileManager.default.fileExists(atPath: path) {
                 print(NSLocalizedString("Found yt-dlp path: %@", comment: "Log message when yt-dlp is found"), path)
                 return path
             }
-            
+
             throw DownloadError.ytDlpNotFound
         } catch {
             print(NSLocalizedString("Error checking yt-dlp: %@", comment: "Log message when checking yt-dlp fails"), error)
             throw DownloadError.ytDlpNotFound
         }
     }
-    
+
     private func getVideoTitle(from url: String, ytDlpPath: String) async throws -> String {
         do {
             let result = try await runCancellableProcess(
@@ -339,38 +331,38 @@ public class DownloadManager {
             throw DownloadError.titleFetchFailed
         }
     }
-    
+
     public func fetchAvailableFormats(from url: String) async throws -> [DownloadFormat] {
         print(NSLocalizedString("Getting available formats, URL: %@", comment: "Log message when fetching formats"), url)
-        
+
         guard URL(string: url) != nil else {
             throw DownloadError.invalidURL
         }
-        
+
         let ytDlpPath = try checkYtDlpAvailability()
         let ffmpegPath = try checkFFmpegAvailability()
-        
+
         let task = Process()
         task.launchPath = ytDlpPath
         task.arguments = [
             "--ffmpeg-location", ffmpegPath,
-            "-F", 
+            "-F",
             url
         ]
-        
+
         let pipe = Pipe()
         task.standardOutput = pipe
         let errorPipe = Pipe()
         task.standardError = errorPipe
-        
+
         do {
             task.launch()
             task.waitUntilExit()
-            
+
             if task.terminationStatus == 0 {
                 let data = pipe.fileHandleForReading.readDataToEndOfFile()
                 let output = String(data: data, encoding: .utf8) ?? ""
-                
+
                 return try parseFormatsFromOutput(output)
             } else {
                 let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
@@ -382,21 +374,21 @@ public class DownloadManager {
             throw error
         } catch {
             print(NSLocalizedString("Error getting formats: %@", comment: "Log message when getting formats fails"), error)
-            
+
             return createDefaultFormats()
         }
     }
-    
+
     private func createDefaultFormats() -> [DownloadFormat] {
         return [
             DownloadFormat(
-                formatId: "bestaudio", 
-                fileExtension: "mp3", 
+                formatId: "bestaudio",
+                fileExtension: "mp3",
                 description: NSLocalizedString("Best Quality (Auto Select)", comment: "Format description for best audio quality")
             ),
             DownloadFormat(
-                formatId: "140", 
-                fileExtension: "m4a", 
+                formatId: "140",
+                fileExtension: "m4a",
                 description: NSLocalizedString("M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]", comment: "Predefined format description"),
                 bitrate: "128kbps",
                 sampleRate: "44kHz",
@@ -404,8 +396,8 @@ public class DownloadManager {
                 fileSize: "3.5MiB"
             ),
             DownloadFormat(
-                formatId: "251", 
-                fileExtension: "webm", 
+                formatId: "251",
+                fileExtension: "webm",
                 description: NSLocalizedString("WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]", comment: "Predefined format description"),
                 bitrate: "160kbps",
                 sampleRate: "48kHz",
@@ -414,38 +406,38 @@ public class DownloadManager {
             )
         ]
     }
-    
+
     private func parseFormatsFromOutput(_ output: String) throws -> [DownloadFormat] {
         var formats: [DownloadFormat] = []
-        
+
         formats.append(DownloadFormat(
-            formatId: "bestaudio", 
-            fileExtension: "mp3", 
+            formatId: "bestaudio",
+            fileExtension: "mp3",
             description: NSLocalizedString("🎵 Best Quality (Auto Select)", comment: "Format description for best audio quality")
         ))
-        
+
         let lines = output.components(separatedBy: .newlines)
         for line in lines where line.contains("audio only") {
             if let format = parseAudioFormatLine(line) {
                 formats.append(format)
             }
         }
-        
+
         if formats.count <= 1 {
             formats.append(contentsOf: createDefaultFormats().dropFirst())
         }
-        
+
         return removeDuplicateFormats(formats)
     }
-    
+
     private func parseAudioFormatLine(_ line: String) -> DownloadFormat? {
         let components = line.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
         guard components.count >= 2 else { return nil }
-        
+
         let formatId = components[0]
-        
+
         var fileExtension = "mp3"
-        
+
         if line.contains("m4a") {
             fileExtension = "m4a"
         } else if line.contains("webm") {
@@ -453,12 +445,12 @@ public class DownloadManager {
         } else if line.contains("opus") {
             fileExtension = "opus"
         }
-        
+
         var bitrate = ""
         if let bitrateRange = line.range(of: "\\d+k", options: .regularExpression) {
             bitrate = String(line[bitrateRange])
         }
-        
+
         var sampleRate = ""
         if let sampleRateRange = line.range(of: "\\d+\\.?\\d*kHz|\\d+Hz|\\d+k\\s", options: .regularExpression) {
             sampleRate = String(line[sampleRateRange]).trimmingCharacters(in: .whitespaces)
@@ -467,7 +459,7 @@ public class DownloadManager {
         } else if line.contains("48k") {
             sampleRate = "48kHz"
         }
-        
+
         var channels = ""
         if line.contains("stereo") || line.contains("2.0") {
             channels = NSLocalizedString("stereo", comment: "Audio channel type")
@@ -478,12 +470,12 @@ public class DownloadManager {
         } else {
             channels = NSLocalizedString("stereo", comment: "Audio channel type")
         }
-        
+
         var fileSize = ""
         if let fileSizeRange = line.range(of: "\\d+\\.?\\d*[KMG]iB", options: .regularExpression) {
             fileSize = String(line[fileSizeRange])
         }
-        
+
         var codec = ""
         if line.contains("opus") {
             codec = "Opus"
@@ -494,7 +486,7 @@ public class DownloadManager {
         } else if line.contains("vorbis") {
             codec = "Vorbis"
         }
-        
+
         let properties = FormatDescriptionProperties(
             fileExtension: fileExtension,
             bitrate: bitrate,
@@ -503,12 +495,12 @@ public class DownloadManager {
             fileSize: fileSize,
             codec: codec
         )
-        
+
         let description = createFormatDescription(properties: properties)
-        
+
         return DownloadFormat(
-            formatId: formatId, 
-            fileExtension: fileExtension, 
+            formatId: formatId,
+            fileExtension: fileExtension,
             description: description,
             bitrate: bitrate,
             sampleRate: sampleRate,
@@ -516,73 +508,73 @@ public class DownloadManager {
             fileSize: fileSize
         )
     }
-    
+
     private func createFormatDescription(properties: FormatDescriptionProperties) -> String {
         var description = ""
-        
+
         if !properties.bitrate.isEmpty {
             description = String(format: NSLocalizedString("%@ Audio (%@", comment: "Format description with bitrate"), properties.fileExtension.uppercased(), properties.bitrate)
-            
+
             if !properties.sampleRate.isEmpty {
                 description += String(format: ", %@", properties.sampleRate)
             }
-            
+
             description += String(format: ", %@", properties.channels)
-            
+
             if !properties.fileSize.isEmpty {
                 description += String(format: ", %@", properties.fileSize)
             }
-            
+
             description += ")"
         } else {
             description = String(format: NSLocalizedString("%@ Audio", comment: "Format description without details"), properties.fileExtension.uppercased())
-            
+
             if !properties.sampleRate.isEmpty || !properties.channels.isEmpty || !properties.fileSize.isEmpty {
                 description += " ("
-                
+
                 if !properties.sampleRate.isEmpty {
                     description += properties.sampleRate
-                    
+
                     if !properties.channels.isEmpty || !properties.fileSize.isEmpty {
                         description += ", "
                     }
                 }
-                
+
                 if !properties.channels.isEmpty {
                     description += properties.channels
-                    
+
                     if !properties.fileSize.isEmpty {
                         description += ", "
                     }
                 }
-                
+
                 if !properties.fileSize.isEmpty {
                     description += properties.fileSize
                 }
-                
+
                 description += ")"
             }
         }
-        
+
         if !properties.codec.isEmpty {
             description += " [\(properties.codec)]"
         }
-        
+
         return description
     }
-    
+
     private func removeDuplicateFormats(_ formats: [DownloadFormat]) -> [DownloadFormat] {
         var uniqueFormats: [DownloadFormat] = []
         var seenDescriptions = Set<String>()
-        
+
         for format in formats where !seenDescriptions.contains(format.description) {
             uniqueFormats.append(format)
             seenDescriptions.insert(format.description)
         }
-        
+
         return uniqueFormats
     }
-    
+
     public func downloadAudio(from url: String, formatId: String) async throws {
         print(NSLocalizedString("Starting audio download, URL: %@, Format ID: %@", comment: "Log message when starting download"), url, formatId)
 
@@ -650,9 +642,8 @@ public class DownloadManager {
             throw DownloadError.downloadFailed(error.localizedDescription)
         }
     }
-    
-    // MARK: - Playlist Methods
-    
+
+
     public func isPlaylistURL(_ url: String) -> Bool {
         let playlistPatterns = [
             "list=",
@@ -662,12 +653,12 @@ public class DownloadManager {
             "youtube.com/playlist",
             "youtu.be/.*list="
         ]
-        
+
         return playlistPatterns.contains { pattern in
             url.range(of: pattern, options: .regularExpression) != nil
         }
     }
-    
+
     public func fetchPlaylistInfo(from url: String) async throws -> PlaylistInfo {
         print(NSLocalizedString("Getting playlist information, URL: %@", comment: "Log message when fetching playlist info"), url)
 
@@ -706,29 +697,27 @@ public class DownloadManager {
             throw DownloadError.playlistFetchFailed
         }
     }
-    
+
     private func parsePlaylistFromOutput(_ output: String, originalURL: String) throws -> PlaylistInfo {
         let lines = output.components(separatedBy: .newlines).filter { !$0.isEmpty }
         var items: [PlaylistItem] = []
         var playlistTitle = "Unknown Playlist"
         var playlistDescription = ""
         var uploader = "Unknown"
-        
+
         for line in lines {
             guard let data = line.data(using: .utf8) else { continue }
-            
+
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                    // Check if it's a playlist entry
                     if let entryType = json["_type"] as? String, entryType == "url" {
                         let videoId = json["id"] as? String ?? ""
                         let title = json["title"] as? String ?? "Unknown Title"
                         let videoUrl = json["url"] as? String ?? ""
                         let duration = json["duration_string"] as? String ?? ""
-                        
-                        // Build thumbnail URL
+
                         let thumbnailUrl = "https://img.youtube.com/vi/\(videoId)/default.jpg"
-                        
+
                         let item = PlaylistItem(
                             videoId: videoId,
                             title: title,
@@ -738,7 +727,6 @@ public class DownloadManager {
                         )
                         items.append(item)
                     }
-                    // Check if it contains playlist information
                     else if json["_type"] == nil || json["_type"] as? String == "playlist" {
                         if let title = json["title"] as? String {
                             playlistTitle = title
@@ -757,11 +745,11 @@ public class DownloadManager {
                 continue
             }
         }
-        
+
         if items.isEmpty {
             throw DownloadError.playlistFetchFailed
         }
-        
+
         return PlaylistInfo(
             id: extractPlaylistId(from: originalURL),
             title: playlistTitle,
@@ -771,16 +759,15 @@ public class DownloadManager {
             items: items
         )
     }
-    
+
     private func extractPlaylistId(from url: String) -> String {
-        // Extract playlist ID
         if let range = url.range(of: "list=([^&]+)", options: .regularExpression) {
             let listPart = String(url[range])
-            return String(listPart.dropFirst(5)) // Remove "list="
+            return String(listPart.dropFirst(5))
         }
         return "unknown"
     }
-    
+
     public func downloadPlaylist(
         from url: String,
         progressCallback: @escaping (PlaylistDownloadProgress) -> Void
@@ -839,4 +826,4 @@ public class DownloadManager {
 
         print(NSLocalizedString("Playlist download completed: %d successful, %d failed", comment: "Log message when playlist download completes"), completed, failed)
     }
-} 
+}

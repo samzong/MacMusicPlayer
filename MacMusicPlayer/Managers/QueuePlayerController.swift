@@ -1,10 +1,3 @@
-//
-//  QueuePlayerController.swift
-//  MacMusicPlayer
-//
-//  Created by X on 2024/09/23.
-//
-
 import Foundation
 import AVFoundation
 
@@ -99,7 +92,6 @@ class QueuePlayerController: NSObject, PlaybackControlling {
         currentTrackIndex = index
     }
 
-    // MARK: - PlaybackControlling Implementation
 
     func play() {
         queuePlayer.play()

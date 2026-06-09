@@ -1,13 +1,6 @@
-//
-//  AppDelegate.swift
-//  MacMusicPlayer
-//
-//  Created by samzong<samzong.lu@gmail.com> on 2024/09/18.
-//
-
 import Cocoa
 import MediaPlayer
- 
+
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -19,11 +12,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var configManager: ConfigManager!
     var statusMenuController: StatusMenuController!
 
-    // Strong reference to the window
     private var downloadWindow: NSWindow?
     private var configWindow: NSWindow?
     private var songPickerWindow: SimpleSongPickerWindow?
-    
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         playerManager = PlayerManager()
         sleepManager = SleepManager()
@@ -31,15 +23,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         libraryManager = LibraryManager()
         configManager = ConfigManager.shared
         DownloadManager.shared.updateLibraryManager(libraryManager)
-        
+
         if let currentLibrary = libraryManager.currentLibrary {
             playerManager.loadLibrary(currentLibrary)
         } else {
             playerManager.requestMusicFolderAccess()
         }
-        
+
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        
+
         if let button = statusItem?.button {
             button.target = self
             button.action = #selector(toggleMenu)
@@ -56,32 +48,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             statusMenuController.configureStatusItem(statusItem, target: self)
         }
         setupRemoteCommandCenter()
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleAddNewLibrary(_:)),
             name: NSNotification.Name("AddNewLibrary"),
             object: nil
         )
-        
+
         DispatchQueue.main.async { [weak self] in
             self?.showSongPickerIfPreferred()
         }
     }
-    
+
     func setupRemoteCommandCenter() {
         let commandCenter = MPRemoteCommandCenter.shared()
-        
+
         commandCenter.playCommand.addTarget { [weak self] _ in
             self?.playerManager.play()
             return .success
         }
-        
+
         commandCenter.pauseCommand.addTarget { [weak self] _ in
             self?.playerManager.pause()
             return .success
         }
-        
+
         commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
             if let isPlaying = self?.playerManager.isPlaying {
                 if isPlaying {
@@ -92,18 +84,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             return .success
         }
-        
+
         commandCenter.nextTrackCommand.addTarget { [weak self] _ in
             self?.playerManager.playNext()
             return .success
         }
-        
+
         commandCenter.previousTrackCommand.addTarget { [weak self] _ in
             self?.playerManager.playPrevious()
             return .success
         }
     }
-    
+
     @objc func toggleMenu() {
         statusMenuController.refresh()
         statusItem?.button?.performClick(nil)
@@ -116,11 +108,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             playerManager.play()
         }
     }
-    
+
     @objc func playPrevious() {
         playerManager.playPrevious()
     }
-    
+
     @objc func playNext() {
         playerManager.playNext()
     }
@@ -128,7 +120,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func feelingLucky() {
         playerManager.feelingLucky()
     }
-    
+
     @objc func quit() {
         NSApplication.shared.terminate(self)
     }
@@ -157,23 +149,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         launchManager.launchAtLogin.toggle()
         statusMenuController.refresh()
     }
-    
+
     func applicationWillTerminate(_ aNotification: Notification) {
         sleepManager.cleanupResourcesOnly()
     }
-    
+
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         showSongPickerIfPreferred()
         return true
     }
-    
+
     @objc func showDownloadWindow() {
         if let existingWindow = self.downloadWindow {
             existingWindow.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
         }
-        
+
         let downloadVC = DownloadViewController()
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 500, height: 400),
@@ -184,60 +176,60 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.contentViewController = downloadVC
         window.title = NSLocalizedString("Download Music", comment: "")
         window.center()
-        
+
         window.isReleasedWhenClosed = false
         window.delegate = self
-        
+
         self.downloadWindow = window
-        
+
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
-    
+
     @objc func handleAddNewLibrary(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let name = userInfo["name"] as? String,
               let path = userInfo["path"] as? String else {
             return
         }
-        
+
         libraryManager.addLibrary(name: name, path: path)
 
         statusMenuController.refresh()
     }
-    
+
     @objc func switchLibrary(_ sender: NSMenuItem) {
         guard let libraryId = sender.representedObject as? UUID else { return }
-        
+
         libraryManager.switchLibrary(id: libraryId)
-        
+
         if let currentLibrary = libraryManager.currentLibrary {
             playerManager.loadLibrary(currentLibrary)
         }
 
         statusMenuController.refresh()
     }
-    
+
     @objc func addNewLibrary() {
         playerManager.requestMusicFolderAccess()
     }
-    
+
     @objc func removeCurrentLibrary() {
         guard libraryManager.libraries.count > 1,
               let currentId = libraryManager.currentLibrary?.id else {
             return
         }
-        
+
         let alert = NSAlert()
         alert.messageText = NSLocalizedString("Confirm Deletion", comment: "Alert title when deleting a music library")
         alert.informativeText = NSLocalizedString("This operation will not delete music files on disk, it only removes this library from the app.", comment: "Alert description when deleting a music library")
         alert.alertStyle = .warning
         alert.addButton(withTitle: NSLocalizedString("Delete", comment: "Button title for confirming deletion"))
         alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button title for cancelling deletion"))
-        
+
         if alert.runModal() == .alertFirstButtonReturn {
             libraryManager.removeLibrary(id: currentId)
-            
+
             if let newCurrent = libraryManager.currentLibrary {
                 playerManager.loadLibrary(newCurrent)
             }
@@ -245,7 +237,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             statusMenuController.refresh()
         }
     }
-    
+
     @objc func refreshCurrentLibrary() {
         guard let currentLibrary = libraryManager.currentLibrary else { return }
 
@@ -256,21 +248,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self.statusMenuController.updateStatusBarIcon()
         }
     }
-    
+
     @objc func renameCurrentLibrary() {
         guard let currentLibrary = libraryManager.currentLibrary else { return }
-        
+
         let alert = NSAlert()
         alert.messageText = NSLocalizedString("Rename Library", comment: "Alert title when renaming a music library")
         alert.informativeText = NSLocalizedString("Please enter a new name for the library:", comment: "Alert description when renaming a music library")
         alert.alertStyle = .informational
         alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button title for confirming rename"))
         alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Button title for cancelling rename"))
-        
+
         let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 250, height: 24))
         textField.stringValue = currentLibrary.name
         alert.accessoryView = textField
-        
+
         if alert.runModal() == .alertFirstButtonReturn {
             let newName = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
             if !newName.isEmpty {
@@ -280,7 +272,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
     }
-    
+
     @objc func showConfigWindow() {
         if let existingWindow = self.configWindow {
             existingWindow.makeKeyAndOrderFront(nil)
@@ -326,13 +318,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         songPickerWindow.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
-    
+
     private func showSongPickerIfPreferred() {
         guard configManager.showSongPickerOnLaunch else { return }
         showSongPickerWindow()
     }
-    
-    
+
+
 }
 
 extension AppDelegate: NSWindowDelegate {

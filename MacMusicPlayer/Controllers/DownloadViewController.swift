@@ -1,14 +1,7 @@
-//
-//  DownloadViewController.swift
-//  MacMusicPlayer
-//
-//  Created by X on 2024/09/18.
-//
 import Cocoa
 import AppKit
 
 class DownloadViewController: NSViewController {
-    // MARK: - UI Components
     private let urlTextField = NSTextField()
     private let detectButton = NSButton()
     private let statusLabel = NSTextField()
@@ -20,12 +13,10 @@ class DownloadViewController: NSViewController {
     private let tableBackgroundView = NSVisualEffectView()
     private let libraryPopup = NSPopUpButton()
     private let libraryLabel = NSTextField()
-    
-    // Pagination buttons
+
     private let nextPageButton = NSButton()
     private let downloadAllButton = NSButton()
-    
-    // MARK: - Properties
+
     private var formats: [DownloadManager.DownloadFormat] = []
     private var ytDlpVersion: String = ""
     private var ffmpegVersion: String = ""
@@ -41,63 +32,53 @@ class DownloadViewController: NSViewController {
         var ffmpegVersion: String
     }
     private var libraryManager: LibraryManager!
-    
-    // Playlist-related properties
+
     private var currentPlaylist: DownloadManager.PlaylistInfo?
     private var isPlaylistMode: Bool = false
     private var isDownloading: Bool = false
     private var downloadTask: Task<Void, Never>?
     private weak var activeDownloadButton: NSButton?
-    
-    // Search-related properties
+
     private var searchResults: [YTSearchManager.SearchResult.VideoItem] = []
     private var isSearchMode: Bool = false
     private var currentNextPageToken: String? = nil
-    private var lastSearchKeyword: String = ""  // Save last search keyword
+    private var lastSearchKeyword: String = ""
     private let ytSearchManager = YTSearchManager.shared
     private let configManager = ConfigManager.shared
-    
-    // UI-related constraints
+
     private var nextPageButtonLeadingConstraint: NSLayoutConstraint?
-    
-    // Track which video row is expanded
+
     private var expandedVideoRow: Int? = nil
     private var formatOptions: [FormatOption] = []
-    
-    // Format option structure
+
     struct FormatOption {
         let title: String
         let formatId: String
         let videoItem: YTSearchManager.SearchResult.VideoItem
     }
-    
-    // MARK: - Lifecycle
+
     override func loadView() {
-        // Set an appropriate initial size, consistent with the compact height used later
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 600, height: 140))
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Use shared LibraryManager instance
+
         if let appDelegate = NSApp.delegate as? AppDelegate {
             libraryManager = appDelegate.libraryManager
         } else {
             libraryManager = LibraryManager()
         }
-        
+
         setupUI()
-        
-        // Add text field change event listener
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(textFieldDidChange(_:)),
             name: NSControl.textDidChangeNotification,
             object: urlTextField
         )
-        
-        // Add configuration update notification listener
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleConfigUpdated),
@@ -105,33 +86,30 @@ class DownloadViewController: NSViewController {
             object: nil
         )
     }
-    
+
     override func viewDidAppear() {
         super.viewDidAppear()
-        
-        // Ensure window becomes the focus window
+
         if let window = view.window {
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
-            
-            // Set focus to URL input field
+
             self.view.window?.makeFirstResponder(urlTextField)
         }
-        
+
         updateLibraryPopup()
         scheduleDependencyCheckIfNeeded()
     }
-    
-    // MARK: - UI Setup
+
     private func setupUI() {
         view.wantsLayer = true
-        
+
         if let window = view.window {
             window.title = NSLocalizedString("Download Music", comment: "")
             window.titleVisibility = .visible
             window.titlebarAppearsTransparent = false
         }
-        
+
         setupLibrarySelector()
         setupURLField()
         setupDetectButton()
@@ -143,7 +121,7 @@ class DownloadViewController: NSViewController {
         setupNextPageButton()
         setupDownloadAllButton()
     }
-    
+
     private func setupURLField() {
         urlTextField.translatesAutoresizingMaskIntoConstraints = false
         urlTextField.placeholderString = NSLocalizedString("Enter video URL or search keyword", comment: "")
@@ -153,7 +131,7 @@ class DownloadViewController: NSViewController {
         urlTextField.target = self
         urlTextField.action = #selector(detectOrSearch)
         view.addSubview(urlTextField)
-        
+
         NSLayoutConstraint.activate([
             urlTextField.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
             urlTextField.leadingAnchor.constraint(equalTo: libraryPopup.trailingAnchor, constant: 8),
@@ -161,25 +139,25 @@ class DownloadViewController: NSViewController {
             urlTextField.heightAnchor.constraint(equalToConstant: 28)
         ])
     }
-    
+
     private func setupDetectButton() {
         detectButton.translatesAutoresizingMaskIntoConstraints = false
-        detectButton.title = NSLocalizedString("Search", comment: "") // default is "Search"
+        detectButton.title = NSLocalizedString("Search", comment: "")
         detectButton.bezelStyle = .rounded
         detectButton.target = self
         detectButton.action = #selector(detectOrSearch)
         detectButton.font = NSFont.systemFont(ofSize: 13, weight: .medium)
         detectButton.contentTintColor = .white
         detectButton.wantsLayer = true
-        
+
         if #available(macOS 11.0, *) {
             detectButton.bezelColor = NSColor.controlAccentColor
         } else {
             detectButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
         }
-        
+
         view.addSubview(detectButton)
-        
+
         NSLayoutConstraint.activate([
             detectButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
             detectButton.leadingAnchor.constraint(equalTo: urlTextField.trailingAnchor, constant: 8),
@@ -187,7 +165,7 @@ class DownloadViewController: NSViewController {
             detectButton.heightAnchor.constraint(equalToConstant: 28)
         ])
     }
-    
+
     private func setupNextPageButton() {
         nextPageButton.translatesAutoresizingMaskIntoConstraints = false
         nextPageButton.title = NSLocalizedString("View more", comment: "")
@@ -197,9 +175,8 @@ class DownloadViewController: NSViewController {
         nextPageButton.action = #selector(loadNextPage)
         nextPageButton.font = NSFont.systemFont(ofSize: 12)
         nextPageButton.contentTintColor = NSColor.linkColor
-        nextPageButton.isHidden = true // Hide initially
-        
-        // Add mouse hover effect
+        nextPageButton.isHidden = true
+
         let trackingArea = NSTrackingArea(
             rect: NSRect.zero,
             options: [.inVisibleRect, .activeAlways, .mouseEnteredAndExited],
@@ -207,19 +184,18 @@ class DownloadViewController: NSViewController {
             userInfo: ["button": "nextPage"]
         )
         nextPageButton.addTrackingArea(trackingArea)
-        
+
         view.addSubview(nextPageButton)
-        
-        // Right-align, no longer using position relative to statusLabel
+
         nextPageButtonLeadingConstraint = nil
-        
+
         NSLayoutConstraint.activate([
             nextPageButton.centerYAnchor.constraint(equalTo: statusLabel.centerYAnchor),
             nextPageButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             nextPageButton.heightAnchor.constraint(equalToConstant: 16)
         ])
     }
-    
+
     private func setupDownloadAllButton() {
         downloadAllButton.translatesAutoresizingMaskIntoConstraints = false
         downloadAllButton.title = NSLocalizedString("Download All", comment: "")
@@ -228,16 +204,16 @@ class DownloadViewController: NSViewController {
         downloadAllButton.target = self
         downloadAllButton.action = #selector(downloadAllButtonTapped)
         downloadAllButton.contentTintColor = NSColor.white
-        downloadAllButton.isHidden = true // Hide initially
-        
+        downloadAllButton.isHidden = true
+
         if #available(macOS 11.0, *) {
             downloadAllButton.bezelColor = NSColor.controlAccentColor
         } else {
             downloadAllButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
         }
-        
+
         view.addSubview(downloadAllButton)
-        
+
         NSLayoutConstraint.activate([
             downloadAllButton.centerYAnchor.constraint(equalTo: statusLabel.centerYAnchor),
             downloadAllButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
@@ -245,7 +221,7 @@ class DownloadViewController: NSViewController {
             downloadAllButton.widthAnchor.constraint(equalToConstant: 100)
         ])
     }
-    
+
     private func setupLibrarySelector() {
         libraryLabel.translatesAutoresizingMaskIntoConstraints = false
         libraryLabel.isEditable = false
@@ -257,47 +233,47 @@ class DownloadViewController: NSViewController {
         libraryLabel.stringValue = ""
         libraryLabel.isHidden = true
         view.addSubview(libraryLabel)
-        
+
         libraryPopup.translatesAutoresizingMaskIntoConstraints = false
         libraryPopup.target = self
         libraryPopup.action = #selector(handleLibrarySelection(_:))
         view.addSubview(libraryPopup)
-        
+
         NSLayoutConstraint.activate([
             libraryLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
             libraryLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             libraryLabel.heightAnchor.constraint(equalToConstant: 28),
-            
+
             libraryPopup.centerYAnchor.constraint(equalTo: libraryLabel.centerYAnchor),
             libraryPopup.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             libraryPopup.widthAnchor.constraint(equalToConstant: 120),
             libraryPopup.heightAnchor.constraint(equalToConstant: 28)
         ])
-        
+
         updateLibraryPopup()
     }
-    
+
     private func updateLibraryPopup() {
         libraryPopup.removeAllItems()
-        
+
         for library in libraryManager.libraries {
             libraryPopup.addItem(withTitle: library.name)
         }
-        
+
         if let currentLibrary = libraryManager.currentLibrary,
            let index = libraryManager.libraries.firstIndex(where: { $0.id == currentLibrary.id }) {
             libraryPopup.selectItem(at: index)
         }
     }
-    
+
     @objc private func handleLibrarySelection(_ sender: NSPopUpButton) {
         let selectedIndex = sender.indexOfSelectedItem
         guard selectedIndex >= 0 && selectedIndex < libraryManager.libraries.count else { return }
-        
+
         let selectedLibrary = libraryManager.libraries[selectedIndex]
         libraryManager.switchLibrary(id: selectedLibrary.id)
     }
-    
+
     private func setupStatusLabel() {
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
         statusLabel.isEditable = false
@@ -308,7 +284,7 @@ class DownloadViewController: NSViewController {
         statusLabel.textColor = NSColor.secondaryLabelColor
         statusLabel.stringValue = ""
         view.addSubview(statusLabel)
-        
+
         NSLayoutConstraint.activate([
             statusLabel.topAnchor.constraint(equalTo: urlTextField.bottomAnchor, constant: 12),
             statusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -316,7 +292,7 @@ class DownloadViewController: NSViewController {
             statusLabel.heightAnchor.constraint(equalToConstant: 16)
         ])
     }
-    
+
     private func setupProgressIndicator() {
         progressIndicator.translatesAutoresizingMaskIntoConstraints = false
         progressIndicator.style = .spinning
@@ -324,7 +300,7 @@ class DownloadViewController: NSViewController {
         progressIndicator.isIndeterminate = true
         progressIndicator.isHidden = true
         view.addSubview(progressIndicator)
-        
+
         NSLayoutConstraint.activate([
             progressIndicator.centerYAnchor.constraint(equalTo: statusLabel.centerYAnchor),
             progressIndicator.trailingAnchor.constraint(equalTo: statusLabel.trailingAnchor),
@@ -332,7 +308,7 @@ class DownloadViewController: NSViewController {
             progressIndicator.heightAnchor.constraint(equalToConstant: 16)
         ])
     }
-    
+
     private func setupTableView() {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.hasVerticalScroller = true
@@ -340,8 +316,7 @@ class DownloadViewController: NSViewController {
         scrollView.autohidesScrollers = true
         scrollView.borderType = .noBorder
         scrollView.drawsBackground = false
-        
-        // Use translucent material background
+
         tableBackgroundView.translatesAutoresizingMaskIntoConstraints = false
         tableBackgroundView.material = .popover
         tableBackgroundView.state = .active
@@ -350,21 +325,21 @@ class DownloadViewController: NSViewController {
         tableBackgroundView.layer?.masksToBounds = true
         view.addSubview(tableBackgroundView)
         view.addSubview(scrollView)
-        
+
         NSLayoutConstraint.activate([
             tableBackgroundView.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 12),
             tableBackgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             tableBackgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             tableBackgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -50)
         ])
-        
+
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: tableBackgroundView.topAnchor, constant: 0),
             scrollView.leadingAnchor.constraint(equalTo: tableBackgroundView.leadingAnchor, constant: 0),
             scrollView.trailingAnchor.constraint(equalTo: tableBackgroundView.trailingAnchor, constant: 0),
             scrollView.bottomAnchor.constraint(equalTo: tableBackgroundView.bottomAnchor, constant: 0)
         ])
-        
+
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.headerView = nil
         tableView.allowsMultipleSelection = false
@@ -374,20 +349,19 @@ class DownloadViewController: NSViewController {
         tableView.selectionHighlightStyle = .none
         tableView.backgroundColor = .clear
         tableView.enclosingScrollView?.drawsBackground = false
-        tableView.gridStyleMask = [] 
+        tableView.gridStyleMask = []
         tableView.usesAlternatingRowBackgroundColors = false
-        
+
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("FormatColumn"))
         column.width = scrollView.frame.width - 20
         tableView.addTableColumn(column)
-        
+
         scrollView.documentView = tableView
-        
-        // Hide background view and table in initial state
+
         tableBackgroundView.isHidden = true
         scrollView.isHidden = true
     }
-    
+
     private func setupVersionInfo() {
         versionInfoLabel.translatesAutoresizingMaskIntoConstraints = false
         versionInfoLabel.isEditable = false
@@ -397,14 +371,14 @@ class DownloadViewController: NSViewController {
         versionInfoLabel.font = NSFont.systemFont(ofSize: 10)
         versionInfoLabel.textColor = NSColor.tertiaryLabelColor
         view.addSubview(versionInfoLabel)
-        
+
         NSLayoutConstraint.activate([
             versionInfoLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             versionInfoLabel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
             versionInfoLabel.heightAnchor.constraint(equalToConstant: 16)
         ])
     }
-    
+
     private func setupGithubLink() {
         githubLinkButton.translatesAutoresizingMaskIntoConstraints = false
         githubLinkButton.title = "GitHub"
@@ -414,7 +388,7 @@ class DownloadViewController: NSViewController {
         githubLinkButton.action = #selector(openGithub)
         githubLinkButton.font = NSFont.systemFont(ofSize: 10)
         githubLinkButton.contentTintColor = NSColor.linkColor
-        
+
         let trackingArea = NSTrackingArea(
             rect: NSRect.zero,
             options: [.inVisibleRect, .activeAlways, .mouseEnteredAndExited],
@@ -422,36 +396,35 @@ class DownloadViewController: NSViewController {
             userInfo: ["button": "github"]
         )
         githubLinkButton.addTrackingArea(trackingArea)
-        
+
         view.addSubview(githubLinkButton)
-        
+
         NSLayoutConstraint.activate([
             githubLinkButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             githubLinkButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
             githubLinkButton.heightAnchor.constraint(equalToConstant: 16)
         ])
     }
-    
-    // MARK: - Mouse Tracking for GitHub Link
+
     override func mouseEntered(with event: NSEvent) {
         super.mouseEntered(with: event)
         if let userInfo = event.trackingArea?.userInfo as? [String: String] {
             if userInfo["button"] == "github" {
                 let attributedString = NSMutableAttributedString(string: githubLinkButton.title)
-                attributedString.addAttribute(.underlineStyle, 
-                                             value: NSUnderlineStyle.single.rawValue, 
+                attributedString.addAttribute(.underlineStyle,
+                                             value: NSUnderlineStyle.single.rawValue,
                                              range: NSRange(location: 0, length: attributedString.length))
                 githubLinkButton.attributedTitle = attributedString
             } else if userInfo["button"] == "nextPage" {
                 let attributedString = NSMutableAttributedString(string: nextPageButton.title)
-                attributedString.addAttribute(.underlineStyle, 
-                                             value: NSUnderlineStyle.single.rawValue, 
+                attributedString.addAttribute(.underlineStyle,
+                                             value: NSUnderlineStyle.single.rawValue,
                                              range: NSRange(location: 0, length: attributedString.length))
                 nextPageButton.attributedTitle = attributedString
             }
         }
     }
-    
+
     override func mouseExited(with event: NSEvent) {
         super.mouseExited(with: event)
         if let userInfo = event.trackingArea?.userInfo as? [String: String] {
@@ -462,8 +435,7 @@ class DownloadViewController: NSViewController {
             }
         }
     }
-    
-    // MARK: - Dependencies Check
+
     private func scheduleDependencyCheckIfNeeded() {
         guard !hasScheduledDependencyCheck else { return }
         hasScheduledDependencyCheck = true
@@ -476,7 +448,6 @@ class DownloadViewController: NSViewController {
     private func checkDependencies() {
         var status = DependencyStatus(ytInstalled: false, ytVersion: "", ffmpegInstalled: false, ffmpegVersion: "")
 
-        // Shell script direct detection tool
         let script = """
         #!/bin/bash
         export PATH=$PATH:/usr/local/bin:/opt/homebrew/bin:/opt/local/bin:/usr/bin
@@ -488,7 +459,7 @@ class DownloadViewController: NSViewController {
         else
             echo "YT_DLP_INSTALLED=false"
         fi
-        
+
         # Check ffmpeg
         if command -v ffmpeg &> /dev/null; then
             echo "FFMPEG_INSTALLED=true"
@@ -498,11 +469,11 @@ class DownloadViewController: NSViewController {
             echo "FFMPEG_INSTALLED=false"
         fi
         """
-        
+
         let task = Process()
         task.launchPath = "/bin/bash"
         task.arguments = ["-c", script]
-        
+
         let pipe = Pipe()
         task.standardOutput = pipe
 
@@ -578,14 +549,13 @@ class DownloadViewController: NSViewController {
             if task.terminationStatus == 0 {
                 installed = true
 
-                // Get version
                 let versionTask = Process()
                 versionTask.launchPath = "/usr/bin/env"
                 versionTask.arguments = ["yt-dlp", "--version"]
-                
+
                 let versionPipe = Pipe()
                 versionTask.standardOutput = versionPipe
-                
+
                 try versionTask.run()
                 versionTask.waitUntilExit()
 
@@ -631,7 +601,7 @@ class DownloadViewController: NSViewController {
 
                 let versionPipe = Pipe()
                 versionTask.standardOutput = versionPipe
-                
+
                 try versionTask.run()
                 versionTask.waitUntilExit()
 
@@ -657,27 +627,26 @@ class DownloadViewController: NSViewController {
 
         return (installed, versionResult)
     }
-    
+
     private func updateVersionInfo() {
         var infoText = ""
-        
+
         if isYtDlpInstalled {
             infoText += "yt-dlp: v\(ytDlpVersion)"
         } else {
             infoText += "yt-dlp: " + NSLocalizedString("Not installed", comment: "")
         }
-        
+
         infoText += " | "
-        
+
         if isFfmpegInstalled {
             infoText += "ffmpeg: v\(ffmpegVersion)"
         } else {
             infoText += "ffmpeg: " + NSLocalizedString("Not installed", comment: "")
         }
-        
+
         versionInfoLabel.stringValue = infoText
-        
-        // If dependencies are missing, show a prompt
+
         if !isYtDlpInstalled || !isFfmpegInstalled {
             statusLabel.stringValue = NSLocalizedString("Please install missing dependencies", comment: "")
             statusLabel.textColor = NSColor.systemRed
@@ -685,20 +654,17 @@ class DownloadViewController: NSViewController {
             statusLabel.stringValue = ""
         }
     }
-    
-    // MARK: - Input Field Change
+
     @objc private func textFieldDidChange(_ notification: Notification) {
         if let textField = notification.object as? NSTextField, textField == urlTextField {
             updateButtonBasedOnInput()
         }
     }
-    
+
     private func updateButtonBasedOnInput() {
         let text = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // Check URL type
+
         if text.hasPrefix("http://") || text.hasPrefix("https://") {
-            // Check if it's a playlist URL
             if DownloadManager.shared.isPlaylistURL(text) {
                 detectButton.title = NSLocalizedString("Load Playlist", comment: "")
                 isSearchMode = false
@@ -714,26 +680,23 @@ class DownloadViewController: NSViewController {
             isPlaylistMode = false
         }
     }
-    
-    // MARK: - Config Updated
+
     @objc private func handleConfigUpdated() {
-        // When configuration is updated, can do something here, e.g., clear previous search results
         searchResults = []
         if isSearchMode {
             tableView.reloadData()
         }
     }
-    
-    // MARK: - Actions
+
     @objc private func detectOrSearch() {
         let input = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
         if input.isEmpty {
             statusLabel.stringValue = NSLocalizedString("Please enter a URL or search keyword", comment: "")
             statusLabel.textColor = NSColor.systemRed
             return
         }
-        
+
         if isSearchMode {
             performSearch(keyword: input)
         } else if isPlaylistMode {
@@ -742,54 +705,47 @@ class DownloadViewController: NSViewController {
             detectFormats()
         }
     }
-    
+
     private func performSearch(keyword: String, pageToken: String? = nil) {
-        // Validate configuration
         if !configManager.isConfigValid {
             showConfigRequiredPrompt()
             return
         }
-        
-        // Update last search keyword
+
         lastSearchKeyword = keyword
-        
-        // UI preparation before starting search
+
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.3
             progressIndicator.isHidden = false
             progressIndicator.startAnimation(nil)
-            statusLabel.stringValue = pageToken == nil ? 
-                NSLocalizedString("Searching...", comment: "") : 
+            statusLabel.stringValue = pageToken == nil ?
+                NSLocalizedString("Searching...", comment: "") :
                 NSLocalizedString("Load more results...", comment: "")
             statusLabel.textColor = NSColor.secondaryLabelColor
         })
-        
-        // If it's a new search (no pageToken), clear old results and previous pageToken
+
         if pageToken == nil {
             searchResults = []
-            currentNextPageToken = nil  // Reset token
-            nextPageButton.isHidden = true  // Hide next page button until more results are confirmed
-            downloadAllButton.isHidden = true  // Hide download all button
+            currentNextPageToken = nil
+            nextPageButton.isHidden = true
+            downloadAllButton.isHidden = true
             tableView.reloadData()
         }
-        
-        // Execute search
+
         ytSearchManager.search(keyword: keyword, pageToken: pageToken) { [weak self] result in
             guard let self = self else { return }
-            
+
             DispatchQueue.main.async {
                 self.hideProgressIndicator()
-                
+
                 switch result {
                 case .success(let searchResult):
-                    // Save or append search results
                     if pageToken == nil {
                         self.searchResults = searchResult.items
                     } else {
                         self.searchResults.append(contentsOf: searchResult.items)
                     }
-                    
-                    // Save nextPageToken for next page loading, ensure empty string is treated as nil
+
                     let hasNextPage: Bool
                     if let token = searchResult.nextPageToken, !token.isEmpty {
                         self.currentNextPageToken = token
@@ -798,25 +754,20 @@ class DownloadViewController: NSViewController {
                         self.currentNextPageToken = nil
                         hasNextPage = false
                     }
-                    
-                    // Update UI
+
                     if !self.searchResults.isEmpty {
                         self.tableBackgroundView.isHidden = false
                         self.scrollView.isHidden = false
                         self.updateSearchStatus(totalResults: searchResult.totalResults, hasNextPage: hasNextPage)
-                        
-                        // Update nextPageToken and pagination button - explicitly check if there's a next page
+
                         self.nextPageButton.isHidden = !hasNextPage
-                        
-                        // Adjust nextPageButton position based on whether there's a next page
+
                         if hasNextPage {
-                            // Dynamically adjust nextPageButton position, place it after text
                             let textWidth = self.statusLabel.attributedStringValue.size().width
                             self.nextPageButtonLeadingConstraint?.constant = textWidth + 10
                             self.view.layoutSubtreeIfNeeded()
                         }
-                        
-                        // Adjust window size
+
                         if let window = self.view.window {
                             let expandedHeight: CGFloat = min(540, 140 + CGFloat(min(8, self.searchResults.count)) * 40 + 60)
                             let newFrame = NSRect(
@@ -831,14 +782,13 @@ class DownloadViewController: NSViewController {
                         self.statusLabel.stringValue = NSLocalizedString("No results found", comment: "")
                         self.statusLabel.textColor = NSColor.secondaryLabelColor
                     }
-                    
+
                     self.tableView.reloadData()
-                    
+
                 case .failure(let error):
                     self.statusLabel.stringValue = String(format: NSLocalizedString("Search Error: %@", comment: ""), error.localizedDescription)
                     self.statusLabel.textColor = NSColor.systemRed
-                    
-                    // Provide more detailed error information and suggestions
+
                     if let nsError = error as NSError? {
                         if nsError.domain == "YTSearchManager" && nsError.code == 1001 {
                             self.statusLabel.stringValue = NSLocalizedString("Search error: API configuration not completed, please set API URL and API Key", comment: "")
@@ -850,23 +800,21 @@ class DownloadViewController: NSViewController {
                             self.statusLabel.stringValue = NSLocalizedString("Search error: Server error, please try again later", comment: "")
                         }
                     }
-                    
-                    // Add copy error button
+
                     let copyButton = NSButton(frame: NSRect(x: 0, y: 0, width: 80, height: 20))
                     copyButton.title = NSLocalizedString("Copy error", comment: "")
                     copyButton.bezelStyle = .inline
                     copyButton.target = self
                     copyButton.action = #selector(self.copyErrorMessage)
-                    copyButton.tag = 100 // For identification
-                    
-                    // Remove existing copy button
+                    copyButton.tag = 100
+
                     for subview in self.view.subviews {
                         if let button = subview as? NSButton, button.tag == 100 {
                             button.removeFromSuperview()
                             break
                         }
                     }
-                    
+
                     self.view.addSubview(copyButton)
                     copyButton.translatesAutoresizingMaskIntoConstraints = false
                     NSLayoutConstraint.activate([
@@ -878,63 +826,55 @@ class DownloadViewController: NSViewController {
             }
         }
     }
-    
+
     @objc private func loadNextPage() {
-        // Check if there's a next page token
         guard let token = currentNextPageToken, !token.isEmpty else {
-            // If no next page, hide button
             nextPageButton.isHidden = true
             return
         }
-        
-        // Save current scroll position
+
         let scrollPosition = tableView.enclosingScrollView?.contentView.bounds.origin.y ?? 0
-        
-        // Use previous search keyword and current token to load next page
+
         performSearch(keyword: lastSearchKeyword, pageToken: token)
-        
-        // Restore scroll position after loading completes (needs to be executed on main thread)
+
         DispatchQueue.main.async { [weak self] in
             self?.tableView.enclosingScrollView?.contentView.scroll(to: NSPoint(x: 0, y: scrollPosition))
         }
     }
-    
+
     @objc private func copyErrorMessage() {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(statusLabel.stringValue, forType: .string)
-        
-        // Show temporary success message
+
         let originalText = statusLabel.stringValue
         statusLabel.stringValue = NSLocalizedString("Copied to clipboard", comment: "")
         statusLabel.textColor = NSColor.systemGreen
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
             self?.statusLabel.stringValue = originalText
             self?.statusLabel.textColor = NSColor.systemRed
         }
     }
-    
+
     private func showConfigRequiredPrompt() {
         statusLabel.stringValue = NSLocalizedString("Please configure the search service API (API URL and API Key)", comment: "")
         statusLabel.textColor = NSColor.systemRed
-        
-        // Add go to settings button
+
         let goToConfigButton = NSButton(frame: NSRect(x: 0, y: 0, width: 80, height: 20))
         goToConfigButton.title = NSLocalizedString("Go to settings", comment: "")
         goToConfigButton.bezelStyle = .inline
         goToConfigButton.target = self
         goToConfigButton.action = #selector(openConfigWindow)
-        goToConfigButton.tag = 101 // For identification
-        
-        // Remove existing button
+        goToConfigButton.tag = 101
+
         for subview in self.view.subviews {
             if let button = subview as? NSButton, button.tag == 101 {
                 button.removeFromSuperview()
                 break
             }
         }
-        
+
         view.addSubview(goToConfigButton)
         goToConfigButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -943,23 +883,22 @@ class DownloadViewController: NSViewController {
             goToConfigButton.heightAnchor.constraint(equalToConstant: 20)
         ])
     }
-    
+
     @objc private func openConfigWindow() {
         if let appDelegate = NSApp.delegate as? AppDelegate {
             appDelegate.showConfigWindow()
         }
     }
-    
+
     private func loadPlaylist() {
         let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
         if urlString.isEmpty {
             statusLabel.stringValue = NSLocalizedString("Please enter a valid playlist URL", comment: "")
             statusLabel.textColor = NSColor.systemRed
             return
         }
-        
-        // Start loading state
+
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.3
             progressIndicator.isHidden = false
@@ -967,16 +906,14 @@ class DownloadViewController: NSViewController {
             statusLabel.stringValue = NSLocalizedString("Loading playlist information...", comment: "")
             statusLabel.textColor = NSColor.secondaryLabelColor
         })
-        
-        // Clear previous data
+
         formats = []
         searchResults = []
         currentPlaylist = nil
         tableView.reloadData()
         nextPageButton.isHidden = true
         downloadAllButton.isHidden = true
-        
-        // Execute playlist loading
+
         Task {
             do {
                 if !self.isYtDlpInstalled {
@@ -987,7 +924,7 @@ class DownloadViewController: NSViewController {
                     }
                     return
                 }
-                
+
                 if !self.isFfmpegInstalled {
                     DispatchQueue.main.async {
                         self.hideProgressIndicator()
@@ -996,32 +933,30 @@ class DownloadViewController: NSViewController {
                     }
                     return
                 }
-                
+
                 let playlistInfo = try await DownloadManager.shared.fetchPlaylistInfo(from: urlString)
-                
+
                 DispatchQueue.main.async {
                     self.currentPlaylist = playlistInfo
                     self.hideProgressIndicator()
-                    
+
                     if !playlistInfo.items.isEmpty {
                         NSAnimationContext.runAnimationGroup({ context in
                             context.duration = 0.3
                             self.tableBackgroundView.isHidden = false
                             self.scrollView.isHidden = false
                             self.downloadAllButton.isHidden = false
-                            
-                            // Limit status text length to avoid covering button
+
                             let maxLength = 40
-                            let truncatedTitle = playlistInfo.title.count > maxLength ? 
-                                String(playlistInfo.title.prefix(maxLength)) + "..." : 
+                            let truncatedTitle = playlistInfo.title.count > maxLength ?
+                                String(playlistInfo.title.prefix(maxLength)) + "..." :
                                 playlistInfo.title
-                            
+
                             self.statusLabel.stringValue = String(format: NSLocalizedString("Playlist: %@ (%d items)", comment: ""), truncatedTitle, playlistInfo.videoCount)
                             self.statusLabel.textColor = NSColor.secondaryLabelColor
                         }, completionHandler: {
                             self.tableView.reloadData()
-                            
-                            // Adjust window size
+
                             if let window = self.view.window {
                                 let expandedHeight: CGFloat = min(540, 140 + CGFloat(min(8, playlistInfo.items.count)) * 40 + 60)
                                 let newFrame = NSRect(
@@ -1047,36 +982,31 @@ class DownloadViewController: NSViewController {
             }
         }
     }
-    
+
     @objc private func detectFormats() {
         let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
         if urlString.isEmpty {
             statusLabel.stringValue = NSLocalizedString("Please enter a valid URL", comment: "")
             statusLabel.textColor = NSColor.systemRed
             return
         }
-        
-        // Add smooth UI state transition
+
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.3
-            // Show progress indicator
             progressIndicator.isHidden = false
             progressIndicator.startAnimation(nil)
-            
-            // Update status label
+
             statusLabel.stringValue = NSLocalizedString("Detecting available formats...", comment: "")
             statusLabel.textColor = NSColor.secondaryLabelColor
         })
-        
+
         formats = []
         tableView.reloadData()
-        
-        // Hide buttons in detect mode
+
         nextPageButton.isHidden = true
         downloadAllButton.isHidden = true
-        
-        // Use Task to execute asynchronous operations
+
         Task {
             do {
                 if !self.isYtDlpInstalled {
@@ -1087,7 +1017,7 @@ class DownloadViewController: NSViewController {
                     }
                     return
                 }
-                
+
                 if !self.isFfmpegInstalled {
                     DispatchQueue.main.async {
                         self.hideProgressIndicator()
@@ -1096,35 +1026,35 @@ class DownloadViewController: NSViewController {
                     }
                     return
                 }
-                
+
                 let newFormats = try await DownloadManager.shared.fetchAvailableFormats(from: urlString)
-                
+
                 DispatchQueue.main.async {
                     self.formats = newFormats
-                    
+
                     if !self.formats.isEmpty {
                         NSAnimationContext.runAnimationGroup({ context in
                             context.duration = 0.3
                             self.hideProgressIndicator()
-                            
+
                             self.tableBackgroundView.isHidden = false
                             self.scrollView.isHidden = false
-                            
+
                             self.statusLabel.stringValue = String(format: NSLocalizedString("Found %d available formats", comment: ""), self.formats.count)
                             self.statusLabel.textColor = NSColor.secondaryLabelColor
                         }, completionHandler: {
                             self.tableView.reloadData()
-                            
+
                             if let window = self.view.window {
                                 let expandedHeight: CGFloat = min(540, 140 + CGFloat(min(8, self.formats.count)) * 40 + 60)
-                                
+
                                 let newFrame = NSRect(
                                     x: window.frame.origin.x,
                                     y: window.frame.origin.y + window.frame.height - expandedHeight,
                                     width: window.frame.width,
                                     height: expandedHeight
                                 )
-                                
+
                                 window.animator().setFrame(newFrame, display: true)
                             }
                         })
@@ -1143,22 +1073,20 @@ class DownloadViewController: NSViewController {
             }
         }
     }
-    
+
     private func hideProgressIndicator() {
         progressIndicator.isHidden = true
         progressIndicator.stopAnimation(nil)
     }
-    
-    // Status display when search completes
+
     private func updateSearchStatus(totalResults: Int, hasNextPage: Bool) {
         let statusText = String(format: NSLocalizedString("Found %d results", comment: ""), totalResults)
         statusLabel.stringValue = statusText
         statusLabel.textColor = NSColor.secondaryLabelColor
-        
-        // Control next page button visibility
+
         nextPageButton.isHidden = !hasNextPage
     }
-    
+
     @objc private func downloadAudio(sender: NSButton) {
         if isDownloading {
             sender.title = NSLocalizedString("Download", comment: "")
@@ -1245,7 +1173,7 @@ class DownloadViewController: NSViewController {
             }
         }
     }
-    
+
     private func showAlert(message: String) {
         let alert = NSAlert()
         alert.messageText = NSLocalizedString("Information", comment: "")
@@ -1254,7 +1182,7 @@ class DownloadViewController: NSViewController {
         alert.addButton(withTitle: NSLocalizedString("OK", comment: ""))
         alert.beginSheetModal(for: view.window!) { _ in }
     }
-    
+
     @objc private func openGithub() {
         if let url = URL(string: "https://github.com/samzong/macmusicplayer") {
             NSWorkspace.shared.open(url)
@@ -1262,11 +1190,9 @@ class DownloadViewController: NSViewController {
     }
 }
 
-// MARK: - NSTableViewDataSource & NSTableViewDelegate
 extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
     func numberOfRows(in tableView: NSTableView) -> Int {
         if isSearchMode {
-            // If there's an expanded row, add format option count
             if let expandedRow = expandedVideoRow, expandedRow < searchResults.count {
                 return searchResults.count + formatOptions.count
             }
@@ -1277,15 +1203,13 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             return formats.count
         }
     }
-    
+
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         if isSearchMode {
-            // Check if it's a format option row
             if let expandedRow = expandedVideoRow, row > expandedRow && row <= expandedRow + formatOptions.count {
                 return getFormatOptionCellView(for: row - expandedRow - 1)
             }
-            
-            // Normal search result row
+
             let actualRow = row > expandedVideoRow ?? -1 ? row - formatOptions.count : row
             return getSearchResultCellView(for: actualRow)
         } else if isPlaylistMode {
@@ -1294,36 +1218,34 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             return getFormatCellView(for: row)
         }
     }
-    
+
     private func getSearchResultCellView(for row: Int) -> NSView? {
         let video = searchResults[row]
-        
+
         let cellIdentifier = NSUserInterfaceItemIdentifier("SearchCell")
         var cell = tableView.makeView(withIdentifier: cellIdentifier, owner: self) as? NSTableCellView
-        
+
         if cell == nil {
             cell = NSTableCellView()
             cell?.identifier = cellIdentifier
-            
+
             let containerView = NSView()
             containerView.translatesAutoresizingMaskIntoConstraints = false
             cell?.addSubview(containerView)
-            
+
             NSLayoutConstraint.activate([
                 containerView.leadingAnchor.constraint(equalTo: cell!.leadingAnchor, constant: 5),
                 containerView.trailingAnchor.constraint(equalTo: cell!.trailingAnchor, constant: -5),
                 containerView.topAnchor.constraint(equalTo: cell!.topAnchor),
                 containerView.bottomAnchor.constraint(equalTo: cell!.bottomAnchor)
             ])
-            
-            // Thumbnail
+
             let thumbnailView = NSImageView()
             thumbnailView.identifier = NSUserInterfaceItemIdentifier("ThumbnailView")
             thumbnailView.translatesAutoresizingMaskIntoConstraints = false
             thumbnailView.imageScaling = .scaleProportionallyUpOrDown
             containerView.addSubview(thumbnailView)
-            
-            // Title text
+
             let titleField = NSTextField()
             titleField.identifier = NSUserInterfaceItemIdentifier("TitleField")
             titleField.translatesAutoresizingMaskIntoConstraints = false
@@ -1334,8 +1256,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             titleField.font = NSFont.systemFont(ofSize: 12)
             titleField.lineBreakMode = .byTruncatingTail
             containerView.addSubview(titleField)
-            
-            // Detail button
+
             let detailButton = NSButton()
             detailButton.identifier = NSUserInterfaceItemIdentifier("DetailButton")
             detailButton.translatesAutoresizingMaskIntoConstraints = false
@@ -1345,8 +1266,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             detailButton.target = self
             detailButton.action = #selector(openVideoDetail(sender:))
             containerView.addSubview(detailButton)
-            
-            // Detect button
+
             let detectButton = NSButton()
             detectButton.identifier = NSUserInterfaceItemIdentifier("VideoDetectButton")
             detectButton.translatesAutoresizingMaskIntoConstraints = false
@@ -1356,40 +1276,38 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             detectButton.target = self
             detectButton.action = #selector(detectVideoFormats(sender:))
             detectButton.contentTintColor = NSColor.white
-            
+
             if #available(macOS 11.0, *) {
                 detectButton.bezelColor = NSColor.controlAccentColor
             } else {
                 detectButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
             }
-            
+
             containerView.addSubview(detectButton)
-            
+
             NSLayoutConstraint.activate([
                 thumbnailView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 5),
                 thumbnailView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 thumbnailView.widthAnchor.constraint(equalToConstant: 40),
                 thumbnailView.heightAnchor.constraint(equalToConstant: 30),
-                
+
                 titleField.leadingAnchor.constraint(equalTo: thumbnailView.trailingAnchor, constant: 10),
                 titleField.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 titleField.trailingAnchor.constraint(equalTo: detailButton.leadingAnchor, constant: -10),
-                
+
                 detectButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -5),
                 detectButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 detectButton.widthAnchor.constraint(equalToConstant: 60),
                 detectButton.heightAnchor.constraint(equalToConstant: 26),
-                
+
                 detailButton.trailingAnchor.constraint(equalTo: detectButton.leadingAnchor, constant: -5),
                 detailButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 detailButton.widthAnchor.constraint(equalToConstant: 60),
                 detailButton.heightAnchor.constraint(equalToConstant: 26)
             ])
         }
-        
-        // Update thumbnail
+
         if let thumbnailView = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "ThumbnailView" }) as? NSImageView {
-            // Asynchronously load thumbnail
             DispatchQueue.global().async {
                 if let url = URL(string: video.thumbnailUrl),
                    let imageData = try? Data(contentsOf: url),
@@ -1404,45 +1322,43 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 }
             }
         }
-        
-        // Update title
+
         if let titleField = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "TitleField" }) as? NSTextField {
             titleField.stringValue = video.title
         }
-        
-        // Update button tags
+
         if let detailButton = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "DetailButton" }) as? NSButton {
             detailButton.tag = row
         }
-        
+
         if let detectButton = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "VideoDetectButton" }) as? NSButton {
             detectButton.tag = row
         }
-        
+
         return cell
     }
-    
+
     private func getFormatCellView(for row: Int) -> NSView? {
         let format = formats[row]
-        
+
         let cellIdentifier = NSUserInterfaceItemIdentifier("FormatCell")
         var cell = tableView.makeView(withIdentifier: cellIdentifier, owner: self) as? NSTableCellView
-        
+
         if cell == nil {
             cell = NSTableCellView()
             cell?.identifier = cellIdentifier
-            
+
             let containerView = NSView()
             containerView.translatesAutoresizingMaskIntoConstraints = false
             cell?.addSubview(containerView)
-            
+
             NSLayoutConstraint.activate([
                 containerView.leadingAnchor.constraint(equalTo: cell!.leadingAnchor, constant: 5),
                 containerView.trailingAnchor.constraint(equalTo: cell!.trailingAnchor, constant: -5),
                 containerView.topAnchor.constraint(equalTo: cell!.topAnchor),
                 containerView.bottomAnchor.constraint(equalTo: cell!.bottomAnchor)
             ])
-            
+
             let text = NSTextField()
             text.identifier = NSUserInterfaceItemIdentifier("FormatText")
             text.translatesAutoresizingMaskIntoConstraints = false
@@ -1454,8 +1370,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             text.lineBreakMode = .byTruncatingTail
             text.setAccessibilityLabel("Audio format")
             containerView.addSubview(text)
-            
-            // Download button - use a more modern style
+
             let downloadButton = NSButton()
             downloadButton.identifier = NSUserInterfaceItemIdentifier("DownloadButton")
             downloadButton.translatesAutoresizingMaskIntoConstraints = false
@@ -1464,16 +1379,16 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             downloadButton.font = NSFont.systemFont(ofSize: 12, weight: .medium)
             downloadButton.target = self
             downloadButton.action = #selector(downloadAudio(sender:))
-            downloadButton.setAccessibilityLabel("Download this audio format")            
+            downloadButton.setAccessibilityLabel("Download this audio format")
             downloadButton.wantsLayer = true
             downloadButton.contentTintColor = NSColor.white
-            
+
             if #available(macOS 11.0, *) {
                 downloadButton.bezelColor = NSColor.controlAccentColor
             } else {
                 downloadButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
             }
-            
+
             let trackingArea = NSTrackingArea(
                 rect: NSRect.zero,
                 options: [.inVisibleRect, .activeAlways, .mouseEnteredAndExited],
@@ -1481,76 +1396,70 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 userInfo: nil
             )
             downloadButton.addTrackingArea(trackingArea)
-            
+
             let minButtonWidth: CGFloat = 90
             let buttonWidth = downloadButton.title.size(withAttributes: [.font: downloadButton.font!]).width + 20
             let actualButtonWidth = max(minButtonWidth, buttonWidth)
-            
+
             containerView.addSubview(downloadButton)
-            
+
             NSLayoutConstraint.activate([
                 text.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
                 text.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 text.trailingAnchor.constraint(equalTo: downloadButton.leadingAnchor, constant: -10),
-                
+
                 downloadButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -5),
                 downloadButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 downloadButton.widthAnchor.constraint(equalToConstant: actualButtonWidth),
                 downloadButton.heightAnchor.constraint(equalToConstant: 26)
             ])
-            
+
             cell?.textField = text
         }
-        
+
         cell?.textField?.stringValue = format.description
-        
+
         if let downloadButton = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "DownloadButton" }) as? NSButton {
             downloadButton.tag = row
         }
-        
+
         return cell
     }
-    
+
     func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
         return 40
     }
-    
-    // MARK: - Search Result Actions
+
     @objc private func openVideoDetail(sender: NSButton) {
         let row = sender.tag
         guard row >= 0 && row < searchResults.count else { return }
-        
+
         let video = searchResults[row]
         if let url = URL(string: video.videoUrl) {
             NSWorkspace.shared.open(url)
         }
     }
-    
+
     @objc private func detectVideoFormats(sender: NSButton) {
         let row = sender.tag
         guard row >= 0 && row < searchResults.count else { return }
-        
+
         let video = searchResults[row]
-        
-        // Check if need to collapse currently expanded row
+
         if expandedVideoRow == row {
-            // If clicking the currently expanded row, collapse it
             expandedVideoRow = nil
             formatOptions = []
             tableView.reloadData()
             return
         } else if expandedVideoRow != nil {
-            // If another row is expanded, collapse it first
             expandedVideoRow = nil
             formatOptions = []
         }
-        
-        // Show loading state
+
         expandedVideoRow = row
         formatOptions = []
         tableView.reloadData()
-        
-        // Start loading button state update
+
         if let videoCell = tableView.rowView(atRow: row, makeIfNecessary: false),
            let cellContent = videoCell.view(atColumn: 0) as? NSView,
            let detectBtn = cellContent.subviews.first?.subviews.first(where: { ($0 as? NSButton)?.action == #selector(detectVideoFormats(sender:)) }) as? NSButton {
@@ -1560,22 +1469,18 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 detectBtn.animator().alphaValue = 0.6
             })
         }
-        
-        // Create a loading option
+
         let loadingOption = FormatOption(title: NSLocalizedString("Loading formats...", comment: ""), formatId: "", videoItem: video)
         formatOptions = [loadingOption]
         tableView.reloadData()
-        
-        // Actually execute format detection
+
         Task {
             do {
                 let detectedFormats = try await DownloadManager.shared.fetchAvailableFormats(from: video.videoUrl)
-                
-                // Update UI on main thread
+
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self, self.expandedVideoRow == row else { return }
-                    
-                    // Convert detected formats to options
+
                     self.formatOptions = detectedFormats.map { format in
                         return FormatOption(
                             title: format.description,
@@ -1583,8 +1488,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                             videoItem: video
                         )
                     }
-                    
-                    // Re-enable detect button
+
                     if let videoCell = self.tableView.rowView(atRow: row, makeIfNecessary: false),
                        let cellContent = videoCell.view(atColumn: 0) as? NSView,
                        let detectBtn = cellContent.subviews.first?.subviews.first(where: { ($0 as? NSButton)?.action == #selector(self.detectVideoFormats(sender:)) }) as? NSButton {
@@ -1594,16 +1498,13 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                             detectBtn.animator().alphaValue = 1.0
                         })
                     }
-                    
-                    // Refresh table to show actual formats
+
                     self.tableView.reloadData()
                 }
             } catch {
-                // Handle error
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self, self.expandedVideoRow == row else { return }
-                    
-                    // Show error message
+
                     self.formatOptions = [
                         FormatOption(
                             title: String(format: NSLocalizedString("Error: %@", comment: ""), error.localizedDescription),
@@ -1611,8 +1512,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                             videoItem: video
                         )
                     ]
-                    
-                    // Re-enable detect button
+
                     if let videoCell = self.tableView.rowView(atRow: row, makeIfNecessary: false),
                        let cellContent = videoCell.view(atColumn: 0) as? NSView,
                        let detectBtn = cellContent.subviews.first?.subviews.first(where: { ($0 as? NSButton)?.action == #selector(self.detectVideoFormats(sender:)) }) as? NSButton {
@@ -1622,71 +1522,65 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                             detectBtn.animator().alphaValue = 1.0
                         })
                     }
-                    
-                    // Refresh table to show error message
+
                     self.tableView.reloadData()
                 }
             }
         }
     }
-    
+
     @objc private func downloadFormatOption(sender: NSButton) {
         let optionIndex = sender.tag
         guard optionIndex >= 0 && optionIndex < formatOptions.count else { return }
-        
+
         let option = formatOptions[optionIndex]
-        
-        // Check if there's a valid formatId
+
         if option.formatId.isEmpty {
-            return // Skip invalid options (e.g., loading or error messages)
+            return
         }
-        
-        // Directly download specified format
+
         downloadSpecificFormat(video: option.videoItem, formatId: option.formatId, formatName: option.title)
-        
-        // Collapse expanded row
+
         expandedVideoRow = nil
         formatOptions = []
         tableView.reloadData()
     }
-    
+
     func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
         let identifier = NSUserInterfaceItemIdentifier("FormatRowView")
         var rowView = tableView.makeView(withIdentifier: identifier, owner: self) as? CustomTableRowView
-        
+
         if rowView == nil {
             rowView = CustomTableRowView()
             rowView?.identifier = identifier
         }
-        
+
         return rowView
     }
-    
-    // Add method to get format option row view
+
     private func getFormatOptionCellView(for optionIndex: Int) -> NSView? {
         guard optionIndex >= 0 && optionIndex < formatOptions.count else { return nil }
-        
+
         let option = formatOptions[optionIndex]
-        
+
         let cellIdentifier = NSUserInterfaceItemIdentifier("FormatOptionCell")
         var cell = tableView.makeView(withIdentifier: cellIdentifier, owner: self) as? NSTableCellView
-        
+
         if cell == nil {
             cell = NSTableCellView()
             cell?.identifier = cellIdentifier
-            
+
             let containerView = NSView()
             containerView.translatesAutoresizingMaskIntoConstraints = false
             cell?.addSubview(containerView)
-            
+
             NSLayoutConstraint.activate([
                 containerView.leadingAnchor.constraint(equalTo: cell!.leadingAnchor),
                 containerView.trailingAnchor.constraint(equalTo: cell!.trailingAnchor),
                 containerView.topAnchor.constraint(equalTo: cell!.topAnchor),
                 containerView.bottomAnchor.constraint(equalTo: cell!.bottomAnchor)
             ])
-            
-            // Format option display text
+
             let formatLabel = NSTextField()
             formatLabel.identifier = NSUserInterfaceItemIdentifier("FormatOptionLabel")
             formatLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -1697,8 +1591,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             formatLabel.font = NSFont.systemFont(ofSize: 12)
             formatLabel.lineBreakMode = .byTruncatingTail
             containerView.addSubview(formatLabel)
-            
-            // Download button
+
             let downloadButton = NSButton()
             downloadButton.identifier = NSUserInterfaceItemIdentifier("FormatOptionDownloadButton")
             downloadButton.translatesAutoresizingMaskIntoConstraints = false
@@ -1708,36 +1601,34 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             downloadButton.target = self
             downloadButton.action = #selector(downloadFormatOption(sender:))
             downloadButton.contentTintColor = NSColor.white
-            
+
             if #available(macOS 11.0, *) {
                 downloadButton.bezelColor = NSColor.controlAccentColor
             } else {
                 downloadButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
             }
-            
+
             containerView.addSubview(downloadButton)
-            
+
             NSLayoutConstraint.activate([
                 formatLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 25),
                 formatLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 formatLabel.trailingAnchor.constraint(equalTo: downloadButton.leadingAnchor, constant: -10),
-                
+
                 downloadButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -5),
                 downloadButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 downloadButton.widthAnchor.constraint(equalToConstant: 70),
                 downloadButton.heightAnchor.constraint(equalToConstant: 26)
             ])
         }
-        
-        // Update text and button
+
         if let label = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "FormatOptionLabel" }) as? NSTextField {
             label.stringValue = option.title
         }
-        
+
         if let button = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "FormatOptionDownloadButton" }) as? NSButton {
             button.tag = optionIndex
-            
-            // Control button state based on whether option is valid
+
             if option.formatId.isEmpty {
                 button.isEnabled = false
                 button.isHidden = option.title.starts(with: "Error") ? true : false
@@ -1746,34 +1637,33 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                 button.isHidden = false
             }
         }
-        
+
         return cell
     }
-    
+
     private func getPlaylistItemCellView(for row: Int) -> NSView? {
         guard let playlist = currentPlaylist, row >= 0 && row < playlist.items.count else { return nil }
-        
+
         let item = playlist.items[row]
-        
+
         let cellIdentifier = NSUserInterfaceItemIdentifier("PlaylistItemCell")
         var cell = tableView.makeView(withIdentifier: cellIdentifier, owner: self) as? NSTableCellView
-        
+
         if cell == nil {
             cell = NSTableCellView()
             cell?.identifier = cellIdentifier
-            
+
             let containerView = NSView()
             containerView.translatesAutoresizingMaskIntoConstraints = false
             cell?.addSubview(containerView)
-            
+
             NSLayoutConstraint.activate([
                 containerView.leadingAnchor.constraint(equalTo: cell!.leadingAnchor, constant: 5),
                 containerView.trailingAnchor.constraint(equalTo: cell!.trailingAnchor, constant: -5),
                 containerView.topAnchor.constraint(equalTo: cell!.topAnchor),
                 containerView.bottomAnchor.constraint(equalTo: cell!.bottomAnchor)
             ])
-            
-            // Index label
+
             let numberLabel = NSTextField()
             numberLabel.identifier = NSUserInterfaceItemIdentifier("NumberLabel")
             numberLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -1785,8 +1675,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             numberLabel.textColor = NSColor.secondaryLabelColor
             numberLabel.alignment = .center
             containerView.addSubview(numberLabel)
-            
-            // Title text
+
             let titleField = NSTextField()
             titleField.identifier = NSUserInterfaceItemIdentifier("PlaylistTitleField")
             titleField.translatesAutoresizingMaskIntoConstraints = false
@@ -1797,8 +1686,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             titleField.font = NSFont.systemFont(ofSize: 12)
             titleField.lineBreakMode = .byTruncatingTail
             containerView.addSubview(titleField)
-            
-            // Duration label
+
             let durationLabel = NSTextField()
             durationLabel.identifier = NSUserInterfaceItemIdentifier("DurationLabel")
             durationLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -1810,38 +1698,37 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             durationLabel.textColor = NSColor.secondaryLabelColor
             durationLabel.alignment = .right
             containerView.addSubview(durationLabel)
-            
+
             NSLayoutConstraint.activate([
                 numberLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 5),
                 numberLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 numberLabel.widthAnchor.constraint(equalToConstant: 30),
-                
+
                 titleField.leadingAnchor.constraint(equalTo: numberLabel.trailingAnchor, constant: 10),
                 titleField.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 titleField.trailingAnchor.constraint(equalTo: durationLabel.leadingAnchor, constant: -10),
-                
+
                 durationLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -5),
                 durationLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
                 durationLabel.widthAnchor.constraint(equalToConstant: 60)
             ])
         }
-        
-        // Update content
+
         if let numberLabel = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "NumberLabel" }) as? NSTextField {
             numberLabel.stringValue = "\(row + 1)"
         }
-        
+
         if let titleField = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "PlaylistTitleField" }) as? NSTextField {
             titleField.stringValue = item.title
         }
-        
+
         if let durationLabel = cell?.subviews.first?.subviews.first(where: { $0.identifier?.rawValue == "DurationLabel" }) as? NSTextField {
             durationLabel.stringValue = item.duration.isEmpty ? "Unknown" : item.duration
         }
-        
+
         return cell
     }
-    
+
     @objc private func downloadAllButtonTapped() {
         if isDownloading {
             stopDownload()
@@ -1849,7 +1736,7 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             startDownload()
         }
     }
-    
+
     private func stopDownload() {
         downloadTask?.cancel()
         downloadTask = nil
@@ -1878,32 +1765,30 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
         } else {
             downloadAllButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
         }
-        
+
         statusLabel.stringValue = NSLocalizedString("Download stopped", comment: "")
         statusLabel.textColor = NSColor.systemOrange
     }
-    
-    private func startDownload() {        
+
+    private func startDownload() {
         let urlString = urlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // Update download status
+
         isDownloading = true
-        
-        // Change button to stop button
+
         downloadAllButton.title = NSLocalizedString("Stop", comment: "")
         downloadAllButton.contentTintColor = NSColor.white
-        
+
         if #available(macOS 11.0, *) {
             downloadAllButton.bezelColor = NSColor.systemRed
         } else {
             downloadAllButton.layer?.backgroundColor = NSColor.systemRed.cgColor
         }
-        
+
         progressIndicator.isHidden = false
         progressIndicator.startAnimation(nil)
         statusLabel.stringValue = NSLocalizedString("Starting playlist download...", comment: "")
         statusLabel.textColor = NSColor.secondaryLabelColor
-        
+
         downloadTask = Task {
             do {
                 try await DownloadManager.shared.downloadPlaylist(from: urlString) { [weak self] progress in
@@ -1911,63 +1796,57 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                         guard let self = self else { return }
                         guard self.isDownloading else { return }
 
-                        // Limit current song name length to avoid covering button
                         let maxTitleLength = 25
-                        let truncatedCurrentTitle = progress.currentTitle.count > maxTitleLength ? 
-                            String(progress.currentTitle.prefix(maxTitleLength)) + "..." : 
+                        let truncatedCurrentTitle = progress.currentTitle.count > maxTitleLength ?
+                            String(progress.currentTitle.prefix(maxTitleLength)) + "..." :
                             progress.currentTitle
-                        
-                        let statusText = String(format: NSLocalizedString("Downloading (%d/%d) - %@", comment: ""), 
-                                              progress.currentIndex, 
-                                              progress.totalCount, 
+
+                        let statusText = String(format: NSLocalizedString("Downloading (%d/%d) - %@", comment: ""),
+                                              progress.currentIndex,
+                                              progress.totalCount,
                                               truncatedCurrentTitle)
                         self.statusLabel.stringValue = statusText
                         self.statusLabel.textColor = NSColor.secondaryLabelColor
                     }
                 }
-                
+
                 DispatchQueue.main.async {
-                    // Check if task was cancelled
                     guard !Task.isCancelled else { return }
-                    
+
                     self.isDownloading = false
                     self.downloadTask = nil
                     self.activeDownloadButton = nil
                     self.hideProgressIndicator()
                     self.statusLabel.stringValue = NSLocalizedString("Playlist download completed", comment: "")
                     self.statusLabel.textColor = NSColor.systemGreen
-                    
-                    // Restore download button
+
                     self.downloadAllButton.title = NSLocalizedString("Download All", comment: "")
                     self.downloadAllButton.contentTintColor = NSColor.white
-                    
+
                     if #available(macOS 11.0, *) {
                         self.downloadAllButton.bezelColor = NSColor.controlAccentColor
                     } else {
                         self.downloadAllButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
                     }
-                    
-                    // Notify player to refresh music library
+
                     NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
                 }
             } catch {
                 DispatchQueue.main.async {
-                    // Check if it's a cancellation error
                     if error is CancellationError {
-                        return // Don't show error when cancelled, handled by stopDownload
+                        return
                     }
-                    
+
                     self.isDownloading = false
                     self.downloadTask = nil
                     self.activeDownloadButton = nil
                     self.hideProgressIndicator()
                     self.statusLabel.stringValue = String(format: NSLocalizedString("Playlist download failed: %@", comment: ""), error.localizedDescription)
                     self.statusLabel.textColor = NSColor.systemRed
-                    
-                    // Restore download button
+
                     self.downloadAllButton.title = NSLocalizedString("Download All", comment: "")
                     self.downloadAllButton.contentTintColor = NSColor.white
-                    
+
                     if #available(macOS 11.0, *) {
                         self.downloadAllButton.bezelColor = NSColor.controlAccentColor
                     } else {
@@ -1977,23 +1856,21 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
             }
         }
     }
-    
+
     private func downloadSpecificFormat(video: YTSearchManager.SearchResult.VideoItem, formatId: String, formatName: String) {
-        // Show download progress
         progressIndicator.isHidden = false
         progressIndicator.startAnimation(nil)
         statusLabel.stringValue = String(format: NSLocalizedString("Downloading %@...", comment: ""), formatName)
-        
+
         Task {
             do {
                 try await DownloadManager.shared.downloadAudio(from: video.videoUrl, formatId: formatId)
-                
+
                 DispatchQueue.main.async {
                     self.hideProgressIndicator()
                     self.statusLabel.stringValue = NSLocalizedString("Download completed", comment: "")
                     self.statusLabel.textColor = NSColor.systemGreen
-                    
-                    // Notify player to refresh music library
+
                     NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
                 }
             } catch {

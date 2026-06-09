@@ -1,10 +1,3 @@
-//
-//  PlayerManager.swift
-//  MacMusicPlayer
-//
-//  Created by X on 2024/09/18.
-//
-
 import Foundation
 import Combine
 import AppKit
@@ -23,16 +16,12 @@ class PlayerManager: NSObject, ObservableObject {
         }
     }
 
-    // New queue-based architecture
     private let queueController: QueuePlayerController
     private let playlistStore: PlaylistStore
 
-    /// Whether the playlist has any tracks
     var hasPlaylist: Bool { !playlistStore.isEmpty }
 
-    // Legacy currentIndex for backward compatibility during transition
     private var currentIndex = 0
-    // Direct volume control - no temporary caches
     var volume: Float {
         get { queueController.volume }
         set {
@@ -50,7 +39,6 @@ class PlayerManager: NSObject, ObservableObject {
     }
 
     override init() {
-        // Initialize queue-based architecture first
         queueController = QueuePlayerController()
         playlistStore = PlaylistStore()
 
@@ -63,7 +51,6 @@ class PlayerManager: NSObject, ObservableObject {
 
         super.init()
 
-        // Initialize saved volume with default if first launch
         let savedVolume: Float
         if UserDefaults.standard.object(forKey: "SavedVolume") == nil {
             savedVolume = 0.3
@@ -72,19 +59,16 @@ class PlayerManager: NSObject, ObservableObject {
             savedVolume = UserDefaults.standard.float(forKey: "SavedVolume")
         }
 
-        // Wire up queue controller callbacks
         queueController.onTrackChanged = { [weak self] track in
             guard let self = self else { return }
             self.currentTrack = track
 
-            // Sync PlaylistStore currentIndex with queue controller track changes
             if let track = track,
                let trackIndex = self.playlistStore.tracks.firstIndex(where: { $0.id == track.id }) {
                 self.playlistStore.setCurrentIndex(trackIndex)
                 self.currentIndex = trackIndex
             }
 
-            // Ensure Now Playing metadata stays in sync for automatic transitions
             self.updateNowPlayingInfo()
         }
 
@@ -96,10 +80,8 @@ class PlayerManager: NSObject, ObservableObject {
             self?.handleAutomaticTrackCompletion(finishedTrack)
         }
 
-        // Set initial volume from saved preferences
         queueController.volume = savedVolume
 
-        // Listen for music library refresh notification
         NotificationCenter.default.addObserver(self,
                                             selector: #selector(refreshMusicLibrary),
                                             name: NSNotification.Name("RefreshMusicLibrary"),
@@ -109,7 +91,6 @@ class PlayerManager: NSObject, ObservableObject {
     }
 
     private func loadSavedMusicFolder() {
-        // Do nothing, now controlled by LibraryManager
     }
 
     func requestMusicFolderAccess() {
@@ -119,12 +100,11 @@ class PlayerManager: NSObject, ObservableObject {
             openPanel.canChooseFiles = false
             openPanel.allowsMultipleSelection = false
             openPanel.prompt = NSLocalizedString("Select Music Folder", comment: "Open panel prompt for selecting music folder")
-            
+
             if openPanel.runModal() == .OK {
                 if let url = openPanel.url {
                     let name = url.lastPathComponent
-                    
-                    // Create new music library
+
                     NotificationCenter.default.post(
                         name: NSNotification.Name("AddNewLibrary"),
                         object: nil,
@@ -156,63 +136,52 @@ class PlayerManager: NSObject, ObservableObject {
     }
 
     func loadLibrary(_ library: MusicLibrary) {
-        // Clear current queue and stop playback
         queueController.clearQueue()
         currentTrack = nil
         isPlaying = false
         currentIndex = 0
 
-        // Legacy playlist for backward compatibility during migration
         playlist = []
 
-        // Load music files from new music library
         loadTracksFromMusicFolder(URL(fileURLWithPath: library.path))
     }
-    
+
     func loadTracksFromMusicFolder(_ folderURL: URL) {
         let fileManager = FileManager.default
-        
-        // Get all contents of the folder
+
         guard let enumerator = fileManager.enumerator(at: folderURL,
                                                     includingPropertiesForKeys: [.isRegularFileKey],
                                                     options: [.skipsHiddenFiles, .skipsPackageDescendants]) else {
             print("Failed to enumerate folder contents")
             return
         }
-        
+
         var newPlaylist: [Track] = []
-        
+
         for case let fileURL as URL in enumerator {
-            // Check if file type is audio file
             if isAudioFile(fileURL) {
                 let fileName = fileURL.deletingPathExtension().lastPathComponent
-                
-                // Simple handling: use filename as title, split by " - " into artist and title if present
+
                 var title = fileName
                 var artist = NSLocalizedString("Unknown Artist", comment: "Default artist name when parsing filenames")
-                
+
                 if let range = fileName.range(of: " - ") {
                     artist = String(fileName[..<range.lowerBound]).trimmingCharacters(in: .whitespaces)
                     title = String(fileName[range.upperBound...]).trimmingCharacters(in: .whitespaces)
                 }
-                
+
                 let track = Track(id: UUID(), title: title, artist: artist, url: fileURL)
                 newPlaylist.append(track)
             }
         }
-        
-        // Update playlist
+
         DispatchQueue.main.async {
-            // Sort playlist by title
             let sortedTracks = newPlaylist.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
 
-            // Update PlaylistStore (new architecture)
             self.playlistStore.setTracks(sortedTracks)
 
-            // Legacy playlist for backward compatibility
             self.playlist = sortedTracks
 
-            // Set first track as current if available
             if !sortedTracks.isEmpty {
                 self.currentIndex = 0
                 self.currentTrack = sortedTracks[0]
@@ -222,12 +191,11 @@ class PlayerManager: NSObject, ObservableObject {
                 self.currentTrack = nil
                 self.currentIndex = 0
             }
-            
-            // Notify that playlist has been updated
+
             NotificationCenter.default.post(name: NSNotification.Name("PlaylistUpdated"), object: nil)
         }
     }
-    
+
     private func isAudioFile(_ url: URL) -> Bool {
         let audioExtensions = ["mp3", "m4a", "wav", "aac", "flac", "ogg", "aiff"]
         return audioExtensions.contains(url.pathExtension.lowercased())
@@ -239,7 +207,6 @@ class PlayerManager: NSObject, ObservableObject {
             return
         }
 
-        // Use queue controller for new architecture
         queueController.play()
 
         print(NSLocalizedString("Started playing", comment: "") + ": \(track.title)")
@@ -254,7 +221,6 @@ class PlayerManager: NSObject, ObservableObject {
     }
 
     func stop() {
-        // Queue controller stop (pause + seek to 0, non-destructive)
         queueController.stop()
         updateNowPlayingInfo()
     }
@@ -273,7 +239,6 @@ class PlayerManager: NSObject, ObservableObject {
     }
 
     func clearQueue() {
-        // Clear queue controller (destructive)
         queueController.clearQueue()
         currentTrack = nil
         isPlaying = false
@@ -284,40 +249,31 @@ class PlayerManager: NSObject, ObservableObject {
     func playNext() {
         guard !playlistStore.isEmpty else { return }
 
-        // Get next index based on play mode from PlaylistStore
         guard let nextIndex = playlistStore.nextIndex(for: playMode) else {
-            // No next track available (e.g., end of sequential playlist)
             return
         }
 
-        // Update PlaylistStore current index
         playlistStore.setCurrentIndex(nextIndex)
 
-        // Use queue controller advance or rebuild queue for complex modes
         switch playMode {
         case .sequential:
             if queueController.advanceToNext() {
-                // Successfully advanced in queue
                 currentIndex = nextIndex
             } else {
-                // End of queue, wrap around - rebuild queue
                 queueController.setQueue(playlistStore.tracks, startingAt: 0)
                 playlistStore.setCurrentIndex(0)
                 currentIndex = 0
                 queueController.play()
             }
         case .singleLoop:
-            // Restart current track
             queueController.stop()
             queueController.play()
         case .random:
-            // Rebuild queue starting at random index
             queueController.setQueue(playlistStore.tracks, startingAt: nextIndex)
             currentIndex = nextIndex
             queueController.play()
         }
 
-        // Legacy update for backward compatibility
         currentTrack = playlistStore.currentTrack
 
         updateNowPlayingInfo()
@@ -330,16 +286,13 @@ class PlayerManager: NSObject, ObservableObject {
         case .sequential, .random:
             guard let previousIndex = playlistStore.previousIndex() else { return }
 
-            // Rebuild queue for previous track (AVQueuePlayer limitation)
             queueController.setQueue(playlistStore.tracks, startingAt: previousIndex)
             playlistStore.setCurrentIndex(previousIndex)
             currentIndex = previousIndex
             queueController.play()
 
-            // Legacy update
             currentTrack = playlistStore.currentTrack
         case .singleLoop:
-            // Restart current track
             queueController.stop()
             queueController.play()
         }
@@ -350,7 +303,6 @@ class PlayerManager: NSObject, ObservableObject {
 
     @MainActor
     @objc func refreshMusicLibrary() {
-        // Simply reload the current library, same as startup
         if let library = (NSApplication.shared.delegate as? AppDelegate)?.libraryManager.currentLibrary {
             loadLibrary(library)
         } else {
@@ -359,11 +311,9 @@ class PlayerManager: NSObject, ObservableObject {
     }
 
 
-    /// Randomly select and play a track - "Feeling Lucky" feature
     func feelingLucky() {
         guard !playlistStore.isEmpty else { return }
 
-        // Generate random index, avoiding current track for variety
         var randomIndex = Int.random(in: 0..<playlistStore.count)
         if playlistStore.count > 1 {
             while randomIndex == playlistStore.currentIndex {
@@ -385,7 +335,6 @@ class PlayerManager: NSObject, ObservableObject {
             else { return }
 
             if finishedIndex == playlistStore.count - 1 {
-                // Last track finished – rebuild queue from the top to loop
                 let nextIndex = (finishedIndex + 1) % playlistStore.count
                 queueController.setQueue(playlistStore.tracks, startingAt: nextIndex)
                 queueController.play()
@@ -407,16 +356,13 @@ class PlayerManager: NSObject, ObservableObject {
             updateNowPlayingInfo()
 
         case .random:
-            // Pick a truly random next track and rebuild queue
             guard let nextIndex = playlistStore.nextIndex(for: playMode) else { return }
 
-            // Rebuild queue starting from the random track
             queueController.setQueue(playlistStore.tracks, startingAt: nextIndex)
             playlistStore.setCurrentIndex(nextIndex)
             currentIndex = nextIndex
             queueController.play()
 
-            // Update UI state
             currentTrack = playlistStore.currentTrack
             updateNowPlayingInfo()
         }
