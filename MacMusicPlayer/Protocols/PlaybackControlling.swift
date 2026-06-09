@@ -1,10 +1,3 @@
-//
-//  PlaybackControlling.swift
-//  MacMusicPlayer
-//
-//  Created by X on 2024/09/23.
-//
-
 import Foundation
 import AVFoundation
 

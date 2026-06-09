@@ -1,10 +1,3 @@
-//
-//  SimpleSongPickerWindow.swift
-//  MacMusicPlayer
-//
-//  Created by X on 2024/09/24.
-//
-
 import Cocoa
 import Combine
 
@@ -37,8 +30,7 @@ class SimpleSongPickerWindow: NSPanel {
         setupWindow()
         setupViews()
         loadTracks()
-        
-        // Listen for playlist updates via Combine
+
         if let playerManager = self.playerManager {
             playlistCancellable = playerManager.$playlist
                 .receive(on: DispatchQueue.main)
@@ -67,7 +59,6 @@ class SimpleSongPickerWindow: NSPanel {
     private func setupViews() {
         guard let contentView = contentView else { return }
 
-        // Background view with rounded corners and visual effect for dark mode support
         backgroundView = NSVisualEffectView()
         backgroundView.material = .sidebar
         backgroundView.blendingMode = .behindWindow
@@ -84,7 +75,6 @@ class SimpleSongPickerWindow: NSPanel {
             backgroundView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
 
-        // Search field
         searchField = NSSearchField()
         searchField.placeholderString = NSLocalizedString(
             "search_songs_placeholder",
@@ -94,7 +84,6 @@ class SimpleSongPickerWindow: NSPanel {
         searchField.translatesAutoresizingMaskIntoConstraints = false
         backgroundView.addSubview(searchField)
 
-        // Table view in scroll view
         let scrollView = NSScrollView()
         scrollView.hasVerticalScroller = false
         scrollView.hasHorizontalScroller = false
@@ -120,14 +109,12 @@ class SimpleSongPickerWindow: NSPanel {
 
         scrollView.documentView = tableView
 
-        // Status label
         statusLabel = NSTextField(labelWithString: "Press Enter to play, Esc to Close")
         statusLabel.font = NSFont.systemFont(ofSize: 11)
         statusLabel.textColor = .secondaryLabelColor
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
         backgroundView.addSubview(statusLabel)
 
-        // Layout
         NSLayoutConstraint.activate([
             searchField.topAnchor.constraint(equalTo: backgroundView.topAnchor, constant: 20),
             searchField.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor, constant: 20),
@@ -164,7 +151,6 @@ class SimpleSongPickerWindow: NSPanel {
     }
 
     private func filterTracks() {
-        // Cancel any pending filter operation
         filterWorkItem?.cancel()
 
         let searchText = searchField.stringValue.lowercased()
@@ -182,7 +168,6 @@ class SimpleSongPickerWindow: NSPanel {
                 }
             }
 
-            // Update UI on main thread
             DispatchQueue.main.async { [weak self] in
                 guard let self = self, self.filterWorkItem?.isCancelled == false else { return }
 
@@ -199,7 +184,6 @@ class SimpleSongPickerWindow: NSPanel {
 
         filterWorkItem = workItem
 
-        // Debounce: wait 150ms before filtering to avoid filtering on every keystroke
         DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + 0.15, execute: workItem)
     }
 
@@ -245,13 +229,13 @@ class SimpleSongPickerWindow: NSPanel {
 
     override func keyDown(with event: NSEvent) {
         switch event.keyCode {
-        case 36, 76: // Return or Enter
+        case 36, 76:
             playSelectedTrack()
 
-        case 53: // Escape
+        case 53:
             close()
 
-        case 49: // Space
+        case 49:
             if searchField.currentEditor() == nil {
                 guard let playerManager = playerManager,
                       let selectedRow = tableView.selectedRow >= 0 ? tableView.selectedRow : nil,
@@ -265,7 +249,6 @@ class SimpleSongPickerWindow: NSPanel {
                         playerManager.play()
                     }
                 } else {
-                    // Play the selected track without closing the window
                     if let allTrackIndex = findAllTrackIndex(for: selectedRow) {
                         playerManager.playTrack(at: allTrackIndex)
                         tableView.reloadData()
@@ -288,14 +271,12 @@ class SimpleSongPickerWindow: NSPanel {
     }
 }
 
-// MARK: - NSTableViewDataSource
 extension SimpleSongPickerWindow: NSTableViewDataSource {
     func numberOfRows(in tableView: NSTableView) -> Int {
         return filteredTracks.count
     }
 }
 
-// MARK: - NSTableViewDelegate
 extension SimpleSongPickerWindow: NSTableViewDelegate {
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let identifier = NSUserInterfaceItemIdentifier("TrackCell")
@@ -343,13 +324,11 @@ extension SimpleSongPickerWindow: NSTableViewDelegate {
     func tableView(_ tableView: NSTableView,
                    shouldTypeSelectFor event: NSEvent,
                    withCurrentSearch searchString: String?) -> Bool {
-        // Disable AppKit type-select to avoid scanning the full playlist and keep text input in the search field.
         return false
     }
 
 }
 
-// MARK: - NSSearchFieldDelegate
 extension SimpleSongPickerWindow: NSSearchFieldDelegate {
     func controlTextDidChange(_ obj: Notification) {
         filterTracks()

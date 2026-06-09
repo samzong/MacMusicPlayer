@@ -1,10 +1,3 @@
-//
-//  MusicLibrary.swift
-//  MacMusicPlayer
-//
-//  Created by X on 2024/03/21.
-//
-
 import Foundation
 
 struct MusicLibrary: Identifiable, Codable {
@@ -13,7 +6,7 @@ struct MusicLibrary: Identifiable, Codable {
     var path: String
     var createdAt: Date
     var lastAccessed: Date
-    
+
     init(id: UUID = UUID(), name: String, path: String, createdAt: Date = Date(), lastAccessed: Date = Date()) {
         self.id = id
         self.name = name
@@ -21,4 +14,4 @@ struct MusicLibrary: Identifiable, Codable {
         self.createdAt = createdAt
         self.lastAccessed = lastAccessed
     }
-} 
+}

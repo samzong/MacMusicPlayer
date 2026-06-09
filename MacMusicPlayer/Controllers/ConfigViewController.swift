@@ -1,15 +1,7 @@
-//
-//  ConfigViewController.swift
-//  MacMusicPlayer
-//
-//  Created by samzong<samzong.lu@gmail.com>
-//
-
 import Cocoa
 
 class ConfigViewController: NSViewController {
-    // MARK: - UI Components
-    
+
     private let apiUrlLabel = NSTextField()
     private let apiUrlTextField = NSTextField()
     private let apiKeyLabel = NSTextField()
@@ -21,40 +13,36 @@ class ConfigViewController: NSViewController {
     private let songPickerCheckbox = NSButton()
     private var statusStackView: NSStackView?
     private var hideStatusWorkItem: DispatchWorkItem?
-    
-    // MARK: - Properties
+
     private let configManager = ConfigManager.shared
     private var saveCallback: (() -> Void)?
-    
-    // MARK: - Initialization
+
     init(saveCallback: (() -> Void)? = nil) {
         self.saveCallback = saveCallback
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    // MARK: - Lifecycle
+
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 400, height: 280))
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
     }
-    
+
     override func viewWillAppear() {
         super.viewWillAppear()
         loadCurrentConfig()
     }
-    
-    // MARK: - UI Setup
+
     private func setupUI() {
         view.wantsLayer = true
-        
+
         setupApiKeyUI()
         setupApiUrlUI()
         setupSongPickerPreference()
@@ -62,7 +50,7 @@ class ConfigViewController: NSViewController {
         setupFormGrid()
         setupButtons()
     }
-    
+
     private func setupApiKeyUI() {
         apiKeyLabel.translatesAutoresizingMaskIntoConstraints = false
         apiKeyLabel.stringValue = NSLocalizedString("API Key:", comment: "API Key label")
@@ -72,14 +60,14 @@ class ConfigViewController: NSViewController {
         apiKeyLabel.alignment = .right
         apiKeyLabel.font = NSFont.systemFont(ofSize: 13)
         apiKeyLabel.textColor = NSColor.labelColor
-        
+
         apiKeyTextField.translatesAutoresizingMaskIntoConstraints = false
         apiKeyTextField.placeholderString = NSLocalizedString("Enter API Key", comment: "API Key placeholder")
         apiKeyTextField.font = NSFont.systemFont(ofSize: 13)
         apiKeyTextField.bezelStyle = .roundedBezel
         apiKeyTextField.focusRingType = .exterior
     }
-    
+
     private func setupApiUrlUI() {
         apiUrlLabel.translatesAutoresizingMaskIntoConstraints = false
         apiUrlLabel.stringValue = NSLocalizedString("API URL:", comment: "API URL label")
@@ -89,14 +77,14 @@ class ConfigViewController: NSViewController {
         apiUrlLabel.alignment = .right
         apiUrlLabel.font = NSFont.systemFont(ofSize: 13)
         apiUrlLabel.textColor = NSColor.labelColor
-        
+
         apiUrlTextField.translatesAutoresizingMaskIntoConstraints = false
         apiUrlTextField.placeholderString = NSLocalizedString("Enter API URL", comment: "API URL placeholder")
         apiUrlTextField.font = NSFont.systemFont(ofSize: 13)
         apiUrlTextField.bezelStyle = .roundedBezel
         apiUrlTextField.focusRingType = .exterior
     }
-    
+
     private func setupButtons() {
         saveButton.translatesAutoresizingMaskIntoConstraints = false
         saveButton.title = NSLocalizedString("Save", comment: "Save button")
@@ -125,9 +113,8 @@ class ConfigViewController: NSViewController {
             buttonStack.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20)
         ])
     }
-    
-    
-    
+
+
     private func setupStatusLabel() {
         statusIconView.translatesAutoresizingMaskIntoConstraints = false
         statusIconView.isHidden = true
@@ -137,7 +124,7 @@ class ConfigViewController: NSViewController {
         statusIconView.contentTintColor = NSColor.systemGreen
         statusIconView.setContentCompressionResistancePriority(.required, for: .horizontal)
         statusIconView.setContentHuggingPriority(.required, for: .horizontal)
-        
+
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
         statusLabel.stringValue = ""
         statusLabel.isEditable = false
@@ -148,7 +135,7 @@ class ConfigViewController: NSViewController {
         statusLabel.textColor = NSColor.secondaryLabelColor
         statusLabel.isHidden = true
         statusLabel.lineBreakMode = .byWordWrapping
-        
+
         let stackView = NSStackView()
         stackView.orientation = .horizontal
         stackView.alignment = .centerY
@@ -195,7 +182,7 @@ class ConfigViewController: NSViewController {
             grid.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
     }
-    
+
     private func setupSongPickerPreference() {
         songPickerCheckbox.translatesAutoresizingMaskIntoConstraints = false
         songPickerCheckbox.setButtonType(.switch)
@@ -203,14 +190,13 @@ class ConfigViewController: NSViewController {
         songPickerCheckbox.font = NSFont.systemFont(ofSize: 13)
         songPickerCheckbox.state = configManager.showSongPickerOnLaunch ? .on : .off
     }
-    
-    // MARK: - Functionality
+
     private func loadCurrentConfig() {
         apiKeyTextField.stringValue = configManager.apiKey
         apiUrlTextField.stringValue = configManager.apiUrl
         songPickerCheckbox.state = configManager.showSongPickerOnLaunch ? .on : .off
     }
-    
+
     @objc private func saveConfig() {
         let apiKey = apiKeyTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         var apiUrl = apiUrlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -218,55 +204,50 @@ class ConfigViewController: NSViewController {
         let currentApiUrl = configManager.apiUrl
         let apiKeyChanged = apiKey != currentApiKey
         let apiUrlChanged = apiUrl != currentApiUrl
-        
-        // Ensure URL format is correct
+
         if !apiUrl.isEmpty && !apiUrl.hasPrefix("http") {
             apiUrl = "https://" + apiUrl
         }
-        // Validate URL format
         if apiUrlChanged && !apiUrl.isEmpty {
             if URLComponents(string: apiUrl) == nil {
                 showStatus(NSLocalizedString("API URL is invalid", comment: "Error message when API URL is invalid"), isError: true)
                 return
             }
         }
-        
-        // Validate input
+
         if apiKeyChanged && apiKey.isEmpty {
             showStatus(NSLocalizedString("Please enter API Key", comment: "Error message when API Key is empty"), isError: true)
             return
         }
-        
+
         if apiUrlChanged && apiUrl.isEmpty {
             showStatus(NSLocalizedString("Please enter API URL", comment: "Error message when API URL is empty"), isError: true)
             return
         }
-        
-        // Save configuration
+
         let shouldShowSongPicker = (songPickerCheckbox.state == .on)
-        
+
         configManager.saveConfig(apiKey: apiKey, apiUrl: apiUrl, showSongPickerOnLaunch: shouldShowSongPicker)
         showStatus(NSLocalizedString("Configuration saved", comment: "Success message when configuration is saved"), isError: false)
-        
-        // Call callback function
+
         saveCallback?()
     }
-    
+
     @objc private func cancelConfig() {
         configManager.resetConfig()
         loadCurrentConfig()
         showStatus(NSLocalizedString("Reset to defaults", comment: "Success message when configuration is reset"), isError: false)
     }
-    
-    
+
+
     private func showStatus(_ message: String, isError: Bool) {
         hideStatusWorkItem?.cancel()
-        
+
         let textColor: NSColor = isError ? .systemRed : .systemGreen
         statusLabel.stringValue = message
         statusLabel.textColor = textColor
         statusLabel.isHidden = false
-        
+
         if #available(macOS 11.0, *) {
             let symbolName = isError ? "exclamationmark.triangle.fill" : "checkmark.circle.fill"
             statusIconView.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)
@@ -275,7 +256,7 @@ class ConfigViewController: NSViewController {
         }
         statusIconView.contentTintColor = textColor
         statusIconView.isHidden = false
-        
+
         if let stack = statusStackView {
             stack.isHidden = false
             NSAnimationContext.runAnimationGroup { context in
@@ -283,7 +264,7 @@ class ConfigViewController: NSViewController {
                 stack.animator().alphaValue = 1
             }
         }
-        
+
         if !isError {
             let workItem = DispatchWorkItem { [weak self] in
                 guard let self = self, let stack = self.statusStackView else { return }

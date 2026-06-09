@@ -1,10 +1,3 @@
-//
-//  PlaylistStore.swift
-//  MacMusicPlayer
-//
-//  Created by X on 2024/09/23.
-//
-
 import Foundation
 
 enum PlayMode: String {
@@ -17,7 +10,6 @@ enum PlayMode: String {
     }
 }
 
-/// Owns authoritative track ordering (source of truth)
 class PlaylistStore: ObservableObject {
     @Published private(set) var tracks: [Track] = []
     @Published private(set) var currentIndex: Int = 0
