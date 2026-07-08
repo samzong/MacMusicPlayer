@@ -10,6 +10,9 @@
   </div>
   <p>An elegant and minimalist menu bar music player for macOS (no Dock icon), providing a seamless music playback experience.</p>
   <p>
+    <a href="https://www.producthunt.com/products/macmusicplayer?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-macmusicplayer" target="_blank" rel="noopener noreferrer"><img alt="MacMusicPlayer - A clean, lightweight music player for macOS. | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1190776&amp;theme=light&amp;t=1783488136221"></a>
+  </p>
+  <p>
     <a href="https://github.com/samzong/MacMusicPlayer/releases"><img src="https://img.shields.io/github/v/release/samzong/MacMusicPlayer" alt="Release" /></a>
     <a href="https://github.com/samzong/MacMusicPlayer/blob/main/LICENSE"><img src="https://img.shields.io/github/license/samzong/MacMusicPlayer" alt="License" /></a>
     <a href="https://deepwiki.com/samzong/MacMusicPlayer"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
