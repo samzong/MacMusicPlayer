@@ -248,7 +248,7 @@ class PlayerManager: NSObject, ObservableObject {
         currentTrack = tracks[index]
         queueController.play()
         isPlaying = true
-        updateNowPlayingInfo()
+        updateNowPlayingInfo(playbackState: .playing)
     }
 
     func clearQueue() {
@@ -261,6 +261,7 @@ class PlayerManager: NSObject, ObservableObject {
 
     func playNext() {
         guard !playlistStore.isEmpty else { return }
+        let shouldResumePlayback = nowPlayingPlaybackState == .playing
 
         guard let nextIndex = playlistStore.nextIndex(for: playMode) else {
             return
@@ -276,14 +277,15 @@ class PlayerManager: NSObject, ObservableObject {
                 queueController.setQueue(playlistStore.tracks, startingAt: 0)
                 playlistStore.setCurrentIndex(0)
                 currentIndex = 0
-                queueController.play()
             }
         case .singleLoop:
             queueController.stop()
-            queueController.play()
         case .random:
             queueController.setQueue(playlistStore.tracks, startingAt: nextIndex)
             currentIndex = nextIndex
+        }
+
+        if shouldResumePlayback {
             queueController.play()
         }
 
@@ -294,6 +296,7 @@ class PlayerManager: NSObject, ObservableObject {
 
     func playPrevious() {
         guard !playlistStore.isEmpty else { return }
+        let shouldResumePlayback = nowPlayingPlaybackState == .playing
 
         switch playMode {
         case .sequential, .random:
@@ -302,11 +305,13 @@ class PlayerManager: NSObject, ObservableObject {
             queueController.setQueue(playlistStore.tracks, startingAt: previousIndex)
             playlistStore.setCurrentIndex(previousIndex)
             currentIndex = previousIndex
-            queueController.play()
 
             currentTrack = playlistStore.currentTrack
         case .singleLoop:
             queueController.stop()
+        }
+
+        if shouldResumePlayback {
             queueController.play()
         }
 
