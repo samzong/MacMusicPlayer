@@ -18,6 +18,7 @@ class PlayerManager: NSObject, ObservableObject {
 
     private let queueController: QueuePlayerController
     private let playlistStore: PlaylistStore
+    private var nowPlayingPlaybackState: MPNowPlayingPlaybackState = .stopped
 
     var hasPlaylist: Bool { !playlistStore.isEmpty }
 
@@ -115,8 +116,16 @@ class PlayerManager: NSObject, ObservableObject {
         }
     }
 
-    func updateNowPlayingInfo() {
+    func updateNowPlayingInfo(playbackState: MPNowPlayingPlaybackState? = nil) {
         var nowPlayingInfo = [String: Any]()
+
+        if let playbackState {
+            nowPlayingPlaybackState = playbackState
+        } else if queueController.isPlaying {
+            nowPlayingPlaybackState = .playing
+        } else if queueController.currentTrack == nil {
+            nowPlayingPlaybackState = .stopped
+        }
 
         if let currentTrack = queueController.currentTrack ?? currentTrack {
             nowPlayingInfo[MPMediaItemPropertyTitle] = currentTrack.title
@@ -132,13 +141,17 @@ class PlayerManager: NSObject, ObservableObject {
             }
         }
 
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+        let infoCenter = MPNowPlayingInfoCenter.default()
+        infoCenter.nowPlayingInfo = nowPlayingInfo
+        infoCenter.playbackState = nowPlayingPlaybackState
     }
 
     func loadLibrary(_ library: MusicLibrary) {
         queueController.clearQueue()
+        nowPlayingPlaybackState = .stopped
         currentTrack = nil
         isPlaying = false
+        updateNowPlayingInfo(playbackState: .stopped)
         currentIndex = 0
 
         playlist = []
@@ -211,18 +224,18 @@ class PlayerManager: NSObject, ObservableObject {
 
         print(NSLocalizedString("Started playing", comment: "") + ": \(track.title)")
 
-        updateNowPlayingInfo()
+        updateNowPlayingInfo(playbackState: .playing)
     }
 
     func pause() {
         queueController.pause()
         print(NSLocalizedString("Paused playback", comment: ""))
-        updateNowPlayingInfo()
+        updateNowPlayingInfo(playbackState: .paused)
     }
 
     func stop() {
         queueController.stop()
-        updateNowPlayingInfo()
+        updateNowPlayingInfo(playbackState: .stopped)
     }
 
     func playTrack(at index: Int) {
