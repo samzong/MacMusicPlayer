@@ -3,7 +3,7 @@ import AVFoundation
 
 class QueuePlayerController: NSObject, PlaybackControlling {
     private let queuePlayer: AVQueuePlayer
-    private var playerItems: [AVPlayerItem] = []
+    private var itemIndices: [ObjectIdentifier: Int] = [:]
     private var tracks: [Track] = []
     private var currentTrackIndex: Int = 0
     private var currentItemStatusObservation: NSKeyValueObservation?
@@ -77,6 +77,7 @@ class QueuePlayerController: NSObject, PlaybackControlling {
             observeCurrentItemStatus()
             guard queuePlayer.currentItem != nil else { return }
             updateCurrentTrackIndex()
+            appendNextItemIfNeeded()
             onTrackChanged?(currentTrack)
             onPlaybackStateChanged?(isPlaying)
         }
@@ -97,7 +98,7 @@ class QueuePlayerController: NSObject, PlaybackControlling {
 
     @objc private func playerItemDidFinish(_ notification: Notification) {
         guard let finishedItem = notification.object as? AVPlayerItem,
-              let index = playerItems.firstIndex(of: finishedItem),
+              let index = itemIndices.removeValue(forKey: ObjectIdentifier(finishedItem)),
               index < tracks.count else {
             return
         }
@@ -107,7 +108,7 @@ class QueuePlayerController: NSObject, PlaybackControlling {
 
     private func updateCurrentTrackIndex() {
         guard let currentItem = queuePlayer.currentItem,
-              let index = playerItems.firstIndex(of: currentItem) else {
+              let index = itemIndices[ObjectIdentifier(currentItem)] else {
             return
         }
         currentTrackIndex = index
@@ -129,7 +130,7 @@ class QueuePlayerController: NSObject, PlaybackControlling {
 
     func clearQueue() {
         queuePlayer.removeAllItems()
-        playerItems.removeAll()
+        itemIndices.removeAll()
         tracks.removeAll()
         currentTrackIndex = 0
     }
@@ -140,37 +141,31 @@ class QueuePlayerController: NSObject, PlaybackControlling {
         guard !tracks.isEmpty else { return }
 
         self.tracks = tracks
-
-        var newPlayerItems: [AVPlayerItem] = []
-        newPlayerItems.reserveCapacity(tracks.count)
-
-        for track in tracks {
-            let playerItem = createPlayerItem(from: track)
-            newPlayerItems.append(playerItem)
-        }
-
-        guard !newPlayerItems.isEmpty else { return }
-
-        playerItems = newPlayerItems
-
-        let boundedIndex = max(0, min(index, playerItems.count - 1))
-        currentTrackIndex = boundedIndex
-
-        let orderedIndices = Array(boundedIndex..<playerItems.count) + Array(0..<boundedIndex)
-
-        for trackIndex in orderedIndices {
-            let playerItem = playerItems[trackIndex]
-            queuePlayer.insert(playerItem, after: queuePlayer.items().last)
-        }
+        currentTrackIndex = max(0, min(index, tracks.count - 1))
+        appendItem(at: currentTrackIndex)
+        appendNextItemIfNeeded()
     }
 
     func advanceToNext() -> Bool {
         guard currentTrackIndex < tracks.count - 1 else { return false }
+        appendNextItemIfNeeded()
+        if let currentItem = queuePlayer.currentItem {
+            itemIndices.removeValue(forKey: ObjectIdentifier(currentItem))
+        }
         queuePlayer.advanceToNextItem()
         return true
     }
 
-    private func createPlayerItem(from track: Track) -> AVPlayerItem {
-        return AVPlayerItem(url: track.url)
+    private func appendNextItemIfNeeded() {
+        guard queuePlayer.items().count < 2 else { return }
+        let nextIndex = currentTrackIndex + 1
+        guard nextIndex < tracks.count else { return }
+        appendItem(at: nextIndex)
+    }
+
+    private func appendItem(at index: Int) {
+        let item = AVPlayerItem(url: tracks[index].url)
+        itemIndices[ObjectIdentifier(item)] = index
+        queuePlayer.insert(item, after: queuePlayer.items().last)
     }
 }
