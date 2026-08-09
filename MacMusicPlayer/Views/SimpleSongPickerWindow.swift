@@ -451,6 +451,10 @@ class SimpleSongPickerWindow: NSPanel {
                 if let selectedTrackID,
                    let selectedRow = filtered.firstIndex(where: { $0.id == selectedTrackID }) {
                     self.restoreSelection(for: selectedRow)
+                } else if searchText.isEmpty,
+                          let currentTrackID = self.playerManager?.currentTrack?.id,
+                          let currentRow = filtered.firstIndex(where: { $0.id == currentTrackID }) {
+                    self.restoreSelection(for: currentRow)
                 } else {
                     self.selectFirstRow()
                 }
