@@ -185,6 +185,7 @@ class SimpleSongPickerWindow: NSPanel {
     private var allTracks: [Track] = []
     private var filteredTracks: [Track] = []
     private var filterWorkItem: DispatchWorkItem?
+    private var filterGeneration = 0
     private var playlistCancellable: AnyCancellable?
 
     private let windowWidth: CGFloat = 600
@@ -407,6 +408,7 @@ class SimpleSongPickerWindow: NSPanel {
 
     override func close() {
         filterWorkItem?.cancel()
+        filterGeneration += 1
         super.close()
     }
 
@@ -416,41 +418,58 @@ class SimpleSongPickerWindow: NSPanel {
         filterTracks()
     }
 
-    private func filterTracks() {
+    private func filterTracks(playWhenReady: Bool = false) {
         filterWorkItem?.cancel()
+        filterGeneration += 1
 
         let searchText = searchField.stringValue.lowercased()
+        let tracks = allTracks
+        let generation = filterGeneration
+        let selectedTrackID: UUID?
+        if playWhenReady, filteredTracks.indices.contains(tableView.selectedRow) {
+            selectedTrackID = filteredTracks[tableView.selectedRow].id
+        } else {
+            selectedTrackID = nil
+        }
 
         let workItem = DispatchWorkItem { [weak self] in
-            guard let self = self else { return }
-
             let filtered: [Track]
             if searchText.isEmpty {
-                filtered = self.allTracks
+                filtered = tracks
             } else {
-                filtered = self.allTracks.filter { track in
+                filtered = tracks.filter { track in
                     let filename = track.url.deletingPathExtension().lastPathComponent.lowercased()
                     return filename.contains(searchText)
                 }
             }
 
             DispatchQueue.main.async { [weak self] in
-                guard let self = self, self.filterWorkItem?.isCancelled == false else { return }
+                guard let self = self, self.filterGeneration == generation else { return }
 
                 self.filteredTracks = filtered
                 self.tableView.reloadData()
-                self.selectFirstRow()
+                if let selectedTrackID,
+                   let selectedRow = filtered.firstIndex(where: { $0.id == selectedTrackID }) {
+                    self.restoreSelection(for: selectedRow)
+                } else {
+                    self.selectFirstRow()
+                }
                 self.updateStatus()
 
                 if filtered.isEmpty && !self.searchField.stringValue.isEmpty {
                     self.searchField.becomeFirstResponder()
+                }
+
+                if playWhenReady {
+                    self.playSelectedTrack()
                 }
             }
         }
 
         filterWorkItem = workItem
 
-        DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + 0.15, execute: workItem)
+        let delay = playWhenReady ? 0 : 0.15
+        DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + delay, execute: workItem)
     }
 
     private func selectFirstRow() {
@@ -496,7 +515,7 @@ class SimpleSongPickerWindow: NSPanel {
     override func keyDown(with event: NSEvent) {
         switch event.keyCode {
         case 36, 76:
-            playSelectedTrack()
+            filterTracks(playWhenReady: true)
 
         case 53:
             close()
@@ -605,6 +624,11 @@ extension SimpleSongPickerWindow: NSTextFieldDelegate {
     }
 
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        if commandSelector == #selector(NSResponder.insertNewline(_:)) {
+            filterTracks(playWhenReady: true)
+            return true
+        }
+
         if commandSelector == #selector(NSResponder.cancelOperation(_:)) {
             close()
             return true
