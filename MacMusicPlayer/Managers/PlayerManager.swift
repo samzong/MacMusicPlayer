@@ -7,6 +7,12 @@ class PlayerManager: NSObject, ObservableObject {
     @Published var playlist: [Track] = []
     @Published var currentTrack: Track? {
         didSet {
+            if let currentTrack, let currentLibraryID {
+                UserDefaults.standard.set(
+                    currentTrack.url.path,
+                    forKey: "LastSelectedTrackPath.\(currentLibraryID.uuidString)"
+                )
+            }
             NotificationCenter.default.post(name: NSNotification.Name("TrackChanged"), object: nil)
         }
     }
@@ -19,6 +25,7 @@ class PlayerManager: NSObject, ObservableObject {
     private let queueController: QueuePlayerController
     private let playlistStore: PlaylistStore
     private var nowPlayingPlaybackState: MPNowPlayingPlaybackState = .stopped
+    private var currentLibraryID: UUID?
 
     var hasPlaylist: Bool { !playlistStore.isEmpty }
 
@@ -147,6 +154,7 @@ class PlayerManager: NSObject, ObservableObject {
     }
 
     func loadLibrary(_ library: MusicLibrary) {
+        currentLibraryID = library.id
         queueController.clearQueue()
         nowPlayingPlaybackState = .stopped
         currentTrack = nil
@@ -156,10 +164,10 @@ class PlayerManager: NSObject, ObservableObject {
 
         playlist = []
 
-        loadTracksFromMusicFolder(URL(fileURLWithPath: library.path))
+        loadTracksFromMusicFolder(URL(fileURLWithPath: library.path), libraryID: library.id)
     }
 
-    func loadTracksFromMusicFolder(_ folderURL: URL) {
+    private func loadTracksFromMusicFolder(_ folderURL: URL, libraryID: UUID) {
         let fileManager = FileManager.default
 
         guard let enumerator = fileManager.enumerator(at: folderURL,
@@ -189,6 +197,7 @@ class PlayerManager: NSObject, ObservableObject {
         }
 
         DispatchQueue.main.async {
+            guard self.currentLibraryID == libraryID else { return }
             let sortedTracks = newPlaylist.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
 
             self.playlistStore.setTracks(sortedTracks)
@@ -196,10 +205,17 @@ class PlayerManager: NSObject, ObservableObject {
             self.playlist = sortedTracks
 
             if !sortedTracks.isEmpty {
-                self.currentIndex = 0
-                self.currentTrack = sortedTracks[0]
-                self.playlistStore.setCurrentIndex(0)
-                self.queueController.setQueue(sortedTracks, startingAt: 0)
+                let savedTrackPath = UserDefaults.standard.string(
+                    forKey: "LastSelectedTrackPath.\(libraryID.uuidString)"
+                )
+                let selectedIndex = savedTrackPath.flatMap { path in
+                    sortedTracks.firstIndex(where: { $0.url.path == path })
+                } ?? 0
+
+                self.currentIndex = selectedIndex
+                self.currentTrack = sortedTracks[selectedIndex]
+                self.playlistStore.setCurrentIndex(selectedIndex)
+                self.queueController.setQueue(sortedTracks, startingAt: selectedIndex)
             } else {
                 self.currentTrack = nil
                 self.currentIndex = 0
