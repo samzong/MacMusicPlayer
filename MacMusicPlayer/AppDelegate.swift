@@ -203,10 +203,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         libraryManager.switchLibrary(id: libraryId)
 
-        if let currentLibrary = libraryManager.currentLibrary {
-            playerManager.loadLibrary(currentLibrary)
-        }
-
         statusMenuController.refresh()
     }
 
@@ -229,10 +225,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         if alert.runModal() == .alertFirstButtonReturn {
             libraryManager.removeLibrary(id: currentId)
-
-            if let newCurrent = libraryManager.currentLibrary {
-                playerManager.loadLibrary(newCurrent)
-            }
 
             statusMenuController.refresh()
         }
