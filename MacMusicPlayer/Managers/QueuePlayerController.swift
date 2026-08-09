@@ -6,17 +6,21 @@ class QueuePlayerController: NSObject, PlaybackControlling {
     private var playerItems: [AVPlayerItem] = []
     private var tracks: [Track] = []
     private var currentTrackIndex: Int = 0
+    private var currentItemStatusObservation: NSKeyValueObservation?
 
     var onTrackChanged: ((Track?) -> Void)?
     var onPlaybackStateChanged: ((Bool) -> Void)?
     var onTrackFinished: ((Track?) -> Void)?
 
     var isPlaying: Bool {
-        queuePlayer.rate > 0
+        guard let currentItem = queuePlayer.currentItem else { return false }
+        return currentItem.status != .failed && queuePlayer.rate > 0
     }
 
     var currentTrack: Track? {
-        guard currentTrackIndex < tracks.count else { return nil }
+        guard let currentItem = queuePlayer.currentItem,
+              currentItem.status != .failed,
+              currentTrackIndex < tracks.count else { return nil }
         return tracks[currentTrackIndex]
     }
 
@@ -60,6 +64,7 @@ class QueuePlayerController: NSObject, PlaybackControlling {
     }
 
     private func removeObservers() {
+        currentItemStatusObservation = nil
         NotificationCenter.default.removeObserver(self)
         queuePlayer.removeObserver(self, forKeyPath: "rate")
         queuePlayer.removeObserver(self, forKeyPath: "currentItem")
@@ -69,8 +74,24 @@ class QueuePlayerController: NSObject, PlaybackControlling {
         if keyPath == "rate" {
             onPlaybackStateChanged?(isPlaying)
         } else if keyPath == "currentItem" {
+            observeCurrentItemStatus()
+            guard queuePlayer.currentItem != nil else { return }
             updateCurrentTrackIndex()
             onTrackChanged?(currentTrack)
+            onPlaybackStateChanged?(isPlaying)
+        }
+    }
+
+    private func observeCurrentItemStatus() {
+        currentItemStatusObservation = queuePlayer.currentItem?.observe(\.status, options: [.initial, .new]) { [weak self] item, _ in
+            guard item.status == .failed else { return }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self,
+                      self.queuePlayer.currentItem == nil || self.queuePlayer.currentItem === item else { return }
+                self.onTrackChanged?(nil)
+                self.onPlaybackStateChanged?(false)
+            }
         }
     }
 
