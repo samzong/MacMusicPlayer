@@ -278,9 +278,7 @@ class PlayerManager: NSObject, ObservableObject {
                 playlistStore.setCurrentIndex(0)
                 currentIndex = 0
             }
-        case .singleLoop:
-            queueController.stop()
-        case .random:
+        case .singleLoop, .random:
             queueController.setQueue(playlistStore.tracks, startingAt: nextIndex)
             currentIndex = nextIndex
         }
@@ -299,16 +297,16 @@ class PlayerManager: NSObject, ObservableObject {
         let shouldResumePlayback = nowPlayingPlaybackState == .playing
 
         switch playMode {
-        case .sequential, .random:
-            guard let previousIndex = playlistStore.previousIndex() else { return }
+        case .sequential, .singleLoop, .random:
+            let previousIndex = playlistStore.previousIndex()
+                ?? (playMode == .singleLoop ? playlistStore.currentIndex : nil)
+            guard let previousIndex else { return }
 
             queueController.setQueue(playlistStore.tracks, startingAt: previousIndex)
             playlistStore.setCurrentIndex(previousIndex)
             currentIndex = previousIndex
 
             currentTrack = playlistStore.currentTrack
-        case .singleLoop:
-            queueController.stop()
         }
 
         if shouldResumePlayback {
