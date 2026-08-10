@@ -636,10 +636,6 @@ public class DownloadManager {
 
             if result.terminationStatus == 0 {
                 print(NSLocalizedString("Download successful", comment: "Log message when download succeeds"))
-
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
-                }
             } else {
                 print(NSLocalizedString("Download failed, exit status: %d", comment: "Log message when download fails"), result.terminationStatus)
                 throw DownloadError.downloadFailed(result.standardError)

@@ -146,6 +146,25 @@ class QueuePlayerController: NSObject, PlaybackControlling {
         appendNextItemIfNeeded()
     }
 
+    func replaceTracks(_ newTracks: [Track], preservingCurrentTrackAt index: Int) -> Bool {
+        guard newTracks.indices.contains(index),
+              let currentItem = queuePlayer.currentItem,
+              tracks.indices.contains(currentTrackIndex),
+              tracks[currentTrackIndex].url.path == newTracks[index].url.path else {
+            return false
+        }
+
+        for item in queuePlayer.items().dropFirst() {
+            queuePlayer.remove(item)
+        }
+
+        tracks = newTracks
+        currentTrackIndex = index
+        itemIndices = [ObjectIdentifier(currentItem): index]
+        appendNextItemIfNeeded()
+        return true
+    }
+
     func advanceToNext() -> Bool {
         guard currentTrackIndex < tracks.count - 1 else { return false }
         appendNextItemIfNeeded()
