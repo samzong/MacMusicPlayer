@@ -155,20 +155,29 @@ class PlayerManager: NSObject, ObservableObject {
 
     func loadLibrary(_ library: MusicLibrary) {
         currentLibraryID = library.id
-        queueController.clearQueue()
-        nowPlayingPlaybackState = .stopped
-        currentTrack = nil
-        isPlaying = false
-        updateNowPlayingInfo(playbackState: .stopped)
-        currentIndex = 0
+        resetPlayback()
 
         playlist = []
 
         loadTracksFromMusicFolder(URL(fileURLWithPath: library.path), libraryID: library.id)
     }
 
-    private func loadTracksFromMusicFolder(_ folderURL: URL, libraryID: UUID) {
+    private func resetPlayback() {
+        queueController.clearQueue()
+        nowPlayingPlaybackState = .stopped
+        currentTrack = nil
+        isPlaying = false
+        updateNowPlayingInfo(playbackState: .stopped)
+        currentIndex = 0
+    }
+
+    private func loadTracksFromMusicFolder(
+        _ folderURL: URL,
+        libraryID: UUID,
+        preservingCurrentItem: Bool = false
+    ) {
         let fileManager = FileManager.default
+        let existingTracksByPath = Dictionary(uniqueKeysWithValues: playlist.map { ($0.url.path, $0) })
 
         guard let enumerator = fileManager.enumerator(at: folderURL,
                                                     includingPropertiesForKeys: [.isRegularFileKey],
@@ -191,7 +200,8 @@ class PlayerManager: NSObject, ObservableObject {
                     title = String(fileName[range.upperBound...]).trimmingCharacters(in: .whitespaces)
                 }
 
-                let track = Track(id: UUID(), title: title, artist: artist, url: fileURL)
+                let track = existingTracksByPath[fileURL.path]
+                    ?? Track(id: UUID(), title: title, artist: artist, url: fileURL)
                 newPlaylist.append(track)
             }
         }
@@ -200,8 +210,25 @@ class PlayerManager: NSObject, ObservableObject {
             guard self.currentLibraryID == libraryID else { return }
             let sortedTracks = newPlaylist.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
 
-            self.playlistStore.setTracks(sortedTracks)
+            if preservingCurrentItem,
+               let currentPath = self.currentTrack?.url.path,
+               let currentIndex = sortedTracks.firstIndex(where: { $0.url.path == currentPath }),
+               self.queueController.replaceTracks(sortedTracks, preservingCurrentTrackAt: currentIndex) {
+                self.playlistStore.setTracks(sortedTracks)
+                self.playlistStore.setCurrentIndex(currentIndex)
+                self.currentIndex = currentIndex
+                self.playlist = sortedTracks
+                self.currentTrack = sortedTracks[currentIndex]
+                self.updateNowPlayingInfo()
+                NotificationCenter.default.post(name: NSNotification.Name("PlaylistUpdated"), object: nil)
+                return
+            }
 
+            if preservingCurrentItem {
+                self.resetPlayback()
+            }
+
+            self.playlistStore.setTracks(sortedTracks)
             self.playlist = sortedTracks
 
             if !sortedTracks.isEmpty {
@@ -336,7 +363,15 @@ class PlayerManager: NSObject, ObservableObject {
     @MainActor
     @objc func refreshMusicLibrary() {
         if let library = (NSApplication.shared.delegate as? AppDelegate)?.libraryManager.currentLibrary {
-            loadLibrary(library)
+            if currentLibraryID == library.id {
+                loadTracksFromMusicFolder(
+                    URL(fileURLWithPath: library.path),
+                    libraryID: library.id,
+                    preservingCurrentItem: true
+                )
+            } else {
+                loadLibrary(library)
+            }
         } else {
             loadSavedMusicFolder()
         }

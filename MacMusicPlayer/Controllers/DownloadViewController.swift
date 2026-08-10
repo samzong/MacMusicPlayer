@@ -1254,7 +1254,6 @@ class DownloadViewController: NSViewController {
                         sender.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
                     }
 
-                    NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
                 }
             } catch {
                 DispatchQueue.main.async {
@@ -1986,7 +1985,6 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                         self.downloadAllButton.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
                     }
 
-                    NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
                 }
             } catch {
                 DispatchQueue.main.async {
@@ -2030,7 +2028,6 @@ extension DownloadViewController: NSTableViewDataSource, NSTableViewDelegate {
                     self.statusLabel.stringValue = NSLocalizedString("Download completed", comment: "")
                     self.statusLabel.textColor = NSColor.systemGreen
 
-                    NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
                 }
             } catch {
                 DispatchQueue.main.async {
