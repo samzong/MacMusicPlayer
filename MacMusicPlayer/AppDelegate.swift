@@ -231,9 +231,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func refreshCurrentLibrary() {
-        guard let currentLibrary = libraryManager.currentLibrary else { return }
+        guard libraryManager.currentLibrary != nil else { return }
 
-        playerManager.loadLibrary(currentLibrary)
+        playerManager.refreshMusicLibrary()
         statusMenuController.showTemporaryRefreshingIcon()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
