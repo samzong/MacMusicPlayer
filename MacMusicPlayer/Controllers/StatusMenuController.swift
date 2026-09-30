@@ -1,7 +1,7 @@
 import Cocoa
 
 @MainActor
-final class StatusMenuController: NSObject {
+final class StatusMenuController: NSObject, NSMenuDelegate {
     private let playerManager: PlayerManager
     private let sleepManager: SleepManager
     private let launchManager: LaunchManager
@@ -66,6 +66,7 @@ final class StatusMenuController: NSObject {
         menu.addItem(withTitle: getVersionString(), action: nil, keyEquivalent: "").isEnabled = false
         addActionItem(to: menu, title: NSLocalizedString("Quit", comment: ""), action: #selector(AppDelegate.quit))
 
+        menu.delegate = self
         statusItem.menu = menu
         for name in ["TrackChanged", "PlaybackStateChanged", "PlaylistUpdated"] {
             NotificationCenter.default.addObserver(self, selector: #selector(refresh), name: NSNotification.Name(name), object: nil)
@@ -82,6 +83,10 @@ final class StatusMenuController: NSObject {
         updateToggleStates()
         updateStatusBarIcon()
         updatePlayModeSelection()
+    }
+
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        updateToggleStates()
     }
 
     @discardableResult

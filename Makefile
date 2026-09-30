@@ -7,7 +7,7 @@ RESET := \033[0m
 APP_NAME = MacMusicPlayer
 BUILD_DIR = build
 DMG_VOLUME_NAME = "$(APP_NAME) (Apple Silicon)"
-MACOS_MIN = 12.0
+MACOS_MIN = 13.0
 ICON_SRC = $(APP_NAME)/Assets.xcassets/AppIcon.appiconset
 ICONSET = $(BUILD_DIR)/AppIcon.iconset
 

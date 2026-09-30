@@ -21,7 +21,7 @@
 
 ## Requirements
 
-- macOS 12.0 (Monterey) or later
+- macOS 13.0 (Ventura) or later
 
 ## Installation
 
