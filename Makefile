@@ -134,6 +134,6 @@ clean: ## Remove build artifacts
 
 help: ## Show available targets
 	@awk 'BEGIN {FS = ":.*## "; printf "\n$(BOLD)MacMusicPlayer$(RESET) — menu bar music player for macOS\n"} \
-		/^# ── / {n = $$0; gsub(/(^# ── | ─+$$)/, "", n); printf "\n$(BOLD)%s$(RESET)\n", n} \
+		/^# ── / {n = $$0; gsub(/(^# ── | (─)+$$)/, "", n); printf "\n$(BOLD)%s$(RESET)\n", n} \
 		/^[a-zA-Z_-]+:.*## / {printf "  $(CYAN)make %-16s$(RESET) %s\n", $$1, $$2} \
 		END {printf "\n"}' $(MAKEFILE_LIST)
