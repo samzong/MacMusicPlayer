@@ -2,37 +2,38 @@ import Foundation
 import ServiceManagement
 
 class LaunchManager {
-    private let bundleIdentifier = Bundle.main.bundleIdentifier ?? "com.seimotech.MacMusicPlayer"
+    private let service = SMAppService.mainApp
+    private let defaultsKey = "LaunchAtLogin"
 
     var launchAtLogin: Bool {
-        didSet {
-            setLaunchAtLogin(launchAtLogin)
-            UserDefaults.standard.set(launchAtLogin, forKey: "LaunchAtLogin")
+        get { service.status == .enabled }
+        set {
+            UserDefaults.standard.set(newValue, forKey: defaultsKey)
+            setLaunchAtLogin(newValue)
         }
     }
 
     init() {
-        self.launchAtLogin = UserDefaults.standard.object(forKey: "LaunchAtLogin") == nil ? true : UserDefaults.standard.bool(forKey: "LaunchAtLogin")
-        setLaunchAtLogin(launchAtLogin)
+        let wanted = UserDefaults.standard.object(forKey: defaultsKey) as? Bool ?? true
+        if wanted && service.status != .requiresApproval {
+            setLaunchAtLogin(true)
+        }
     }
 
     private func setLaunchAtLogin(_ enable: Bool) {
-        if #available(macOS 13.0, *) {
-            do {
-                if enable {
-                    if SMAppService.mainApp.status == .notRegistered {
-                        try SMAppService.mainApp.register()
-                    }
-                } else {
-                    if SMAppService.mainApp.status == .enabled {
-                        try SMAppService.mainApp.unregister()
-                    }
-                }
-            } catch {
-                print("Failed to \(enable ? "enable" : "disable") launch at login: \(error)")
+        do {
+            switch (enable, service.status) {
+            case (true, .requiresApproval):
+                SMAppService.openSystemSettingsLoginItems()
+            case (true, .notRegistered), (true, .notFound):
+                try service.register()
+            case (false, .enabled), (false, .requiresApproval):
+                try service.unregister()
+            default:
+                break
             }
-        } else {
-            _ = SMLoginItemSetEnabled(bundleIdentifier as CFString, enable)
+        } catch {
+            print("Failed to \(enable ? "enable" : "disable") launch at login: \(error)")
         }
     }
 }
