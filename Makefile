@@ -1,17 +1,18 @@
-.PHONY: clean build install-app dmg update-homebrew check-arch
+BOLD  := \033[1m
+CYAN  := \033[36m
+RESET := \033[0m
 
-# Variables
+.DEFAULT_GOAL := help
+
 APP_NAME = MacMusicPlayer
 BUILD_DIR = build
 DMG_VOLUME_NAME = "$(APP_NAME)"
 
-# Install variables
 CONFIGURATION = Release
 BUILT_APP_PATH = $(BUILD_DIR)/$(CONFIGURATION)/$(APP_NAME).app
 USER_APPLICATIONS = $(HOME)/Applications
 INSTALL_PATH = $(USER_APPLICATIONS)/$(APP_NAME).app
 
-# Version information
 GIT_COMMIT := $(shell git rev-parse --short HEAD)
 
 # Prefer tagged versions; fall back to the nearest tag or commit hash automatically.
@@ -93,18 +94,15 @@ define echo_dmg_line
 	@echo "    - $(1) version: $(call dmg_path,$(1))"
 endef
 
-# Homebrew related variables
 HOMEBREW_TAP_REPO = homebrew-tap
 CASK_FILE = Casks/mac-music-player.rb
 BRANCH_NAME = update-mac-music-player-$(MARKETING_SEMVER)
 
-# Clean build artifacts
-clean:
-	rm -rf $(BUILD_DIR)
-	xcodebuild clean -scheme $(APP_NAME)
+# ── Build ────────────────────────────────────────────────────────────────────
 
-# Build for local development (current architecture)
-build:
+.PHONY: build install-app
+
+build: ## Build the Release app for this Mac into build/Release
 	@echo "🔨 Build $(APP_NAME) application (local development version)..."
 	@mkdir -p $(BUILD_DIR)
 	xcodebuild \
@@ -121,8 +119,7 @@ build:
 	@echo "✅ Build completed!"
 	@echo "📍 Application location: $(BUILT_APP_PATH)"
 
-# Install app to ~/Applications and launch it
-install-app:
+install-app: ## Quit, rebuild, install to ~/Applications, and launch
 	@echo "⏹️  Force quitting any running $(APP_NAME) instances..."
 	@if pgrep -x "$(APP_NAME)" >/dev/null 2>&1; then \
 		pkill -KILL -x "$(APP_NAME)" >/dev/null 2>&1; \
@@ -148,7 +145,10 @@ install-app:
 		exit 1; \
 	fi
 
-# Build for specific architectures
+# ── Release ──────────────────────────────────────────────────────────────────
+
+.PHONY: dmg check-arch version update-homebrew
+
 define build_target_template
 .PHONY: build-$(1)
 build-$(1):
@@ -156,8 +156,7 @@ build-$(1):
 endef
 $(foreach arch,$(ARCHES),$(eval $(call build_target_template,$(arch))))
 
-# Create DMG (builds all defined architectures)
-dmg: $(foreach arch,$(ARCHES),build-$(arch))
+dmg: $(foreach arch,$(ARCHES),build-$(arch)) ## Archive x86_64 and arm64 and package self-signed DMGs
 	$(foreach arch,$(ARCHES),$(call package_template,$(arch)))
 	@$(MAKE) --no-print-directory check-arch
 	@echo "==> All DMG files have been created:"
@@ -165,8 +164,7 @@ dmg: $(foreach arch,$(ARCHES),build-$(arch))
 	@echo ""
 	@echo "Note: These DMGs are self-signed; users may need to approve them in System Settings."
 
-# Check architecture compatibility
-check-arch:
+check-arch: ## Verify each archive contains its own architecture
 	@echo "==> Check application architecture compatibility..."
 	@for arch in $(ARCHES); do \
 		BINARY="$(call archive_path,$$arch)/Products/Applications/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"; \
@@ -182,16 +180,13 @@ check-arch:
 		fi; \
 	done
 
-
-# Show version information
-version:
+version: ## Print version info (override VERSION, MARKETING_SEMVER, BUILD_NUMBER)
 	@echo "Version:     $(VERSION)"
 	@echo "Git Commit:  $(GIT_COMMIT)"
 	@echo "Marketing:   $(MARKETING_SEMVER)"
 	@echo "Build Number: $(BUILD_NUMBER)"
 
-# Update Homebrew Cask
-update-homebrew:
+update-homebrew: ## Open a homebrew-tap PR for the released DMGs (needs GH_PAT)
 	@echo "==> Starting Homebrew cask update process..."
 	@if [ -z "$(GH_PAT)" ]; then \
 		echo "❌ Error: GH_PAT environment variable is required"; \
@@ -265,20 +260,20 @@ update-homebrew:
 	@rm -rf tmp
 	@echo "✅ Homebrew cask update process completed"
 
-# Help command
-help:
-	@echo "MacMusicPlayer build targets:"
-	@echo "  make build         Build app for the current architecture"
-	@echo "  make install-app   Build, install to ~/Applications, and launch"
-	@echo "  make dmg           Produce self-signed DMGs for x86_64 and arm64"
-	@echo "  make check-arch    Confirm archive slices for each architecture"
-	@echo "  make version       Print version, marketing, and build numbers"
-	@echo "  make clean         Remove build artifacts"
-	@echo "  make update-homebrew GH_PAT=token  Update Homebrew cask"
-	@echo "  make build-<arch>    Build single-arch archives (arches: $(ARCHES))"
-	@echo ""
-	@echo "Override MARKETING_SEMVER/BUILD_NUMBER when needed, e.g. MARKETING_SEMVER=1.2.3 make build"
-	@echo ""
-	@echo "All DMGs are self-signed; users may need to allow them manually."
+# ── Maintenance ──────────────────────────────────────────────────────────────
 
-.DEFAULT_GOAL := help
+.PHONY: clean
+
+clean: ## Remove build artifacts
+	rm -rf $(BUILD_DIR)
+	xcodebuild clean -scheme $(APP_NAME)
+
+# ── Help ─────────────────────────────────────────────────────────────────────
+
+.PHONY: help
+
+help: ## Show available targets
+	@awk 'BEGIN {FS = ":.*## "; printf "\n$(BOLD)MacMusicPlayer$(RESET) — menu bar music player for macOS\n"} \
+		/^# ── / {n = $$0; gsub(/(^# ── | ─+$$)/, "", n); printf "\n$(BOLD)%s$(RESET)\n", n} \
+		/^[a-zA-Z_-]+:.*## / {printf "  $(CYAN)make %-16s$(RESET) %s\n", $$1, $$2} \
+		END {printf "\n"}' $(MAKEFILE_LIST)
