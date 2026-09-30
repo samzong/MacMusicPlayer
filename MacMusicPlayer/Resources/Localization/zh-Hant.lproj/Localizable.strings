@@ -8,7 +8,6 @@
 "Sequential" = "順序播放";
 "Single Loop" = "單曲重複";
 "Random" = "隨機播放";
-"Set Music Source" = "選擇音樂資料夾";
 "Download Music" = "下載音樂";
 "Browse Songs" = "瀏覽歌曲";
 "Prevent Mac Sleep" = "保持系統喚醒";
@@ -40,14 +39,8 @@
 "Started playing" = "正在播放";
 "Paused playback" = "已暫停";
 "No current track to play" = "沒有可播放的音樂";
-"Error accessing Music folder" = "無法訪問音樂資料夾";
-"Could not create player" = "無法初始化播放器";
 
 // System
-"Enable launch at login" = "已開啟開機啟動";
-"Disable launch at login" = "已關閉開機啟動";
-"MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "需要權限保持系統喚醒，以確保音樂不被中斷"; 
-"Version %@ (%@)" = "版本 %@ (%@)"; 
 
 // Download Manager
 "Failed to get available formats" = "無法獲取可用格式";
@@ -64,7 +57,6 @@
 "Error checking yt-dlp: %@" = "檢查 yt-dlp 時出錯: %@";
 "Error getting video title: %@" = "獲取視頻標題時出錯: %@";
 "Getting available formats, URL: %@" = "獲取可用格式，URL: %@";
-"Best Quality (Auto Select)" = "最佳音質 (自動選擇)";
 "stereo" = "立體聲";
 "mono" = "單聲道";
 "5.1 channels" = "5.1聲道";
@@ -73,10 +65,8 @@
 "M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "M4A 音頻 (128kbps, 44kHz, 立體聲, 3.5MiB) [AAC]";
 "WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "WebM 音頻 (160kbps, 48kHz, 立體聲, 3.2MiB) [Opus]";
 "Failed to get formats: %@" = "獲取格式失敗: %@";
-"Error getting formats: %@" = "獲取格式時出錯: %@";
 "Starting audio download, URL: %@, Format ID: %@" = "開始下載音頻，URL: %@, 格式ID: %@";
 "Getting playlist information, URL: %@" = "獲取播放列表信息，URL: %@";
-"Starting playlist download, URL: %@" = "開始下載播放列表，URL: %@";
 "Successfully downloaded: %@" = "下載成功：%@";
 "Failed to download: %@ - Error: %@" = "下載失敗：%@ - 錯誤：%@";
 "Completed" = "已完成";
@@ -87,7 +77,6 @@
 "Executing download command..." = "執行下載命令...";
 "Download output: %@" = "下載輸出: %@";
 "Download error output: %@" = "下載錯誤輸出: %@";
-"Waiting for download to complete..." = "等待下載完成...";
 "Download successful" = "下載成功";
 "Download failed, exit status: %d" = "下載失敗，退出狀態: %d";
 "Error during download: %@" = "下載時出錯: %@";
@@ -96,8 +85,6 @@
 "Not installed" = "未安裝";
 "Installed" = "已安裝";
 "Please install missing dependencies" = "請安裝缺少的依賴";
-"Please select a format to download" = "請選擇要下載的格式";
-"Enter video URL" = "輸入視頻URL";
 "Detect" = "檢測";
 "Download" = "下載"; 
 
@@ -123,7 +110,6 @@
 "Load Playlist" = "載入播放列表";
 "Download All" = "全部下載";
 "Download %d" = "下載 %d 項";
-"Download Selected" = "下載選中項";
 "Stop" = "停止";
 "Download stopped" = "下載已停止";
 
@@ -135,7 +121,6 @@
 "Error: %@" = "錯誤: %@";
 "Starting download..." = "開始下載...";
 "Download completed successfully" = "下載成功完成";
-"Information" = "信息";
 "Loading formats..." = "正在加載格式...";
 "Downloading %@..." = "正在下載 %@...";
 "Download completed" = "下載完成";

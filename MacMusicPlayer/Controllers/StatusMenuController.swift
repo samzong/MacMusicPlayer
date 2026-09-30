@@ -19,7 +19,6 @@ final class StatusMenuController: NSObject {
     private weak var actionTarget: AppDelegate?
 
     private let statusBarSymbolConfiguration = NSImage.SymbolConfiguration(pointSize: 18, weight: .medium, scale: .medium)
-    private var observersRegistered = false
 
     init(playerManager: PlayerManager,
          sleepManager: SleepManager,
@@ -41,22 +40,36 @@ final class StatusMenuController: NSObject {
 
         addTrackInfoSection(to: menu)
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(makeFeelingLuckyItem())
-        addPlaybackSection(to: menu)
+        feelingLuckyItem = addActionItem(to: menu, title: NSLocalizedString("Feeling Lucky", comment: "Menu item for randomly playing a song"), action: #selector(AppDelegate.feelingLucky), key: "l")
+        playPauseItem = addActionItem(to: menu, title: NSLocalizedString("Play", comment: ""), action: #selector(AppDelegate.togglePlayPause))
+        addActionItem(to: menu, title: NSLocalizedString("Previous", comment: ""), action: #selector(AppDelegate.playPrevious))
+        addActionItem(to: menu, title: NSLocalizedString("Next", comment: ""), action: #selector(AppDelegate.playNext))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(makeBrowseItem())
-        menu.addItem(makePlaybackModeSection())
-        menu.addItem(makeLibrarySection())
-        menu.addItem(makeDownloadItem())
-        menu.addItem(makePreventSleepItem())
-        menu.addItem(makeLaunchAtLoginItem())
-        menu.addItem(makeSettingsItem())
+        addActionItem(to: menu, title: NSLocalizedString("Browse Songs", comment: "Menu item for browsing and selecting songs"), action: #selector(AppDelegate.showSongPickerWindow), key: "f")
+
+        let playModeMenu = NSMenu()
+        for mode in PlayMode.allCases {
+            addActionItem(to: playModeMenu, title: mode.localizedString, action: #selector(AppDelegate.setPlayMode(_:))).representedObject = mode
+        }
+        menu.addItem(withTitle: NSLocalizedString("Playback Mode", comment: ""), action: nil, keyEquivalent: "").submenu = playModeMenu
+        self.playModeMenu = playModeMenu
+
+        let libraryMenu = NSMenu()
+        menu.addItem(withTitle: NSLocalizedString("Music Libraries", comment: "Menu item for music libraries"), action: nil, keyEquivalent: "").submenu = libraryMenu
+        self.libraryMenu = libraryMenu
+
+        addActionItem(to: menu, title: NSLocalizedString("Download Music", comment: ""), action: #selector(AppDelegate.showDownloadWindow), key: "d")
+        preventSleepItem = addActionItem(to: menu, title: NSLocalizedString("Prevent Mac Sleep", comment: ""), action: #selector(AppDelegate.togglePreventSleep))
+        launchAtLoginItem = addActionItem(to: menu, title: NSLocalizedString("Launch at Login", comment: ""), action: #selector(AppDelegate.toggleLaunchAtLogin))
+        addActionItem(to: menu, title: NSLocalizedString("Settings", comment: ""), action: #selector(AppDelegate.showConfigWindow), key: "s")
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(makeVersionItem())
-        menu.addItem(makeQuitItem())
+        menu.addItem(withTitle: getVersionString(), action: nil, keyEquivalent: "").isEnabled = false
+        addActionItem(to: menu, title: NSLocalizedString("Quit", comment: ""), action: #selector(AppDelegate.quit))
 
         statusItem.menu = menu
-        registerNotifications()
+        for name in ["TrackChanged", "PlaybackStateChanged", "PlaylistUpdated"] {
+            NotificationCenter.default.addObserver(self, selector: #selector(refresh), name: NSNotification.Name(name), object: nil)
+        }
         refresh()
     }
 
@@ -69,6 +82,13 @@ final class StatusMenuController: NSObject {
         updateToggleStates()
         updateStatusBarIcon()
         updatePlayModeSelection()
+    }
+
+    @discardableResult
+    private func addActionItem(to menu: NSMenu, title: String, action: Selector, key: String = "") -> NSMenuItem {
+        let item = menu.addItem(withTitle: title, action: action, keyEquivalent: key)
+        item.target = actionTarget
+        return item
     }
 
     private func addTrackInfoSection(to menu: NSMenu) {
@@ -84,109 +104,6 @@ final class StatusMenuController: NSObject {
         trackInfoItem.view = containerView
         menu.addItem(trackInfoItem)
         trackLabel = label
-    }
-
-    private func addPlaybackSection(to menu: NSMenu) {
-        let playPauseTitle = playerManager.isPlaying ? NSLocalizedString("Pause", comment: "") : NSLocalizedString("Play", comment: "")
-        let playPauseItem = NSMenuItem(title: playPauseTitle, action: #selector(AppDelegate.togglePlayPause), keyEquivalent: "")
-        playPauseItem.target = actionTarget
-        menu.addItem(playPauseItem)
-        self.playPauseItem = playPauseItem
-
-        let previousItem = NSMenuItem(title: NSLocalizedString("Previous", comment: ""), action: #selector(AppDelegate.playPrevious), keyEquivalent: "")
-        previousItem.target = actionTarget
-        menu.addItem(previousItem)
-
-        let nextItem = NSMenuItem(title: NSLocalizedString("Next", comment: ""), action: #selector(AppDelegate.playNext), keyEquivalent: "")
-        nextItem.target = actionTarget
-        menu.addItem(nextItem)
-    }
-
-    private func makeFeelingLuckyItem() -> NSMenuItem {
-        let item = NSMenuItem(title: NSLocalizedString("Feeling Lucky", comment: "Menu item for randomly playing a song"), action: #selector(AppDelegate.feelingLucky), keyEquivalent: "l")
-        item.target = actionTarget
-        feelingLuckyItem = item
-        return item
-    }
-
-    private func makeBrowseItem() -> NSMenuItem {
-        let item = NSMenuItem(title: NSLocalizedString("Browse Songs", comment: "Menu item for browsing and selecting songs"), action: #selector(AppDelegate.showSongPickerWindow), keyEquivalent: "f")
-        item.target = actionTarget
-        return item
-    }
-
-    private func makePlaybackModeSection() -> NSMenuItem {
-        let playModeMenu = NSMenu()
-        let playModeItem = NSMenuItem(title: NSLocalizedString("Playback Mode", comment: ""), action: nil, keyEquivalent: "")
-
-        let sequentialItem = NSMenuItem(title: PlayMode.sequential.localizedString, action: #selector(AppDelegate.setPlayMode(_:)), keyEquivalent: "")
-        sequentialItem.tag = 0
-        sequentialItem.target = actionTarget
-
-        let singleLoopItem = NSMenuItem(title: PlayMode.singleLoop.localizedString, action: #selector(AppDelegate.setPlayMode(_:)), keyEquivalent: "")
-        singleLoopItem.tag = 1
-        singleLoopItem.target = actionTarget
-
-        let randomItem = NSMenuItem(title: PlayMode.random.localizedString, action: #selector(AppDelegate.setPlayMode(_:)), keyEquivalent: "")
-        randomItem.tag = 2
-        randomItem.target = actionTarget
-
-        playModeMenu.addItem(sequentialItem)
-        playModeMenu.addItem(singleLoopItem)
-        playModeMenu.addItem(randomItem)
-
-        playModeItem.submenu = playModeMenu
-        self.playModeMenu = playModeMenu
-
-        return playModeItem
-    }
-
-    private func makeLibrarySection() -> NSMenuItem {
-        let libraryMenu = NSMenu()
-        let libraryMenuItem = NSMenuItem(title: NSLocalizedString("Music Libraries", comment: "Menu item for music libraries"), action: nil, keyEquivalent: "")
-        libraryMenuItem.submenu = libraryMenu
-        self.libraryMenu = libraryMenu
-        return libraryMenuItem
-    }
-
-    private func makeDownloadItem() -> NSMenuItem {
-        let item = NSMenuItem(title: NSLocalizedString("Download Music", comment: ""), action: #selector(AppDelegate.showDownloadWindow), keyEquivalent: "d")
-        item.target = actionTarget
-        return item
-    }
-
-    private func makePreventSleepItem() -> NSMenuItem {
-        let item = NSMenuItem(title: NSLocalizedString("Prevent Mac Sleep", comment: ""), action: #selector(AppDelegate.togglePreventSleep), keyEquivalent: "")
-        item.target = actionTarget
-        item.state = sleepManager.preventSleep ? .on : .off
-        preventSleepItem = item
-        return item
-    }
-
-    private func makeLaunchAtLoginItem() -> NSMenuItem {
-        let item = NSMenuItem(title: NSLocalizedString("Launch at Login", comment: ""), action: #selector(AppDelegate.toggleLaunchAtLogin), keyEquivalent: "")
-        item.target = actionTarget
-        item.state = launchManager.launchAtLogin ? .on : .off
-        launchAtLoginItem = item
-        return item
-    }
-
-    private func makeSettingsItem() -> NSMenuItem {
-        let item = NSMenuItem(title: NSLocalizedString("Settings", comment: ""), action: #selector(AppDelegate.showConfigWindow), keyEquivalent: "s")
-        item.target = actionTarget
-        return item
-    }
-
-    private func makeVersionItem() -> NSMenuItem {
-        let versionItem = NSMenuItem(title: getVersionString(), action: nil, keyEquivalent: "")
-        versionItem.isEnabled = false
-        return versionItem
-    }
-
-    private func makeQuitItem() -> NSMenuItem {
-        let item = NSMenuItem(title: NSLocalizedString("Quit", comment: ""), action: #selector(AppDelegate.quit), keyEquivalent: "")
-        item.target = actionTarget
-        return item
     }
 
     private func updateTrackInfo() {
@@ -206,32 +123,18 @@ final class StatusMenuController: NSObject {
         libraryMenu.removeAllItems()
 
         for library in libraryManager.libraries {
-            let item = NSMenuItem(title: library.name, action: #selector(AppDelegate.switchLibrary(_:)), keyEquivalent: "")
+            let item = addActionItem(to: libraryMenu, title: library.name, action: #selector(AppDelegate.switchLibrary(_:)))
             item.representedObject = library.id
             item.state = libraryManager.currentLibrary?.id == library.id ? .on : .off
-            item.target = actionTarget
-            libraryMenu.addItem(item)
         }
 
         libraryMenu.addItem(NSMenuItem.separator())
-
-        let refreshItem = NSMenuItem(title: NSLocalizedString("Refresh Current Library", comment: "Menu item for refreshing current music library"), action: #selector(AppDelegate.refreshCurrentLibrary), keyEquivalent: "r")
-        refreshItem.target = actionTarget
-        libraryMenu.addItem(refreshItem)
-
-        let addItem = NSMenuItem(title: NSLocalizedString("Add New Library", comment: "Menu item for adding a new music library"), action: #selector(AppDelegate.addNewLibrary), keyEquivalent: "")
-        addItem.target = actionTarget
-        libraryMenu.addItem(addItem)
-
+        addActionItem(to: libraryMenu, title: NSLocalizedString("Refresh Current Library", comment: "Menu item for refreshing current music library"), action: #selector(AppDelegate.refreshCurrentLibrary), key: "r")
+        addActionItem(to: libraryMenu, title: NSLocalizedString("Add New Library", comment: "Menu item for adding a new music library"), action: #selector(AppDelegate.addNewLibrary))
         if libraryManager.libraries.count > 1 {
-            let deleteItem = NSMenuItem(title: NSLocalizedString("Delete Current Library", comment: "Menu item for deleting current music library"), action: #selector(AppDelegate.removeCurrentLibrary), keyEquivalent: "")
-            deleteItem.target = actionTarget
-            libraryMenu.addItem(deleteItem)
+            addActionItem(to: libraryMenu, title: NSLocalizedString("Delete Current Library", comment: "Menu item for deleting current music library"), action: #selector(AppDelegate.removeCurrentLibrary))
         }
-
-        let renameItem = NSMenuItem(title: NSLocalizedString("Rename Current Library", comment: "Menu item for renaming current music library"), action: #selector(AppDelegate.renameCurrentLibrary), keyEquivalent: "")
-        renameItem.target = actionTarget
-        libraryMenu.addItem(renameItem)
+        addActionItem(to: libraryMenu, title: NSLocalizedString("Rename Current Library", comment: "Menu item for renaming current music library"), action: #selector(AppDelegate.renameCurrentLibrary))
     }
 
     private func updateToggleStates() {
@@ -240,51 +143,25 @@ final class StatusMenuController: NSObject {
     }
 
     func updateStatusBarIcon() {
-        guard let button = statusItem?.button else { return }
-        let symbolName = playerManager.isPlaying ? "headphones.circle.fill" : "headphones.circle"
-        guard let icon = makeStatusBarImage(symbolName: symbolName, accessibilityDescription: "Music") else {
-            button.image = nil
-            return
-        }
-
-        button.image = icon
-        button.imageScaling = .scaleProportionallyDown
-        button.contentTintColor = nil
+        setStatusBarIcon(playerManager.isPlaying ? "headphones.circle.fill" : "headphones.circle", accessibilityDescription: "Music")
     }
 
     func showTemporaryRefreshingIcon() {
-        guard let button = statusItem?.button else { return }
-        guard let icon = makeStatusBarImage(symbolName: "arrow.clockwise", accessibilityDescription: "Refreshing") else {
-            return
-        }
+        setStatusBarIcon("arrow.clockwise", accessibilityDescription: "Refreshing")
+    }
 
-        button.image = icon
+    private func setStatusBarIcon(_ symbolName: String, accessibilityDescription: String) {
+        guard let button = statusItem?.button else { return }
+        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: accessibilityDescription)?.withSymbolConfiguration(statusBarSymbolConfiguration)
+        image?.isTemplate = true
+        button.image = image
         button.imageScaling = .scaleProportionallyDown
-        button.contentTintColor = nil
     }
 
     private func updatePlayModeSelection() {
-        guard let playModeMenu = playModeMenu else { return }
-        for item in playModeMenu.items {
-            item.state = item.tag == playerManager.playMode.tag ? .on : .off
+        for item in playModeMenu?.items ?? [] {
+            item.state = item.representedObject as? PlayMode == playerManager.playMode ? .on : .off
         }
-    }
-
-    private func makeStatusBarImage(symbolName: String, accessibilityDescription: String) -> NSImage? {
-        guard let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: accessibilityDescription)?.withSymbolConfiguration(statusBarSymbolConfiguration) else {
-            return nil
-        }
-
-        image.isTemplate = true
-        return image
-    }
-
-    private func registerNotifications() {
-        guard !observersRegistered else { return }
-        NotificationCenter.default.addObserver(self, selector: #selector(refresh), name: NSNotification.Name("TrackChanged"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(refresh), name: NSNotification.Name("PlaybackStateChanged"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(refresh), name: NSNotification.Name("PlaylistUpdated"), object: nil)
-        observersRegistered = true
     }
 
     private func getVersionString() -> String {
@@ -295,9 +172,5 @@ final class StatusMenuController: NSObject {
             let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
             return String(format: NSLocalizedString("Version %@", comment: ""), appVersion)
         #endif
-    }
-
-    deinit {
-        NotificationCenter.default.removeObserver(self)
     }
 }

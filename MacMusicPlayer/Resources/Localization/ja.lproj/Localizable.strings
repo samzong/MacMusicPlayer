@@ -8,7 +8,6 @@
 "Sequential" = "順番に再生";
 "Single Loop" = "1曲リピート";
 "Random" = "シャッフル";
-"Set Music Source" = "音楽フォルダを選択";
 "Download Music" = "音楽をダウンロードする";
 "Browse Songs" = "曲を選択";
 "Prevent Mac Sleep" = "システムのスリープを防止";
@@ -40,14 +39,8 @@
 "Started playing" = "再生中";
 "Paused playback" = "一時停止中";
 "No current track to play" = "再生可能な音楽がありません";
-"Error accessing Music folder" = "音楽フォルダにアクセスできません";
-"Could not create player" = "プレーヤーを初期化できません";
 
 // System
-"Enable launch at login" = "ログイン時の起動を有効にしました";
-"Disable launch at login" = "ログイン時の起動を無効にしました";
-"MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "途切れのない音楽再生のため、システムのスリープを防止する権限が必要です"; 
-"Version %@ (%@)" = "バージョン %@ (%@)"; 
 
 // Download Manager
 "Failed to get available formats" = "利用可能なフォーマットを取得できませんでした";
@@ -64,7 +57,6 @@
 "Error checking yt-dlp: %@" = "yt-dlpの確認中にエラーが発生しました: %@";
 "Error getting video title: %@" = "動画タイトルの取得中にエラーが発生しました: %@";
 "Getting available formats, URL: %@" = "利用可能なフォーマットを取得中、URL: %@";
-"Best Quality (Auto Select)" = "最高音質 (自動選択)";
 "stereo" = "ステレオ";
 "mono" = "モノラル";
 "5.1 channels" = "5.1チャンネル";
@@ -73,10 +65,8 @@
 "M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "M4A オーディオ (128kbps, 44kHz, ステレオ, 3.5MiB) [AAC]";
 "WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "WebM オーディオ (160kbps, 48kHz, ステレオ, 3.2MiB) [Opus]";
 "Failed to get formats: %@" = "フォーマットの取得に失敗しました: %@";
-"Error getting formats: %@" = "フォーマットの取得中にエラーが発生しました: %@";
 "Starting audio download, URL: %@, Format ID: %@" = "オーディオのダウンロードを開始、URL: %@, フォーマットID: %@";
 "Getting playlist information, URL: %@" = "プレイリスト情報を取得中、URL: %@";
-"Starting playlist download, URL: %@" = "プレイリストダウンロードを開始、URL: %@";
 "Successfully downloaded: %@" = "ダウンロード成功：%@";
 "Failed to download: %@ - Error: %@" = "ダウンロード失敗：%@ - エラー：%@";
 "Completed" = "完了";
@@ -87,7 +77,6 @@
 "Executing download command..." = "ダウンロードコマンドを実行中...";
 "Download output: %@" = "ダウンロード出力: %@";
 "Download error output: %@" = "ダウンロードエラー出力: %@";
-"Waiting for download to complete..." = "ダウンロード完了を待機中...";
 "Download successful" = "ダウンロード成功";
 "Download failed, exit status: %d" = "ダウンロード失敗、終了ステータス: %d";
 "Error during download: %@" = "ダウンロード中にエラーが発生しました: %@";
@@ -96,8 +85,6 @@
 "Not installed" = "インストールされていません";
 "Installed" = "インストール済み";
 "Please install missing dependencies" = "不足している依存関係をインストールしてください";
-"Please select a format to download" = "ダウンロードするフォーマットを選択してください";
-"Enter video URL" = "動画URLを入力";
 "Detect" = "検出";
 "Download" = "ダウンロード"; 
 
@@ -123,7 +110,6 @@
 "Load Playlist" = "プレイリスト読み込み";
 "Download All" = "すべてダウンロード";
 "Download %d" = "%d 件をダウンロード";
-"Download Selected" = "選択項目をダウンロード";
 "Stop" = "停止";
 "Download stopped" = "ダウンロード停止";
 
@@ -135,7 +121,6 @@
 "Error: %@" = "エラー: %@";
 "Starting download..." = "ダウンロードを開始中...";
 "Download completed successfully" = "ダウンロードが正常に完了しました";
-"Information" = "情報";
 "Loading formats..." = "フォーマットを読み込んでいます...";
 "Downloading %@..." = "ダウンロード中: %@...";
 "Download completed" = "ダウンロードが完了しました";

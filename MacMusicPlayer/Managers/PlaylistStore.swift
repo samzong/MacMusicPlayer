@@ -1,6 +1,6 @@
 import Foundation
 
-enum PlayMode: String {
+enum PlayMode: String, CaseIterable {
     case sequential = "Sequential"
     case singleLoop = "Single Loop"
     case random = "Random"
@@ -10,9 +10,9 @@ enum PlayMode: String {
     }
 }
 
-class PlaylistStore: ObservableObject {
-    @Published private(set) var tracks: [Track] = []
-    @Published private(set) var currentIndex: Int = 0
+class PlaylistStore {
+    private(set) var tracks: [Track] = []
+    private(set) var currentIndex: Int = 0
 
     func setTracks(_ newTracks: [Track]) {
         tracks = newTracks
@@ -49,22 +49,8 @@ class PlaylistStore: ObservableObject {
         tracks.isEmpty
     }
 
-    var count: Int {
-        tracks.count
-    }
-
     var currentTrack: Track? {
         guard currentIndex < tracks.count else { return nil }
         return tracks[currentIndex]
-    }
-}
-
-extension PlayMode {
-    var tag: Int {
-        switch self {
-        case .sequential: return 0
-        case .singleLoop: return 1
-        case .random: return 2
-        }
     }
 }

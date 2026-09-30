@@ -1,10 +1,10 @@
 import Foundation
 import ServiceManagement
 
-class LaunchManager: ObservableObject {
+class LaunchManager {
     private let bundleIdentifier = Bundle.main.bundleIdentifier ?? "com.seimotech.MacMusicPlayer"
 
-    @Published var launchAtLogin: Bool {
+    var launchAtLogin: Bool {
         didSet {
             setLaunchAtLogin(launchAtLogin)
             UserDefaults.standard.set(launchAtLogin, forKey: "LaunchAtLogin")

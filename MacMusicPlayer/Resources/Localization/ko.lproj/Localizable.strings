@@ -8,7 +8,6 @@
 "Sequential" = "순서대로 재생";
 "Single Loop" = "한 곡 반복";
 "Random" = "무작위 재생";
-"Set Music Source" = "음악 폴더 선택";
 "Download Music" = "음악 다운로드";
 "Browse Songs" = "노래 선택";
 "Prevent Mac Sleep" = "시스템 절전 방지";
@@ -40,14 +39,8 @@
 "Started playing" = "재생 중";
 "Paused playback" = "일시정지됨";
 "No current track to play" = "재생할 음악이 없습니다";
-"Error accessing Music folder" = "음악 폴더에 접근할 수 없습니다";
-"Could not create player" = "플레이어를 초기화할 수 없습니다";
 
 // System
-"Enable launch at login" = "로그인 시 실행이 활성화되었습니다";
-"Disable launch at login" = "로그인 시 실행이 비활성화되었습니다";
-"MacMusicPlayer needs permission to prevent system sleep to ensure uninterrupted music playback." = "중단 없는 음악 재생을 위해 시스템 절전 방지 권한이 필요합니다"; 
-"Version %@ (%@)" = "버전 %@ (%@)"; 
 
 // Download Manager
 "Failed to get available formats" = "사용 가능한 형식을 가져오지 못했습니다";
@@ -64,7 +57,6 @@
 "Error checking yt-dlp: %@" = "yt-dlp 확인 중 오류 발생: %@";
 "Error getting video title: %@" = "비디오 제목을 가져오는 중 오류 발생: %@";
 "Getting available formats, URL: %@" = "사용 가능한 형식을 가져오는 중, URL: %@";
-"Best Quality (Auto Select)" = "최고 품질 (자동 선택)";
 "stereo" = "스테레오";
 "mono" = "모노";
 "5.1 channels" = "5.1 채널";
@@ -73,10 +65,8 @@
 "M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "M4A 오디오 (128kbps, 44kHz, 스테레오, 3.5MiB) [AAC]";
 "WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "WebM 오디오 (160kbps, 48kHz, 스테레오, 3.2MiB) [Opus]";
 "Failed to get formats: %@" = "형식을 가져오지 못했습니다: %@";
-"Error getting formats: %@" = "형식을 가져오는 중 오류 발생: %@";
 "Starting audio download, URL: %@, Format ID: %@" = "오디오 다운로드 시작, URL: %@, 형식 ID: %@";
 "Getting playlist information, URL: %@" = "재생목록 정보 가져오는 중, URL: %@";
-"Starting playlist download, URL: %@" = "재생목록 다운로드 시작, URL: %@";
 "Successfully downloaded: %@" = "다운로드 성공: %@";
 "Failed to download: %@ - Error: %@" = "다운로드 실패: %@ - 오류: %@";
 "Completed" = "완료";
@@ -87,7 +77,6 @@
 "Executing download command..." = "다운로드 명령 실행 중...";
 "Download output: %@" = "다운로드 출력: %@";
 "Download error output: %@" = "다운로드 오류 출력: %@";
-"Waiting for download to complete..." = "다운로드 완료 대기 중...";
 "Download successful" = "다운로드 성공";
 "Download failed, exit status: %d" = "다운로드 실패, 종료 상태: %d";
 "Error during download: %@" = "다운로드 중 오류 발생: %@";
@@ -96,8 +85,6 @@
 "Not installed" = "설치되지 않음";
 "Installed" = "설치됨";
 "Please install missing dependencies" = "누락된 종속성을 설치하세요";
-"Please select a format to download" = "다운로드할 형식을 선택하세요";
-"Enter video URL" = "비디오 URL 입력";
 "Detect" = "감지";
 "Download" = "다운로드"; 
 
@@ -123,7 +110,6 @@
 "Load Playlist" = "재생목록 로드";
 "Download All" = "모두 다운로드";
 "Download %d" = "%d개 다운로드";
-"Download Selected" = "선택 항목 다운로드";
 "Stop" = "중지";
 "Download stopped" = "다운로드 중지됨";
 
@@ -135,7 +121,6 @@
 "Error: %@" = "오류: %@";
 "Starting download..." = "다운로드 시작 중...";
 "Download completed successfully" = "다운로드 성공";
-"Information" = "정보";
 "Loading formats..." = "형식 로드 중...";
 "Downloading %@..." = "다운로드 중: %@...";
 "Download completed" = "다운로드 완료";

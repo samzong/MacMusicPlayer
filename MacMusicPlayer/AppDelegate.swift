@@ -9,7 +9,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var sleepManager: SleepManager!
     var launchManager: LaunchManager!
     var libraryManager: LibraryManager!
-    var configManager: ConfigManager!
     var statusMenuController: StatusMenuController!
 
     private var downloadWindow: NSWindow?
@@ -21,7 +20,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         sleepManager = SleepManager()
         launchManager = LaunchManager()
         libraryManager = LibraryManager()
-        configManager = ConfigManager.shared
         DownloadManager.shared.updateLibraryManager(libraryManager)
 
         if let currentLibrary = libraryManager.currentLibrary {
@@ -30,9 +28,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             playerManager.requestMusicFolderAccess()
         }
 
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        self.statusItem = statusItem
 
-        if let button = statusItem?.button {
+        if let button = statusItem.button {
             button.target = self
             button.action = #selector(toggleMenu)
         }
@@ -44,9 +43,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             libraryManager: libraryManager
         )
 
-        if let statusItem = statusItem {
-            statusMenuController.configureStatusItem(statusItem, target: self)
-        }
+        statusMenuController.configureStatusItem(statusItem, target: self)
         setupRemoteCommandCenter()
 
         NotificationCenter.default.addObserver(
@@ -75,13 +72,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
-            if let isPlaying = self?.playerManager.isPlaying {
-                if isPlaying {
-                    self?.playerManager.pause()
-                } else {
-                    self?.playerManager.play()
-                }
-            }
+            self?.togglePlayPause()
             return .success
         }
 
@@ -130,17 +121,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func setPlayMode(_ sender: NSMenuItem) {
-        let mode: PlayMode
-        switch sender.tag {
-        case 0:
-            mode = .sequential
-        case 1:
-            mode = .singleLoop
-        case 2:
-            mode = .random
-        default:
-            return
-        }
+        guard let mode = sender.representedObject as? PlayMode else { return }
         playerManager.playMode = mode
         statusMenuController.refresh()
     }
@@ -308,7 +289,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func showSongPickerIfPreferred() {
-        guard configManager.showSongPickerOnLaunch else { return }
+        guard ConfigManager.shared.showSongPickerOnLaunch else { return }
         showSongPickerWindow()
     }
 

@@ -36,13 +36,10 @@ class YTSearchManager {
         }
 
         var urlComponents = URLComponents(string: "\(apiUrl)/search")
-        let queryItems = [
+        urlComponents?.queryItems = [
             URLQueryItem(name: "platform", value: "youtube"),
-            URLQueryItem(name: "q", value: keyword),
-            pageToken != nil ? URLQueryItem(name: "pageToken", value: pageToken) : nil
-        ].compactMap { $0 }
-
-        urlComponents?.queryItems = queryItems
+            URLQueryItem(name: "q", value: keyword)
+        ] + (pageToken.map { [URLQueryItem(name: "pageToken", value: $0)] } ?? [])
 
         guard let url = urlComponents?.url else {
             let error = NSError(domain: "YTSearchManager", code: 1002, userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("Invalid URL", comment: "")])
@@ -53,7 +50,6 @@ class YTSearchManager {
         print("YTSearchManager - Send request: URL: \(url.absoluteString), PageToken: \(pageToken ?? "nil")")
 
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
         request.addValue("Bearer \(configManager.apiKey)", forHTTPHeaderField: "Authorization")
 
         let task = URLSession.shared.dataTask(with: request) { data, response, error in

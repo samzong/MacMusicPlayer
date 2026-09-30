@@ -1,12 +1,13 @@
 import Foundation
 import AVFoundation
 
-class QueuePlayerController: NSObject, PlaybackControlling {
+class QueuePlayerController: NSObject {
     private let queuePlayer: AVQueuePlayer
     private var itemIndices: [ObjectIdentifier: Int] = [:]
     private var tracks: [Track] = []
     private var currentTrackIndex: Int = 0
     private var currentItemStatusObservation: NSKeyValueObservation?
+    private var playerObservations: [NSKeyValueObservation] = []
 
     var onTrackChanged: ((Track?) -> Void)?
     var onPlaybackStateChanged: ((Bool) -> Void)?
@@ -47,10 +48,6 @@ class QueuePlayerController: NSObject, PlaybackControlling {
         setupObservers()
     }
 
-    deinit {
-        removeObservers()
-    }
-
     private func setupObservers() {
         NotificationCenter.default.addObserver(
             self,
@@ -59,28 +56,21 @@ class QueuePlayerController: NSObject, PlaybackControlling {
             object: nil
         )
 
-        queuePlayer.addObserver(self, forKeyPath: "rate", options: [.new], context: nil)
-        queuePlayer.addObserver(self, forKeyPath: "currentItem", options: [.new], context: nil)
-    }
-
-    private func removeObservers() {
-        currentItemStatusObservation = nil
-        NotificationCenter.default.removeObserver(self)
-        queuePlayer.removeObserver(self, forKeyPath: "rate")
-        queuePlayer.removeObserver(self, forKeyPath: "currentItem")
-    }
-
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if keyPath == "rate" {
-            onPlaybackStateChanged?(isPlaying)
-        } else if keyPath == "currentItem" {
-            observeCurrentItemStatus()
-            guard queuePlayer.currentItem != nil else { return }
-            updateCurrentTrackIndex()
-            appendNextItemIfNeeded()
-            onTrackChanged?(currentTrack)
-            onPlaybackStateChanged?(isPlaying)
-        }
+        playerObservations = [
+            queuePlayer.observe(\.rate) { [weak self] _, _ in
+                guard let self else { return }
+                self.onPlaybackStateChanged?(self.isPlaying)
+            },
+            queuePlayer.observe(\.currentItem) { [weak self] _, _ in
+                guard let self else { return }
+                self.observeCurrentItemStatus()
+                guard self.queuePlayer.currentItem != nil else { return }
+                self.updateCurrentTrackIndex()
+                self.appendNextItemIfNeeded()
+                self.onTrackChanged?(self.currentTrack)
+                self.onPlaybackStateChanged?(self.isPlaying)
+            }
+        ]
     }
 
     private func observeCurrentItemStatus() {
@@ -121,11 +111,6 @@ class QueuePlayerController: NSObject, PlaybackControlling {
 
     func pause() {
         queuePlayer.pause()
-    }
-
-    func stop() {
-        queuePlayer.pause()
-        queuePlayer.seek(to: .zero)
     }
 
     func clearQueue() {

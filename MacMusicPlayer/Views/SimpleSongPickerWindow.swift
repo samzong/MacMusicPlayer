@@ -13,12 +13,6 @@ private func applyContinuousPanelCorners(to view: NSView) {
     view.layer?.masksToBounds = true
 }
 
-private func fillRoundedRect(_ rect: NSRect, radius: CGFloat, color: NSColor) {
-    let path = NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius)
-    color.setFill()
-    path.fill()
-}
-
 private final class PanelBorderView: NSView {
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
 
@@ -66,11 +60,8 @@ private class PickerRowView: NSTableRowView {
 
     override func draw(_ dirtyRect: NSRect) {
         if isSelected {
-            fillRoundedRect(
-                selectionRect,
-                radius: PanelCornerMetrics.selectionRadius,
-                color: .controlAccentColor
-            )
+            NSColor.controlAccentColor.setFill()
+            NSBezierPath(roundedRect: selectionRect, xRadius: PanelCornerMetrics.selectionRadius, yRadius: PanelCornerMetrics.selectionRadius).fill()
         }
     }
 
@@ -91,18 +82,18 @@ private class PickerRowView: NSTableRowView {
     override func mouseEntered(with event: NSEvent) {
         super.mouseEntered(with: event)
         isHovering = true
-        updateHover(animated: true)
+        updateHover()
     }
 
     override func mouseExited(with event: NSEvent) {
         super.mouseExited(with: event)
         isHovering = false
-        updateHover(animated: true)
+        updateHover()
     }
 
     override var isSelected: Bool {
         didSet {
-            updateHover(animated: true)
+            updateHover()
             needsDisplay = true
             updateCellAppearances()
         }
@@ -114,14 +105,8 @@ private class PickerRowView: NSTableRowView {
         }
     }
 
-    private func updateHover(animated: Bool) {
+    private func updateHover() {
         let shouldShow = isHovering && !isSelected
-
-        if !animated {
-            hoverLayer.isHidden = !shouldShow
-            hoverLayer.opacity = shouldShow ? 1 : 0
-            return
-        }
 
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.15
@@ -190,7 +175,6 @@ class SimpleSongPickerWindow: NSPanel {
 
     private let windowWidth: CGFloat = 600
     private let windowHeight: CGFloat = 400
-    private let rowHeight: CGFloat = 36
 
     init(playerManager: PlayerManager) {
         self.playerManager = playerManager
@@ -204,23 +188,15 @@ class SimpleSongPickerWindow: NSPanel {
 
         setupWindow()
         setupViews()
-        loadTracks()
 
-        if let playerManager = self.playerManager {
-            playlistCancellable = playerManager.$playlist
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] _ in
-                    self?.loadTracks()
-                }
-        }
+        playlistCancellable = playerManager.$playlist
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.loadTracks()
+            }
     }
 
     override var canBecomeKey: Bool { true }
-
-    deinit {
-        filterWorkItem?.cancel()
-        playlistCancellable?.cancel()
-    }
 
     private func setupWindow() {
         isOpaque = false
@@ -328,6 +304,7 @@ class SimpleSongPickerWindow: NSPanel {
         tableView.dataSource = self
         tableView.headerView = nil
         tableView.rowSizeStyle = .custom
+        tableView.rowHeight = 36
         tableView.target = self
         tableView.doubleAction = #selector(playSelectedTrack)
         tableView.backgroundColor = .clear
@@ -450,13 +427,13 @@ class SimpleSongPickerWindow: NSPanel {
                 self.tableView.reloadData()
                 if let selectedTrackID,
                    let selectedRow = filtered.firstIndex(where: { $0.id == selectedTrackID }) {
-                    self.restoreSelection(for: selectedRow)
+                    self.selectRow(selectedRow)
                 } else if searchText.isEmpty,
                           let currentTrackID = self.playerManager?.currentTrack?.id,
                           let currentRow = filtered.firstIndex(where: { $0.id == currentTrackID }) {
-                    self.restoreSelection(for: currentRow)
+                    self.selectRow(currentRow)
                 } else {
-                    self.selectFirstRow()
+                    self.selectRow(0)
                 }
                 self.updateStatus()
 
@@ -476,14 +453,8 @@ class SimpleSongPickerWindow: NSPanel {
         DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + delay, execute: workItem)
     }
 
-    private func selectFirstRow() {
-        guard !filteredTracks.isEmpty else { return }
-        tableView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
-        tableView.scrollRowToVisible(0)
-    }
-
-    private func restoreSelection(for row: Int) {
-        guard row >= 0, row < filteredTracks.count else { return }
+    private func selectRow(_ row: Int) {
+        guard filteredTracks.indices.contains(row) else { return }
         tableView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
         tableView.scrollRowToVisible(row)
     }
@@ -526,9 +497,8 @@ class SimpleSongPickerWindow: NSPanel {
 
         case 49:
             if searchField.currentEditor() == nil {
-                guard let playerManager = playerManager,
-                      let selectedRow = tableView.selectedRow >= 0 ? tableView.selectedRow : nil,
-                      selectedRow < filteredTracks.count else { break }
+                let selectedRow = tableView.selectedRow
+                guard let playerManager, filteredTracks.indices.contains(selectedRow) else { break }
 
                 let track = filteredTracks[selectedRow]
                 if playerManager.currentTrack?.id == track.id {
@@ -541,7 +511,7 @@ class SimpleSongPickerWindow: NSPanel {
                     if let allTrackIndex = findAllTrackIndex(for: selectedRow) {
                         playerManager.playTrack(at: allTrackIndex)
                         tableView.reloadData()
-                        restoreSelection(for: selectedRow)
+                        selectRow(selectedRow)
                     }
                 }
             } else {
@@ -610,10 +580,6 @@ extension SimpleSongPickerWindow: NSTableViewDelegate {
         return cellView
     }
 
-    func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
-        return rowHeight
-    }
-
     func tableView(_ tableView: NSTableView,
                    shouldTypeSelectFor event: NSEvent,
                    withCurrentSearch searchString: String?) -> Bool {
@@ -641,11 +607,9 @@ extension SimpleSongPickerWindow: NSTextFieldDelegate {
         if commandSelector == #selector(NSResponder.moveUp(_:)) {
             let currentRow = tableView.selectedRow
             if currentRow > 0 {
-                let newRow = currentRow - 1
-                tableView.selectRowIndexes(IndexSet(integer: newRow), byExtendingSelection: false)
-                tableView.scrollRowToVisible(newRow)
-            } else if currentRow < 0, !filteredTracks.isEmpty {
-                selectFirstRow()
+                selectRow(currentRow - 1)
+            } else if currentRow < 0 {
+                selectRow(0)
             }
             return true
         }
@@ -653,11 +617,7 @@ extension SimpleSongPickerWindow: NSTextFieldDelegate {
         if commandSelector == #selector(NSResponder.moveDown(_:)) {
             let currentRow = tableView.selectedRow
             if currentRow < filteredTracks.count - 1 {
-                let newRow = currentRow + 1
-                tableView.selectRowIndexes(IndexSet(integer: newRow), byExtendingSelection: false)
-                tableView.scrollRowToVisible(newRow)
-            } else if currentRow < 0, !filteredTracks.isEmpty {
-                selectFirstRow()
+                selectRow(currentRow + 1)
             }
             return true
         }

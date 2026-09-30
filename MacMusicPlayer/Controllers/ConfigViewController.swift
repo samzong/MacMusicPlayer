@@ -11,7 +11,7 @@ class ConfigViewController: NSViewController {
     private let statusLabel = NSTextField()
     private let statusIconView = NSImageView()
     private let songPickerCheckbox = NSButton()
-    private var statusStackView: NSStackView?
+    private let statusStackView = NSStackView()
     private var hideStatusWorkItem: DispatchWorkItem?
 
     private let configManager = ConfigManager.shared
@@ -118,9 +118,7 @@ class ConfigViewController: NSViewController {
     private func setupStatusLabel() {
         statusIconView.translatesAutoresizingMaskIntoConstraints = false
         statusIconView.isHidden = true
-        if #available(macOS 11.0, *) {
-            statusIconView.symbolConfiguration = NSImage.SymbolConfiguration(pointSize: 14, weight: .medium)
-        }
+        statusIconView.symbolConfiguration = NSImage.SymbolConfiguration(pointSize: 14, weight: .medium)
         statusIconView.contentTintColor = NSColor.systemGreen
         statusIconView.setContentCompressionResistancePriority(.required, for: .horizontal)
         statusIconView.setContentHuggingPriority(.required, for: .horizontal)
@@ -136,16 +134,14 @@ class ConfigViewController: NSViewController {
         statusLabel.isHidden = true
         statusLabel.lineBreakMode = .byWordWrapping
 
-        let stackView = NSStackView()
-        stackView.orientation = .horizontal
-        stackView.alignment = .centerY
-        stackView.spacing = 8
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.addArrangedSubview(statusIconView)
-        stackView.addArrangedSubview(statusLabel)
-        stackView.isHidden = true
-        stackView.alphaValue = 0
-        statusStackView = stackView
+        statusStackView.orientation = .horizontal
+        statusStackView.alignment = .centerY
+        statusStackView.spacing = 8
+        statusStackView.translatesAutoresizingMaskIntoConstraints = false
+        statusStackView.addArrangedSubview(statusIconView)
+        statusStackView.addArrangedSubview(statusLabel)
+        statusStackView.isHidden = true
+        statusStackView.alphaValue = 0
     }
 
     private func setupFormGrid() {
@@ -160,19 +156,13 @@ class ConfigViewController: NSViewController {
         grid.yPlacement = .top
 
         grid.addRow(with: [NSView(), songPickerCheckbox])
-        if let statusStack = statusStackView {
-            grid.addRow(with: [NSView(), statusStack])
-        }
+        grid.addRow(with: [NSView(), statusStackView])
 
-        if grid.numberOfColumns >= 2 {
-            grid.column(at: 0).xPlacement = .trailing
-            grid.column(at: 0).width = 100
-            grid.column(at: 1).xPlacement = .leading
-        }
-        if grid.numberOfRows >= 2 {
-            grid.row(at: 0).yPlacement = .center
-            grid.row(at: 1).yPlacement = .center
-        }
+        grid.column(at: 0).xPlacement = .trailing
+        grid.column(at: 0).width = 100
+        grid.column(at: 1).xPlacement = .leading
+        grid.row(at: 0).yPlacement = .center
+        grid.row(at: 1).yPlacement = .center
 
         view.addSubview(grid)
 
@@ -188,7 +178,6 @@ class ConfigViewController: NSViewController {
         songPickerCheckbox.setButtonType(.switch)
         songPickerCheckbox.title = NSLocalizedString("Show song picker on launch", comment: "Checkbox label for showing song picker on launch")
         songPickerCheckbox.font = NSFont.systemFont(ofSize: 13)
-        songPickerCheckbox.state = configManager.showSongPickerOnLaunch ? .on : .off
     }
 
     private func loadCurrentConfig() {
@@ -200,19 +189,15 @@ class ConfigViewController: NSViewController {
     @objc private func saveConfig() {
         let apiKey = apiKeyTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         var apiUrl = apiUrlTextField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        let currentApiKey = configManager.apiKey
-        let currentApiUrl = configManager.apiUrl
-        let apiKeyChanged = apiKey != currentApiKey
-        let apiUrlChanged = apiUrl != currentApiUrl
+        let apiKeyChanged = apiKey != configManager.apiKey
+        let apiUrlChanged = apiUrl != configManager.apiUrl
 
         if !apiUrl.isEmpty && !apiUrl.hasPrefix("http") {
             apiUrl = "https://" + apiUrl
         }
-        if apiUrlChanged && !apiUrl.isEmpty {
-            if URLComponents(string: apiUrl) == nil {
-                showStatus(NSLocalizedString("API URL is invalid", comment: "Error message when API URL is invalid"), isError: true)
-                return
-            }
+        if apiUrlChanged && !apiUrl.isEmpty && URLComponents(string: apiUrl) == nil {
+            showStatus(NSLocalizedString("API URL is invalid", comment: "Error message when API URL is invalid"), isError: true)
+            return
         }
 
         if apiKeyChanged && apiKey.isEmpty {
@@ -225,9 +210,7 @@ class ConfigViewController: NSViewController {
             return
         }
 
-        let shouldShowSongPicker = (songPickerCheckbox.state == .on)
-
-        configManager.saveConfig(apiKey: apiKey, apiUrl: apiUrl, showSongPickerOnLaunch: shouldShowSongPicker)
+        configManager.saveConfig(apiKey: apiKey, apiUrl: apiUrl, showSongPickerOnLaunch: songPickerCheckbox.state == .on)
         showStatus(NSLocalizedString("Configuration saved", comment: "Success message when configuration is saved"), isError: false)
 
         saveCallback?()
@@ -248,31 +231,24 @@ class ConfigViewController: NSViewController {
         statusLabel.textColor = textColor
         statusLabel.isHidden = false
 
-        if #available(macOS 11.0, *) {
-            let symbolName = isError ? "exclamationmark.triangle.fill" : "checkmark.circle.fill"
-            statusIconView.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)
-        } else {
-            statusIconView.image = isError ? NSImage(named: NSImage.cautionName) : NSImage(named: NSImage.statusAvailableName)
-        }
+        statusIconView.image = NSImage(systemSymbolName: isError ? "exclamationmark.triangle.fill" : "checkmark.circle.fill", accessibilityDescription: nil)
         statusIconView.contentTintColor = textColor
         statusIconView.isHidden = false
 
-        if let stack = statusStackView {
-            stack.isHidden = false
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.15
-                stack.animator().alphaValue = 1
-            }
+        statusStackView.isHidden = false
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.15
+            statusStackView.animator().alphaValue = 1
         }
 
         if !isError {
             let workItem = DispatchWorkItem { [weak self] in
-                guard let self = self, let stack = self.statusStackView else { return }
+                guard let self = self else { return }
                 NSAnimationContext.runAnimationGroup({ context in
                     context.duration = 0.25
-                    stack.animator().alphaValue = 0
+                    self.statusStackView.animator().alphaValue = 0
                 }, completionHandler: {
-                    stack.isHidden = true
+                    self.statusStackView.isHidden = true
                     self.hideStatusWorkItem = nil
                 })
             }

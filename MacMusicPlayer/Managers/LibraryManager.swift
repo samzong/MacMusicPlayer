@@ -1,9 +1,8 @@
 import Foundation
-import Combine
 
-class LibraryManager: ObservableObject {
-    @Published var libraries: [MusicLibrary] = []
-    @Published var currentLibrary: MusicLibrary?
+class LibraryManager {
+    var libraries: [MusicLibrary] = []
+    var currentLibrary: MusicLibrary?
 
     init() {
         loadLibraries()
@@ -22,10 +21,7 @@ class LibraryManager: ObservableObject {
     }
 
     func addLibrary(name: String, path: String) {
-        let newLibrary = MusicLibrary(
-            name: name,
-            path: path
-        )
+        let newLibrary = MusicLibrary(name: name, path: path)
 
         libraries.append(newLibrary)
         saveLibraries()
@@ -48,18 +44,12 @@ class LibraryManager: ObservableObject {
 
     func switchLibrary(id: UUID) {
         guard currentLibrary?.id != id,
-              let newLibrary = libraries.first(where: { $0.id == id }) else {
+              let index = libraries.firstIndex(where: { $0.id == id }) else {
             return
         }
 
-        var updatedLibrary = newLibrary
-        updatedLibrary.lastAccessed = Date()
-
-        if let index = libraries.firstIndex(where: { $0.id == id }) {
-            libraries[index] = updatedLibrary
-        }
-
-        currentLibrary = updatedLibrary
+        libraries[index].lastAccessed = Date()
+        currentLibrary = libraries[index]
 
         UserDefaults.standard.set(id.uuidString, forKey: "LastUsedLibraryID")
         saveLibraries()
@@ -72,18 +62,16 @@ class LibraryManager: ObservableObject {
             return
         }
 
-        var updatedLibrary = libraries[index]
-        updatedLibrary.name = newName
-        libraries[index] = updatedLibrary
+        libraries[index].name = newName
 
         if currentLibrary?.id == id {
-            currentLibrary = updatedLibrary
+            currentLibrary = libraries[index]
         }
 
         saveLibraries()
     }
 
-    func saveLibraries() {
+    private func saveLibraries() {
         do {
             let data = try JSONEncoder().encode(libraries)
             UserDefaults.standard.set(data, forKey: "MusicLibraries")
@@ -92,7 +80,7 @@ class LibraryManager: ObservableObject {
         }
     }
 
-    func loadLibraries() {
+    private func loadLibraries() {
         guard let data = UserDefaults.standard.data(forKey: "MusicLibraries") else {
             return
         }
@@ -107,11 +95,8 @@ class LibraryManager: ObservableObject {
     private func migrateExistingSingleLibrary() {
         if let savedPath = UserDefaults.standard.string(forKey: "MusicFolderPath") {
             let defaultLibrary = MusicLibrary(
-                id: UUID(),
                 name: NSLocalizedString("My Music", comment: "Default music library name"),
-                path: savedPath,
-                createdAt: Date(),
-                lastAccessed: Date()
+                path: savedPath
             )
 
             libraries.append(defaultLibrary)

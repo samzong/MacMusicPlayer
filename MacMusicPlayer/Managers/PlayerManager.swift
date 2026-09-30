@@ -3,9 +3,9 @@ import Combine
 import AppKit
 import MediaPlayer
 
-class PlayerManager: NSObject, ObservableObject {
+class PlayerManager: NSObject {
     @Published var playlist: [Track] = []
-    @Published var currentTrack: Track? {
+    var currentTrack: Track? {
         didSet {
             if let currentTrack, let currentLibraryID {
                 UserDefaults.standard.set(
@@ -16,7 +16,7 @@ class PlayerManager: NSObject, ObservableObject {
             NotificationCenter.default.post(name: NSNotification.Name("TrackChanged"), object: nil)
         }
     }
-    @Published var isPlaying = false {
+    var isPlaying = false {
         didSet {
             NotificationCenter.default.post(name: NSNotification.Name("PlaybackStateChanged"), object: nil)
         }
@@ -29,17 +29,7 @@ class PlayerManager: NSObject, ObservableObject {
 
     var hasPlaylist: Bool { !playlistStore.isEmpty }
 
-    private var currentIndex = 0
-    var volume: Float {
-        get { queueController.volume }
-        set {
-            queueController.volume = newValue
-            UserDefaults.standard.set(newValue, forKey: "SavedVolume")
-        }
-    }
-
-
-    @Published var playMode: PlayMode = .sequential {
+    var playMode: PlayMode = .sequential {
         didSet {
             UserDefaults.standard.set(playMode.rawValue, forKey: "PlayMode")
             NotificationCenter.default.post(name: NSNotification.Name("PlayModeChanged"), object: nil)
@@ -74,7 +64,6 @@ class PlayerManager: NSObject, ObservableObject {
             if let track = track,
                let trackIndex = self.playlistStore.tracks.firstIndex(where: { $0.id == track.id }) {
                 self.playlistStore.setCurrentIndex(trackIndex)
-                self.currentIndex = trackIndex
             }
 
             self.updateNowPlayingInfo()
@@ -94,11 +83,6 @@ class PlayerManager: NSObject, ObservableObject {
                                             selector: #selector(refreshMusicLibrary),
                                             name: NSNotification.Name("RefreshMusicLibrary"),
                                             object: nil)
-
-        loadSavedMusicFolder()
-    }
-
-    private func loadSavedMusicFolder() {
     }
 
     func requestMusicFolderAccess() {
@@ -168,7 +152,6 @@ class PlayerManager: NSObject, ObservableObject {
         currentTrack = nil
         isPlaying = false
         updateNowPlayingInfo(playbackState: .stopped)
-        currentIndex = 0
     }
 
     private func loadTracksFromMusicFolder(
@@ -216,7 +199,6 @@ class PlayerManager: NSObject, ObservableObject {
                self.queueController.replaceTracks(sortedTracks, preservingCurrentTrackAt: currentIndex) {
                 self.playlistStore.setTracks(sortedTracks)
                 self.playlistStore.setCurrentIndex(currentIndex)
-                self.currentIndex = currentIndex
                 self.playlist = sortedTracks
                 self.currentTrack = sortedTracks[currentIndex]
                 self.updateNowPlayingInfo()
@@ -239,13 +221,11 @@ class PlayerManager: NSObject, ObservableObject {
                     sortedTracks.firstIndex(where: { $0.url.path == path })
                 } ?? 0
 
-                self.currentIndex = selectedIndex
                 self.currentTrack = sortedTracks[selectedIndex]
                 self.playlistStore.setCurrentIndex(selectedIndex)
                 self.queueController.setQueue(sortedTracks, startingAt: selectedIndex)
             } else {
                 self.currentTrack = nil
-                self.currentIndex = 0
             }
 
             NotificationCenter.default.post(name: NSNotification.Name("PlaylistUpdated"), object: nil)
@@ -276,30 +256,16 @@ class PlayerManager: NSObject, ObservableObject {
         updateNowPlayingInfo(playbackState: .paused)
     }
 
-    func stop() {
-        queueController.stop()
-        updateNowPlayingInfo(playbackState: .stopped)
-    }
-
     func playTrack(at index: Int) {
         guard index >= 0 && index < playlistStore.tracks.count else { return }
 
         let tracks = playlistStore.tracks
         queueController.setQueue(tracks, startingAt: index)
         playlistStore.setCurrentIndex(index)
-        currentIndex = index
         currentTrack = tracks[index]
         queueController.play()
         isPlaying = true
         updateNowPlayingInfo(playbackState: .playing)
-    }
-
-    func clearQueue() {
-        queueController.clearQueue()
-        currentTrack = nil
-        isPlaying = false
-        currentIndex = 0
-        updateNowPlayingInfo()
     }
 
     func playNext() {
@@ -314,16 +280,12 @@ class PlayerManager: NSObject, ObservableObject {
 
         switch playMode {
         case .sequential:
-            if queueController.advanceToNext() {
-                currentIndex = nextIndex
-            } else {
+            if !queueController.advanceToNext() {
                 queueController.setQueue(playlistStore.tracks, startingAt: 0)
                 playlistStore.setCurrentIndex(0)
-                currentIndex = 0
             }
         case .singleLoop, .random:
             queueController.setQueue(playlistStore.tracks, startingAt: nextIndex)
-            currentIndex = nextIndex
         }
 
         if shouldResumePlayback {
@@ -339,18 +301,12 @@ class PlayerManager: NSObject, ObservableObject {
         guard !playlistStore.isEmpty else { return }
         let shouldResumePlayback = nowPlayingPlaybackState == .playing
 
-        switch playMode {
-        case .sequential, .singleLoop, .random:
-            let previousIndex = playlistStore.previousIndex()
-                ?? (playMode == .singleLoop ? playlistStore.currentIndex : nil)
-            guard let previousIndex else { return }
+        guard let previousIndex = playlistStore.previousIndex()
+            ?? (playMode == .singleLoop ? playlistStore.currentIndex : nil) else { return }
 
-            queueController.setQueue(playlistStore.tracks, startingAt: previousIndex)
-            playlistStore.setCurrentIndex(previousIndex)
-            currentIndex = previousIndex
-
-            currentTrack = playlistStore.currentTrack
-        }
+        queueController.setQueue(playlistStore.tracks, startingAt: previousIndex)
+        playlistStore.setCurrentIndex(previousIndex)
+        currentTrack = playlistStore.currentTrack
 
         if shouldResumePlayback {
             queueController.play()
@@ -362,33 +318,22 @@ class PlayerManager: NSObject, ObservableObject {
 
     @MainActor
     @objc func refreshMusicLibrary() {
-        if let library = (NSApplication.shared.delegate as? AppDelegate)?.libraryManager.currentLibrary {
-            if currentLibraryID == library.id {
-                loadTracksFromMusicFolder(
-                    URL(fileURLWithPath: library.path),
-                    libraryID: library.id,
-                    preservingCurrentItem: true
-                )
-            } else {
-                loadLibrary(library)
-            }
+        guard let library = (NSApplication.shared.delegate as? AppDelegate)?.libraryManager.currentLibrary else { return }
+        if currentLibraryID == library.id {
+            loadTracksFromMusicFolder(
+                URL(fileURLWithPath: library.path),
+                libraryID: library.id,
+                preservingCurrentItem: true
+            )
         } else {
-            loadSavedMusicFolder()
+            loadLibrary(library)
         }
     }
 
 
     func feelingLucky() {
-        guard !playlistStore.isEmpty else { return }
-
-        var randomIndex = Int.random(in: 0..<playlistStore.count)
-        if playlistStore.count > 1 {
-            while randomIndex == playlistStore.currentIndex {
-                randomIndex = Int.random(in: 0..<playlistStore.count)
-            }
-        }
-
-        playTrack(at: randomIndex)
+        guard !playlistStore.isEmpty, let index = playlistStore.nextIndex(for: .random) else { return }
+        playTrack(at: index)
     }
 
     private func handleAutomaticTrackCompletion(_ finishedTrack: Track?) {
@@ -396,17 +341,10 @@ class PlayerManager: NSObject, ObservableObject {
 
         switch playMode {
         case .sequential:
-            guard
-                let finishedTrack,
-                let finishedIndex = playlistStore.tracks.firstIndex(where: { $0.id == finishedTrack.id })
-            else { return }
-
-            if finishedIndex == playlistStore.count - 1 {
-                let nextIndex = (finishedIndex + 1) % playlistStore.count
-                queueController.setQueue(playlistStore.tracks, startingAt: nextIndex)
-                queueController.play()
-                updateNowPlayingInfo()
-            }
+            guard let finishedTrack, finishedTrack.id == playlistStore.tracks.last?.id else { return }
+            queueController.setQueue(playlistStore.tracks, startingAt: 0)
+            queueController.play()
+            updateNowPlayingInfo()
 
         case .singleLoop:
             guard
@@ -415,7 +353,6 @@ class PlayerManager: NSObject, ObservableObject {
             else { return }
 
             playlistStore.setCurrentIndex(finishedIndex)
-            currentIndex = finishedIndex
             currentTrack = playlistStore.currentTrack
 
             queueController.setQueue(playlistStore.tracks, startingAt: finishedIndex)
@@ -427,7 +364,6 @@ class PlayerManager: NSObject, ObservableObject {
 
             queueController.setQueue(playlistStore.tracks, startingAt: nextIndex)
             playlistStore.setCurrentIndex(nextIndex)
-            currentIndex = nextIndex
             queueController.play()
 
             currentTrack = playlistStore.currentTrack
