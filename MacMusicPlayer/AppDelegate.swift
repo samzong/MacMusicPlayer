@@ -150,10 +150,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusMenuController.refresh()
     }
 
-    func applicationWillTerminate(_ aNotification: Notification) {
-        sleepManager.cleanupResourcesOnly()
-    }
-
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         showSongPickerIfPreferred()
         return true
