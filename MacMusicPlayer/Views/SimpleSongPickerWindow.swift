@@ -512,19 +512,10 @@ extension SimpleSongPickerWindow: NSTableViewDelegate {
             text.textColor = .labelColor
             text.lineBreakMode = .byTruncatingTail
             text.translatesAutoresizingMaskIntoConstraints = false
-            let icon = NSImageView()
-            icon.symbolConfiguration = NSImage.SymbolConfiguration(pointSize: 13, weight: .regular)
-            icon.translatesAutoresizingMaskIntoConstraints = false
-            cell.addSubview(icon)
             cell.addSubview(text)
             cell.textField = text
-            cell.imageView = icon
             NSLayoutConstraint.activate([
-                icon.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 12),
-                icon.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
-                icon.widthAnchor.constraint(equalToConstant: 16),
-                icon.heightAnchor.constraint(equalToConstant: 16),
-                text.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 10),
+                text.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 12),
                 text.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -12),
                 text.centerYAnchor.constraint(equalTo: cell.centerYAnchor)
             ])
@@ -532,8 +523,8 @@ extension SimpleSongPickerWindow: NSTableViewDelegate {
         let track = filteredTracks[row]
         let current = track.id == playerManager.currentTrack?.id
         cell.textField?.stringValue = track.url.deletingPathExtension().lastPathComponent
-        cell.imageView?.image = NSImage(systemSymbolName: current ? (playerManager.isPlaying ? "speaker.wave.2.fill" : "pause.fill") : "music.note", accessibilityDescription: nil)
-        cell.imageView?.contentTintColor = current ? .controlAccentColor : .secondaryLabelColor
+        cell.textField?.textColor = current ? .controlAccentColor : .labelColor
+        cell.textField?.font = .systemFont(ofSize: 13, weight: current ? .semibold : .regular)
         let state = current ? ", " + NSLocalizedString(playerManager.isPlaying ? "Play" : "Pause", comment: "") : ""
         cell.setAccessibilityLabel((cell.textField?.stringValue ?? "") + state)
         return cell
