@@ -1,4 +1,5 @@
 import Cocoa
+import Combine
 
 @MainActor
 final class StatusMenuController: NSObject, NSMenuDelegate {
@@ -7,6 +8,9 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
     private let launchManager: LaunchManager
     private let libraryManager: LibraryManager
 
+    private var subscriptions = Set<AnyCancellable>()
+    private let menu = NSMenu()
+    private weak var mainMenu: NSMenu?
     private weak var statusItem: NSStatusItem?
 
     private weak var trackLabel: NSTextField?
@@ -31,11 +35,8 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
         super.init()
     }
 
-    func configureStatusItem(_ statusItem: NSStatusItem, target: AppDelegate) {
-        self.statusItem = statusItem
+    func configureMenu(target: AppDelegate) {
         self.actionTarget = target
-
-        let menu = NSMenu()
         menu.minimumWidth = 200
 
         addTrackInfoSection(to: menu)
@@ -67,10 +68,24 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
         addActionItem(to: menu, title: NSLocalizedString("Quit", comment: ""), action: #selector(AppDelegate.quit))
 
         menu.delegate = self
-        statusItem.menu = menu
-        for name in ["TrackChanged", "PlaybackStateChanged", "PlaylistUpdated"] {
-            NotificationCenter.default.addObserver(self, selector: #selector(refresh), name: NSNotification.Name(name), object: nil)
+        for name in ["TrackChanged", "PlaybackStateChanged", "PlaylistUpdated", "PlayModeChanged", "LibrariesChanged"] {
+            NotificationCenter.default.publisher(for: NSNotification.Name(name))
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in self?.refresh() }
+                .store(in: &subscriptions)
         }
+        refresh()
+    }
+
+    func configureStatusItem(_ statusItem: NSStatusItem) {
+        self.statusItem = statusItem
+        statusItem.menu = menu
+        updateStatusBarIcon()
+    }
+
+    func configureMainMenu(_ mainMenu: NSMenu) {
+        self.mainMenu = mainMenu
+        mainMenu.delegate = self
         refresh()
     }
 
@@ -83,10 +98,26 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
         updateToggleStates()
         updateStatusBarIcon()
         updatePlayModeSelection()
+        if let mainMenu {
+            mainMenu.removeAllItems()
+            for item in menu.items {
+                if item.view != nil {
+                    let trackItem = NSMenuItem(
+                        title: playerManager.currentTrack?.title ?? NSLocalizedString("No Music Source", comment: ""),
+                        action: nil,
+                        keyEquivalent: ""
+                    )
+                    trackItem.isEnabled = false
+                    mainMenu.addItem(trackItem)
+                } else {
+                    mainMenu.addItem(item.copy() as! NSMenuItem)
+                }
+            }
+        }
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
-        updateToggleStates()
+        refresh()
     }
 
     @discardableResult

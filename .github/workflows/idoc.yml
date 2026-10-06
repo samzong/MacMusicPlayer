@@ -21,8 +21,8 @@ jobs:
         run: |
           cat > idoc.yml << EOF
           site: MacMusicPlayer
-          description: MacMusicPlayer is an elegant and minimalist music player for macOS, designed as a menu bar application to provide a seamless music playback experience. Built with SwiftUI, it perfectly integrates into the macOS ecosystem, delivering an exceptional user experience.
-          keywords: macOS, music player, menu bar, SwiftUI, seamless,macOS Integration, exceptional, user experience, Minimalist Design,Audio Player
+          description: MacMusicPlayer is an elegant and minimalist music player for macOS, designed as a menu bar application to provide a seamless music playback experience. Built with AppKit, it perfectly integrates into the macOS ecosystem, delivering an exceptional user experience.
+          keywords: macOS, music player, menu bar, AppKit, seamless,macOS Integration, exceptional, user experience, Minimalist Design,Audio Player
           favicon: MacMusicPlayer/Assets.xcassets/AppIcon.appiconset/icon-removebg.png
           logo: MacMusicPlayer/Assets.xcassets/AppIcon.appiconset/icon-removebg.png
 

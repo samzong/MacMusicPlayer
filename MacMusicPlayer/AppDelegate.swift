@@ -13,27 +13,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var downloadWindow: NSWindow?
     private var configWindow: NSWindow?
+    private var returnToPickerAfterConfig = false
     private var songPickerWindow: SimpleSongPickerWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        playerManager = PlayerManager()
+        libraryManager = LibraryManager()
+        playerManager = PlayerManager(libraryManager: libraryManager)
         sleepManager = SleepManager()
         launchManager = LaunchManager()
-        libraryManager = LibraryManager()
         DownloadManager.shared.updateLibraryManager(libraryManager)
 
         if let currentLibrary = libraryManager.currentLibrary {
             playerManager.loadLibrary(currentLibrary)
         } else {
             playerManager.requestMusicFolderAccess()
-        }
-
-        let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        self.statusItem = statusItem
-
-        if let button = statusItem.button {
-            button.target = self
-            button.action = #selector(toggleMenu)
         }
 
         statusMenuController = StatusMenuController(
@@ -43,7 +36,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             libraryManager: libraryManager
         )
 
-        statusMenuController.configureStatusItem(statusItem, target: self)
+        statusMenuController.configureMenu(target: self)
+        configureMainMenu()
+        updateStatusItemVisibility()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateStatusItemVisibility),
+            name: NSNotification.Name("ConfigUpdated"),
+            object: nil
+        )
         setupRemoteCommandCenter()
 
         NotificationCenter.default.addObserver(
@@ -54,7 +55,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         DispatchQueue.main.async { [weak self] in
-            self?.showSongPickerIfPreferred()
+            self?.showSongPickerWindow()
         }
     }
 
@@ -62,34 +63,39 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let commandCenter = MPRemoteCommandCenter.shared()
 
         commandCenter.playCommand.addTarget { [weak self] _ in
-            self?.playerManager.play()
+            Task { @MainActor [weak self] in
+                self?.playerManager.play()
+            }
             return .success
         }
 
         commandCenter.pauseCommand.addTarget { [weak self] _ in
-            self?.playerManager.pause()
+            Task { @MainActor [weak self] in
+                self?.playerManager.pause()
+            }
             return .success
         }
 
         commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
-            self?.togglePlayPause()
+            Task { @MainActor [weak self] in
+                self?.togglePlayPause()
+            }
             return .success
         }
 
         commandCenter.nextTrackCommand.addTarget { [weak self] _ in
-            self?.playerManager.playNext()
+            Task { @MainActor [weak self] in
+                self?.playerManager.playNext()
+            }
             return .success
         }
 
         commandCenter.previousTrackCommand.addTarget { [weak self] _ in
-            self?.playerManager.playPrevious()
+            Task { @MainActor [weak self] in
+                self?.playerManager.playPrevious()
+            }
             return .success
         }
-    }
-
-    @objc func toggleMenu() {
-        statusMenuController.refresh()
-        statusItem?.button?.performClick(nil)
     }
 
     @objc func togglePlayPause() {
@@ -131,9 +137,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusMenuController.refresh()
     }
 
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        return false
+    }
+
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        showSongPickerIfPreferred()
-        return true
+        showSongPickerWindow()
+        return false
     }
 
     @objc func showDownloadWindow() {
@@ -143,7 +153,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        let downloadVC = DownloadViewController()
+        let downloadVC = DownloadViewController(libraryManager: libraryManager, actionTarget: self)
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 500, height: 400),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
@@ -243,18 +253,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func showConfigWindow() {
+        returnToPickerAfterConfig = returnToPickerAfterConfig || songPickerWindow?.isVisible == true
+        songPickerWindow?.orderOut(nil)
         if let existingWindow = self.configWindow {
             existingWindow.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
         }
 
-        let configVC = ConfigViewController {
-            NotificationCenter.default.post(name: NSNotification.Name("ConfigUpdated"), object: nil)
-        }
+        let configVC = ConfigViewController()
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 280),
+            contentRect: NSRect(x: 0, y: 0, width: 460, height: 300),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -273,13 +283,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func showSongPickerWindow() {
+        if let configWindow, configWindow.isVisible {
+            returnToPickerAfterConfig = true
+            configWindow.performClose(nil)
+            return
+        }
         if let existingWindow = self.songPickerWindow {
             existingWindow.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
         }
 
-        let songPickerWindow = SimpleSongPickerWindow(playerManager: playerManager)
+        let songPickerWindow = SimpleSongPickerWindow(playerManager: playerManager, libraryManager: libraryManager, actionTarget: self)
         songPickerWindow.delegate = self
 
         self.songPickerWindow = songPickerWindow
@@ -288,9 +303,77 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    private func showSongPickerIfPreferred() {
-        guard ConfigManager.shared.showSongPickerOnLaunch else { return }
-        showSongPickerWindow()
+    private func configureMainMenu() {
+        let mainMenu = NSMenu()
+        let appItem = NSMenuItem(title: "MacMusicPlayer", action: nil, keyEquivalent: "")
+        let appMenu = NSMenu()
+        let settingsItem = NSMenuItem(
+            title: NSLocalizedString("Settings", comment: ""),
+            action: #selector(showConfigWindow),
+            keyEquivalent: ","
+        )
+        settingsItem.target = self
+        appMenu.addItem(settingsItem)
+        appMenu.addItem(.separator())
+        let hideItem = appMenu.addItem(withTitle: NSLocalizedString("Hide MacMusicPlayer", comment: ""), action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        hideItem.target = NSApp
+        let quitItem = NSMenuItem(title: NSLocalizedString("Quit", comment: ""), action: #selector(quit), keyEquivalent: "q")
+        quitItem.target = self
+        appMenu.addItem(quitItem)
+        appItem.submenu = appMenu
+        mainMenu.addItem(appItem)
+        let editItem = NSMenuItem(title: NSLocalizedString("Edit", comment: ""), action: nil, keyEquivalent: "")
+        let editMenu = NSMenu()
+        editMenu.addItem(withTitle: NSLocalizedString("Undo", comment: ""), action: Selector(("undo:")), keyEquivalent: "z")
+        let redoItem = editMenu.addItem(withTitle: NSLocalizedString("Redo", comment: ""), action: Selector(("redo:")), keyEquivalent: "z")
+        redoItem.keyEquivalentModifierMask = [.command, .shift]
+        editMenu.addItem(.separator())
+        for (title, action, key) in [
+            ("Cut", #selector(NSText.cut(_:)), "x"),
+            ("Copy", #selector(NSText.copy(_:)), "c"),
+            ("Paste", #selector(NSText.paste(_:)), "v"),
+            ("Select All", #selector(NSText.selectAll(_:)), "a")
+        ] {
+            editMenu.addItem(withTitle: NSLocalizedString(title, comment: ""), action: action, keyEquivalent: key)
+        }
+        editItem.submenu = editMenu
+        mainMenu.addItem(editItem)
+        let actions = NSMenuItem(title: NSLocalizedString("Player", comment: ""), action: nil, keyEquivalent: "")
+        let actionMenu = NSMenu()
+        actions.submenu = actionMenu
+        mainMenu.addItem(actions)
+        let windowItem = NSMenuItem(title: NSLocalizedString("Window", comment: ""), action: nil, keyEquivalent: "")
+        let windowMenu = NSMenu(title: NSLocalizedString("Window", comment: ""))
+        windowMenu.addItem(withTitle: NSLocalizedString("Close", comment: ""), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        windowMenu.addItem(withTitle: NSLocalizedString("Minimize", comment: ""), action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        let bringToFront = windowMenu.addItem(
+            withTitle: NSLocalizedString("Bring All to Front", comment: ""),
+            action: #selector(NSApplication.arrangeInFront(_:)),
+            keyEquivalent: ""
+        )
+        bringToFront.target = NSApp
+        windowItem.submenu = windowMenu
+        mainMenu.addItem(windowItem)
+        NSApp.windowsMenu = windowMenu
+        NSApp.mainMenu = mainMenu
+        statusMenuController.configureMainMenu(actionMenu)
+    }
+
+    @objc private func updateStatusItemVisibility() {
+        NSApp.setActivationPolicy(.accessory)
+        if ConfigManager.shared.showMenubarIcon {
+            if statusItem == nil {
+                let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+                statusItem = item
+                statusMenuController.configureStatusItem(item)
+            }
+        } else {
+            if let statusItem {
+                statusItem.menu = nil
+                NSStatusBar.system.removeStatusItem(statusItem)
+                self.statusItem = nil
+            }
+        }
     }
 
 
@@ -303,6 +386,12 @@ extension AppDelegate: NSWindowDelegate {
                 downloadWindow = nil
             } else if window == configWindow {
                 configWindow = nil
+                if returnToPickerAfterConfig {
+                    returnToPickerAfterConfig = false
+                    DispatchQueue.main.async { [weak self] in
+                        self?.showSongPickerWindow()
+                    }
+                }
             } else if window == songPickerWindow {
                 songPickerWindow = nil
             }

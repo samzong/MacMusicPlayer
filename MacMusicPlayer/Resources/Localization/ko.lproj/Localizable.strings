@@ -151,7 +151,6 @@
 "Please enter API Key" = "API 키를 입력하세요";
 "Please enter API URL" = "API URL을 입력하세요";
 "Configuration saved" = "설정이 저장되었습니다";
-"Show song picker on launch" = "실행 시 곡 검색 창 열기";
 
 // API Error Messages
 "API configuration not completed" = "API 구성이 완료되지 않았습니다";
@@ -161,3 +160,18 @@
 "Reset" = "초기화";
 "Reset to defaults" = "기본값으로 초기화되었습니다";
 "API URL is invalid" = "API URL이 유효하지 않습니다";
+
+"Show menu bar icon" = "메뉴 막대 아이콘 표시";
+"Player" = "플레이어";
+"Edit" = "편집";
+"Cut" = "잘라내기";
+"Copy" = "복사";
+"Paste" = "붙여넣기";
+"Select All" = "모두 선택";
+"Window" = "윈도우";
+"Close" = "닫기";
+"Minimize" = "최소화";
+"Bring All to Front" = "모두 앞으로 가져오기";
+"Undo" = "실행 취소";
+"Redo" = "다시 실행";
+"Hide MacMusicPlayer" = "MacMusicPlayer 가리기";

@@ -151,7 +151,6 @@
 "Please enter API Key" = "请输入API密钥";
 "Please enter API URL" = "请输入API地址";
 "Configuration saved" = "配置已保存";
-"Show song picker on launch" = "启动时打开歌曲搜索窗口";
 
 // API Error Messages
 "API configuration not completed" = "API配置未完成";
@@ -161,3 +160,18 @@
 "Reset" = "重置";
 "Reset to defaults" = "已重置为默认值";
 "API URL is invalid" = "API 地址无效";
+
+"Show menu bar icon" = "显示菜单栏图标";
+"Player" = "播放器";
+"Edit" = "编辑";
+"Cut" = "剪切";
+"Copy" = "复制";
+"Paste" = "粘贴";
+"Select All" = "全选";
+"Window" = "窗口";
+"Close" = "关闭";
+"Minimize" = "最小化";
+"Bring All to Front" = "前置全部窗口";
+"Undo" = "撤销";
+"Redo" = "重做";
+"Hide MacMusicPlayer" = "隐藏 MacMusicPlayer";

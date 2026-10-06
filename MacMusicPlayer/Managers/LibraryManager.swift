@@ -72,6 +72,7 @@ class LibraryManager {
     }
 
     private func saveLibraries() {
+        NotificationCenter.default.post(name: NSNotification.Name("LibrariesChanged"), object: nil)
         do {
             let data = try JSONEncoder().encode(libraries)
             UserDefaults.standard.set(data, forKey: "MusicLibraries")

@@ -27,7 +27,8 @@ class DownloadViewController: NSViewController {
         var ffmpegVersion = ""
     }
     private var dependencies = DependencyStatus()
-    private var libraryManager: LibraryManager!
+    private let libraryManager: LibraryManager
+    private weak var actionTarget: AppDelegate?
 
     private var currentPlaylist: DownloadManager.PlaylistInfo?
     private var currentPlaylistURL: String?
@@ -57,18 +58,22 @@ class DownloadViewController: NSViewController {
         let videoItem: YTSearchManager.SearchResult.VideoItem
     }
 
+    init(libraryManager: LibraryManager, actionTarget: AppDelegate) {
+        self.libraryManager = libraryManager
+        self.actionTarget = actionTarget
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 600, height: 140))
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        if let appDelegate = NSApp.delegate as? AppDelegate {
-            libraryManager = appDelegate.libraryManager
-        } else {
-            libraryManager = LibraryManager()
-        }
 
         setupUI()
 
@@ -917,9 +922,7 @@ class DownloadViewController: NSViewController {
     }
 
     @objc private func openConfigWindow() {
-        if let appDelegate = NSApp.delegate as? AppDelegate {
-            appDelegate.showConfigWindow()
-        }
+        actionTarget?.showConfigWindow()
     }
 
     private func loadPlaylist() {

@@ -151,7 +151,6 @@
 "Please enter API Key" = "Please enter API Key";
 "Please enter API URL" = "Please enter API URL";
 "Configuration saved" = "Configuration saved";
-"Show song picker on launch" = "Show song picker on launch";
 
 // API Error Messages
 "API configuration not completed" = "API configuration not completed";
@@ -161,3 +160,18 @@
 "Reset" = "Reset";
 "Reset to defaults" = "Reset to defaults";
 "API URL is invalid" = "API URL is invalid";
+
+"Show menu bar icon" = "Show menu bar icon";
+"Player" = "Player";
+"Edit" = "Edit";
+"Cut" = "Cut";
+"Copy" = "Copy";
+"Paste" = "Paste";
+"Select All" = "Select All";
+"Window" = "Window";
+"Close" = "Close";
+"Minimize" = "Minimize";
+"Bring All to Front" = "Bring All to Front";
+"Undo" = "Undo";
+"Redo" = "Redo";
+"Hide MacMusicPlayer" = "Hide MacMusicPlayer";
