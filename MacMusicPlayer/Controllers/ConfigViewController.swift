@@ -10,22 +10,11 @@ class ConfigViewController: NSViewController {
     private let cancelButton = NSButton()
     private let statusLabel = NSTextField()
     private let statusIconView = NSImageView()
-    private let songPickerCheckbox = NSButton()
+    private let menubarIconCheckbox = NSButton()
     private let statusStackView = NSStackView()
     private var hideStatusWorkItem: DispatchWorkItem?
 
     private let configManager = ConfigManager.shared
-    private var saveCallback: (() -> Void)?
-
-    init(saveCallback: (() -> Void)? = nil) {
-        self.saveCallback = saveCallback
-        super.init(nibName: nil, bundle: nil)
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 400, height: 280))
     }
@@ -45,7 +34,7 @@ class ConfigViewController: NSViewController {
 
         setupApiKeyUI()
         setupApiUrlUI()
-        setupSongPickerPreference()
+        setupMenubarPreference()
         setupStatusLabel()
         setupFormGrid()
         setupButtons()
@@ -155,7 +144,7 @@ class ConfigViewController: NSViewController {
         grid.xPlacement = .leading
         grid.yPlacement = .top
 
-        grid.addRow(with: [NSView(), songPickerCheckbox])
+        grid.addRow(with: [NSView(), menubarIconCheckbox])
         grid.addRow(with: [NSView(), statusStackView])
 
         grid.column(at: 0).xPlacement = .trailing
@@ -173,17 +162,17 @@ class ConfigViewController: NSViewController {
         ])
     }
 
-    private func setupSongPickerPreference() {
-        songPickerCheckbox.translatesAutoresizingMaskIntoConstraints = false
-        songPickerCheckbox.setButtonType(.switch)
-        songPickerCheckbox.title = NSLocalizedString("Show song picker on launch", comment: "Checkbox label for showing song picker on launch")
-        songPickerCheckbox.font = NSFont.systemFont(ofSize: 13)
+    private func setupMenubarPreference() {
+        menubarIconCheckbox.translatesAutoresizingMaskIntoConstraints = false
+        menubarIconCheckbox.setButtonType(.switch)
+        menubarIconCheckbox.title = NSLocalizedString("Show menu bar icon", comment: "")
+        menubarIconCheckbox.font = NSFont.systemFont(ofSize: 13)
     }
 
     private func loadCurrentConfig() {
         apiKeyTextField.stringValue = configManager.apiKey
         apiUrlTextField.stringValue = configManager.apiUrl
-        songPickerCheckbox.state = configManager.showSongPickerOnLaunch ? .on : .off
+        menubarIconCheckbox.state = configManager.showMenubarIcon ? .on : .off
     }
 
     @objc private func saveConfig() {
@@ -210,10 +199,13 @@ class ConfigViewController: NSViewController {
             return
         }
 
-        configManager.saveConfig(apiKey: apiKey, apiUrl: apiUrl, showSongPickerOnLaunch: songPickerCheckbox.state == .on)
+        configManager.saveConfig(
+            apiKey: apiKey,
+            apiUrl: apiUrl,
+            showMenubarIcon: menubarIconCheckbox.state == .on
+        )
         showStatus(NSLocalizedString("Configuration saved", comment: "Success message when configuration is saved"), isError: false)
 
-        saveCallback?()
     }
 
     @objc private func cancelConfig() {

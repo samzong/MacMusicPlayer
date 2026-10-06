@@ -22,10 +22,12 @@ class PlayerManager: NSObject {
         }
     }
 
+    private let libraryManager: LibraryManager
     private let queueController: QueuePlayerController
     private let playlistStore: PlaylistStore
     private var nowPlayingPlaybackState: MPNowPlayingPlaybackState = .stopped
     private var currentLibraryID: UUID?
+    private var libraryLoadGeneration = 0
 
     var hasPlaylist: Bool { !playlistStore.isEmpty }
 
@@ -36,7 +38,8 @@ class PlayerManager: NSObject {
         }
     }
 
-    override init() {
+    init(libraryManager: LibraryManager) {
+        self.libraryManager = libraryManager
         queueController = QueuePlayerController()
         playlistStore = PlaylistStore()
 
@@ -141,6 +144,7 @@ class PlayerManager: NSObject {
         currentLibraryID = library.id
         resetPlayback()
 
+        playlistStore.setTracks([])
         playlist = []
 
         loadTracksFromMusicFolder(URL(fileURLWithPath: library.path), libraryID: library.id)
@@ -159,6 +163,8 @@ class PlayerManager: NSObject {
         libraryID: UUID,
         preservingCurrentItem: Bool = false
     ) {
+        libraryLoadGeneration += 1
+        let generation = libraryLoadGeneration
         let fileManager = FileManager.default
         let existingTracksByPath = Dictionary(uniqueKeysWithValues: playlist.map { ($0.url.path, $0) })
 
@@ -190,7 +196,7 @@ class PlayerManager: NSObject {
         }
 
         DispatchQueue.main.async {
-            guard self.currentLibraryID == libraryID else { return }
+            guard self.currentLibraryID == libraryID, self.libraryLoadGeneration == generation else { return }
             let sortedTracks = newPlaylist.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
 
             if preservingCurrentItem,
@@ -318,7 +324,7 @@ class PlayerManager: NSObject {
 
     @MainActor
     @objc func refreshMusicLibrary() {
-        guard let library = (NSApplication.shared.delegate as? AppDelegate)?.libraryManager.currentLibrary else { return }
+        guard let library = libraryManager.currentLibrary else { return }
         if currentLibraryID == library.id {
             loadTracksFromMusicFolder(
                 URL(fileURLWithPath: library.path),
