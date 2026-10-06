@@ -16,7 +16,7 @@ class ConfigViewController: NSViewController {
 
     private let configManager = ConfigManager.shared
     override func loadView() {
-        self.view = NSView(frame: NSRect(x: 0, y: 0, width: 460, height: 300))
+        self.view = NSView(frame: NSRect(x: 0, y: 0, width: 400, height: 280))
     }
 
     override func viewDidLoad() {

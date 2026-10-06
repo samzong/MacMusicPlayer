@@ -10,7 +10,6 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
 
     private var subscriptions = Set<AnyCancellable>()
     private let menu = NSMenu()
-    private weak var mainMenu: NSMenu?
     private weak var statusItem: NSStatusItem?
 
     private weak var trackLabel: NSTextField?
@@ -83,12 +82,6 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
         updateStatusBarIcon()
     }
 
-    func configureMainMenu(_ mainMenu: NSMenu) {
-        self.mainMenu = mainMenu
-        mainMenu.delegate = self
-        refresh()
-    }
-
     @objc
     func refresh() {
         updateTrackInfo()
@@ -98,22 +91,7 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
         updateToggleStates()
         updateStatusBarIcon()
         updatePlayModeSelection()
-        if let mainMenu {
-            mainMenu.removeAllItems()
-            for item in menu.items {
-                if item.view != nil {
-                    let trackItem = NSMenuItem(
-                        title: playerManager.currentTrack?.title ?? NSLocalizedString("No Music Source", comment: ""),
-                        action: nil,
-                        keyEquivalent: ""
-                    )
-                    trackItem.isEnabled = false
-                    mainMenu.addItem(trackItem)
-                } else {
-                    mainMenu.addItem(item.copy() as! NSMenuItem)
-                }
-            }
-        }
+
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {

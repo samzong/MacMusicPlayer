@@ -49,8 +49,7 @@ Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/
 - 📥 Built-in YouTube/SoundCloud search & playlist downloads with format selection (requires yt-dlp + ffmpeg)
 - 💾 Smart memory of last music folder location and volume
 - 🚀 Launch at login (enabled by default)
-- 🌙 Prevent-sleep toggle (enabled by default)
-- 🪟 Song picker opens on launch and when the app is reopened; Settings can hide the menu bar icon without adding a Dock icon
+- 🌙 Prevent-sleep toggle (enabled by default) and configurable song picker on launch
 - ⌨️ Media key control and keyboard shortcuts (⌘D Download, ⌘S Settings)
 
 ## Configuration & Tips

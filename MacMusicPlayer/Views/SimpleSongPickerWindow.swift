@@ -473,6 +473,7 @@ class SimpleSongPickerWindow: NSPanel {
         guard let id = selectedTrackID,
               let index = playerManager.playlist.firstIndex(where: { $0.id == id }) else { return }
         playerManager.playTrack(at: index)
+        close()
     }
 
     override func keyDown(with event: NSEvent) {

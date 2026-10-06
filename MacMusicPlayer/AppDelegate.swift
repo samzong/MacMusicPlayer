@@ -264,7 +264,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let configVC = ConfigViewController()
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 460, height: 300),
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 280),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -310,7 +310,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let settingsItem = NSMenuItem(
             title: NSLocalizedString("Settings", comment: ""),
             action: #selector(showConfigWindow),
-            keyEquivalent: ","
+            keyEquivalent: ""
         )
         settingsItem.target = self
         appMenu.addItem(settingsItem)
@@ -338,10 +338,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         editItem.submenu = editMenu
         mainMenu.addItem(editItem)
-        let actions = NSMenuItem(title: NSLocalizedString("Player", comment: ""), action: nil, keyEquivalent: "")
-        let actionMenu = NSMenu()
-        actions.submenu = actionMenu
-        mainMenu.addItem(actions)
         let windowItem = NSMenuItem(title: NSLocalizedString("Window", comment: ""), action: nil, keyEquivalent: "")
         let windowMenu = NSMenu(title: NSLocalizedString("Window", comment: ""))
         windowMenu.addItem(withTitle: NSLocalizedString("Close", comment: ""), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
@@ -356,7 +352,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         mainMenu.addItem(windowItem)
         NSApp.windowsMenu = windowMenu
         NSApp.mainMenu = mainMenu
-        statusMenuController.configureMainMenu(actionMenu)
     }
 
     @objc private func updateStatusItemVisibility() {
