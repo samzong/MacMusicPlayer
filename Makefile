@@ -13,7 +13,10 @@ ICONSET = $(BUILD_DIR)/AppIcon.iconset
 
 BUILT_APP_PATH = $(BUILD_DIR)/$(APP_NAME).app
 DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-arm64.dmg
-SWIFT_BUILD = swift build -c release --triple arm64-apple-macosx$(MACOS_MIN)
+SDK_PATH := $(shell xcrun --show-sdk-path)
+SDK_VERSION := $(shell xcrun --show-sdk-version)
+SWIFT_BUILD = swift build -c release --triple arm64-apple-macosx$(MACOS_MIN) \
+	-Xswiftc -Xclang-linker -Xswiftc -isysroot -Xswiftc -Xclang-linker -Xswiftc "$(SDK_PATH)"
 USER_APPLICATIONS = $(HOME)/Applications
 INSTALL_PATH = $(USER_APPLICATIONS)/$(APP_NAME).app
 
@@ -61,6 +64,11 @@ build: ## Build the Release app into build/
 	rm -rf "$(BUILT_APP_PATH)" "$(ICONSET)"
 	mkdir -p "$(BUILT_APP_PATH)/Contents/MacOS" "$(BUILT_APP_PATH)/Contents/Resources" "$(ICONSET)"
 	cp "$$($(SWIFT_BUILD) --show-bin-path)/$(APP_NAME)" "$(BUILT_APP_PATH)/Contents/MacOS/"
+	@linked=$$(vtool -show-build "$(BUILT_APP_PATH)/Contents/MacOS/$(APP_NAME)" | awk '$$1 == "sdk" {print $$2}'); \
+	if [ "$$linked" != "$(SDK_VERSION)" ]; then \
+		echo "❌ Binary records SDK $$linked, expected $(SDK_VERSION); macOS would run it in legacy appearance mode."; \
+		exit 1; \
+	fi
 	cp $(APP_NAME)/Info.plist "$(BUILT_APP_PATH)/Contents/Info.plist"
 	sed -i '' 's/\$${PRODUCT_NAME}/$(APP_NAME)/' "$(BUILT_APP_PATH)/Contents/Info.plist"
 	for kv in $(INFO_PLIST_KEYS); do plutil -replace "$${kv%%=*}" -string "$${kv#*=}" "$(BUILT_APP_PATH)/Contents/Info.plist"; done
