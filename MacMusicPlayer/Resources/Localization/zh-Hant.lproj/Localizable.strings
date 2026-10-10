@@ -175,3 +175,24 @@
 "Undo" = "復原";
 "Redo" = "重做";
 "Hide MacMusicPlayer" = "隱藏 MacMusicPlayer";
+
+"Paste a link or enter a song or artist" = "貼上連結或輸入歌名、歌手";
+"Music Source" = "音樂來源";
+"Parse" = "解析";
+"Load" = "載入";
+"Find" = "查找";
+"Audio Source Format" = "音源格式";
+"Auto Select Audio" = "自動選擇音源";
+"Save to" = "儲存到";
+"Start Download" = "開始下載";
+"Background Download" = "背景下載";
+"Download Selected (%d)" = "下載所選（%d）";
+"Selected %d / %d" = "已選 %d / %d";
+"Parsing..." = "正在解析…";
+"Downloading" = "下載中";
+"Stopping download..." = "正在停止下載…";
+"Downloaded %d / %d · Failed %d · %@" = "已下載 %d / %d · 失敗 %d · %@";
+"Downloaded %d / %d · Failed %d" = "已下載 %d / %d · 失敗 %d";
+"Use" = "選用";
+"Unknown Title" = "未知標題";
+"Playlist" = "播放清單";

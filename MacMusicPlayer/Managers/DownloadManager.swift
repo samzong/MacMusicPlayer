@@ -1,21 +1,21 @@
 import Foundation
 import AppKit
+import Darwin
 
 class DownloadManager {
     static let shared = DownloadManager()
 
-    private var libraryManager: LibraryManager?
-
     private init() {}
-
-    @MainActor
-    func updateLibraryManager(_ libraryManager: LibraryManager) {
-        self.libraryManager = libraryManager
-    }
 
     struct DownloadFormat {
         let formatId: String
         let description: String
+    }
+
+    struct AudioInfo {
+        let title: String
+        let duration: String
+        let formats: [DownloadFormat]
     }
 
     struct PlaylistInfo {
@@ -30,12 +30,18 @@ class DownloadManager {
     }
 
     struct PlaylistDownloadProgress {
-        let currentIndex: Int
+        let completedCount: Int
+        let failedCount: Int
         let totalCount: Int
         let currentTitle: String
     }
 
-    enum DownloadError: Error {
+    struct PlaylistDownloadResult {
+        let completedCount: Int
+        let failedCount: Int
+    }
+
+    enum DownloadError: LocalizedError {
         case formatFetchFailed
         case downloadFailed(String)
         case invalidURL
@@ -45,7 +51,7 @@ class DownloadManager {
         case playlistFetchFailed
         case playlistDownloadFailed(String)
 
-        var localizedDescription: String {
+        var errorDescription: String? {
             switch self {
             case .formatFetchFailed:
                 return NSLocalizedString("Failed to get available formats", comment: "Error message when format fetching fails")
@@ -92,12 +98,8 @@ class DownloadManager {
         func cancel() {
             lock.lock()
             cancelled = true
-            let process = self.process
             lock.unlock()
-
-            if process?.isRunning == true {
-                process?.terminate()
-            }
+            terminate()
         }
 
         var isCancelled: Bool {
@@ -112,7 +114,13 @@ class DownloadManager {
             lock.unlock()
 
             if process?.isRunning == true {
-                process?.terminate()
+                guard let process else { return }
+                let pid = process.processIdentifier
+                if getpgid(pid) == pid {
+                    kill(-pid, SIGTERM)
+                } else {
+                    process.terminate()
+                }
             }
         }
     }
@@ -144,11 +152,19 @@ class DownloadManager {
                 errorPipe.fileHandleForReading.readDataToEndOfFile()
             }
 
-            try Task.checkCancellation()
-            try task.run()
+            do {
+                try Task.checkCancellation()
+                try task.run()
+            } catch {
+                try? outputPipe.fileHandleForWriting.close()
+                try? errorPipe.fileHandleForWriting.close()
+                _ = await outputReader.value
+                _ = await errorReader.value
+                throw error
+            }
 
             if processBox.isCancelled && task.isRunning {
-                task.terminate()
+                processBox.cancel()
             }
 
             task.waitUntilExit()
@@ -237,140 +253,52 @@ class DownloadManager {
         return trimmedTitle.isEmpty ? "Unknown Title" : trimmedTitle
     }
 
-    func fetchAvailableFormats(from url: String) async throws -> [DownloadFormat] {
-        print(NSLocalizedString("Getting available formats, URL: %@", comment: "Log message when fetching formats"), url)
-
-        guard URL(string: url) != nil else {
-            throw DownloadError.invalidURL
-        }
-
+    func fetchAudioInfo(from url: String) async throws -> AudioInfo {
+        guard URL(string: url) != nil else { throw DownloadError.invalidURL }
         let ytDlpPath = try checkYtDlpAvailability()
-        let ffmpegPath = try checkFFmpegAvailability()
-
         let result = try await runCancellableProcess(
             executablePath: ytDlpPath,
-            arguments: [
-                "--ffmpeg-location", ffmpegPath,
-                "-F",
-                url
-            ]
+            arguments: ["--no-playlist", "--skip-download", "--dump-single-json", url]
         )
-
-        guard result.terminationStatus == 0 else {
-            print(NSLocalizedString("Failed to get formats: %@", comment: "Log message when format fetching fails"), result.standardError)
+        guard result.terminationStatus == 0,
+              let data = result.standardOutput.data(using: .utf8),
+              let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let title = json["title"] as? String,
+              let rawFormats = json["formats"] as? [[String: Any]] else {
             throw DownloadError.formatFetchFailed
         }
-
-        return parseFormatsFromOutput(result.standardOutput)
-    }
-
-    private func parseFormatsFromOutput(_ output: String) -> [DownloadFormat] {
-        var formats = [DownloadFormat(
-            formatId: "bestaudio",
-            description: NSLocalizedString("🎵 Best Quality (Auto Select)", comment: "Format description for best audio quality")
-        )]
-
-        formats += output.components(separatedBy: .newlines)
-            .filter { $0.contains("audio only") }
-            .compactMap(parseAudioFormatLine)
-
-        if formats.count <= 1 {
-            formats += [
-                DownloadFormat(
-                    formatId: "140",
-                    description: NSLocalizedString("M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]", comment: "Predefined format description")
-                ),
-                DownloadFormat(
-                    formatId: "251",
-                    description: NSLocalizedString("WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]", comment: "Predefined format description")
-                )
-            ]
-        }
-
-        var seenDescriptions = Set<String>()
-        return formats.filter { seenDescriptions.insert($0.description).inserted }
-    }
-
-    private func parseAudioFormatLine(_ line: String) -> DownloadFormat? {
-        let components = line.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-        guard components.count >= 2 else { return nil }
-
-        let formatId = components[0]
-
-        var fileExtension = "mp3"
-
-        if line.contains("m4a") {
-            fileExtension = "m4a"
-        } else if line.contains("webm") {
-            fileExtension = "webm"
-        } else if line.contains("opus") {
-            fileExtension = "opus"
-        }
-
-        var bitrate = ""
-        if let bitrateRange = line.range(of: "\\d+k", options: .regularExpression) {
-            bitrate = String(line[bitrateRange])
-        }
-
-        var sampleRate = ""
-        if let sampleRateRange = line.range(of: "\\d+\\.?\\d*kHz|\\d+Hz|\\d+k\\s", options: .regularExpression) {
-            sampleRate = String(line[sampleRateRange]).trimmingCharacters(in: .whitespaces)
-        } else if line.contains("44k") {
-            sampleRate = "44kHz"
-        } else if line.contains("48k") {
-            sampleRate = "48kHz"
-        }
-
-        let channels: String
-        if line.contains("stereo") || line.contains("2.0") {
-            channels = NSLocalizedString("stereo", comment: "Audio channel type")
-        } else if line.contains("mono") || line.contains("1.0") {
-            channels = NSLocalizedString("mono", comment: "Audio channel type")
-        } else if line.contains("5.1") {
-            channels = NSLocalizedString("5.1 channels", comment: "Audio channel type")
-        } else {
-            channels = NSLocalizedString("stereo", comment: "Audio channel type")
-        }
-
-        var fileSize = ""
-        if let fileSizeRange = line.range(of: "\\d+\\.?\\d*[KMG]iB", options: .regularExpression) {
-            fileSize = String(line[fileSizeRange])
-        }
-
-        var codec = ""
-        if line.contains("opus") {
-            codec = "Opus"
-        } else if line.contains("mp4a") {
-            codec = "AAC"
-        } else if line.contains("mp3") {
-            codec = "MP3"
-        } else if line.contains("vorbis") {
-            codec = "Vorbis"
-        }
-
-        var description: String
-        if bitrate.isEmpty {
-            description = String(format: NSLocalizedString("%@ Audio", comment: "Format description without details"), fileExtension.uppercased())
-            let details = [sampleRate, channels, fileSize].filter { !$0.isEmpty }.joined(separator: ", ")
-            if !details.isEmpty {
-                description += " (\(details))"
+        let audioFormats = rawFormats.compactMap { format -> DownloadFormat? in
+            guard let id = format["format_id"] as? String,
+                  format["acodec"] as? String != "none",
+                  format["vcodec"] as? String == "none" else { return nil }
+            var details = [format["ext"] as? String, format["acodec"] as? String].compactMap { $0 }
+            if let bitrate = format["abr"] as? Double, bitrate.isFinite, bitrate > 0, bitrate < Double(Int.max) {
+                details.append("\(Int(bitrate)) kbps")
             }
-        } else {
-            description = String(format: NSLocalizedString("%@ Audio (%@", comment: "Format description with bitrate"), fileExtension.uppercased(), bitrate)
-            for detail in [sampleRate, channels, fileSize] where !detail.isEmpty {
-                description += ", \(detail)"
+            if let sampleRate = format["asr"] as? Int, sampleRate > 0 {
+                details.append("\(sampleRate) Hz")
             }
-            description += ")"
+            return DownloadFormat(formatId: id, description: details.isEmpty ? id : details.joined(separator: " · "))
         }
-
-        if !codec.isEmpty {
-            description += " [\(codec)]"
-        }
-
-        return DownloadFormat(formatId: formatId, description: description)
+        guard !audioFormats.isEmpty else { throw DownloadError.formatFetchFailed }
+        return AudioInfo(
+            title: title,
+            duration: durationText(json),
+            formats: [DownloadFormat(formatId: "bestaudio", description: NSLocalizedString("Auto Select Audio", comment: ""))] + audioFormats
+        )
     }
 
-    func downloadAudio(from url: String, formatId: String, outputTitle: String? = nil) async throws {
+    private func durationText(_ json: [String: Any]) -> String {
+        if let text = json["duration_string"] as? String, !text.isEmpty { return text }
+        guard let duration = json["duration"] as? Double, duration.isFinite, duration >= 0, duration < Double(Int.max) else { return "" }
+        let seconds = Int(duration)
+        if seconds >= 3600 {
+            return String(format: "%d:%02d:%02d", seconds / 3600, seconds / 60 % 60, seconds % 60)
+        }
+        return String(format: "%d:%02d", seconds / 60, seconds % 60)
+    }
+
+    func downloadAudio(from url: String, formatId: String, destination: MusicLibrary, outputTitle: String? = nil) async throws {
         print(NSLocalizedString("Starting audio download, URL: %@, Format ID: %@", comment: "Log message when starting download"), url, formatId)
 
         guard URL(string: url) != nil else {
@@ -391,12 +319,14 @@ class DownloadManager {
         try Task.checkCancellation()
         print(NSLocalizedString("Video title: %@", comment: "Log message showing video title"), videoTitle)
 
-        guard let currentLibrary = libraryManager?.currentLibrary else {
-            throw DownloadError.downloadFailed("No music library selected")
-        }
-
-        let musicPath = currentLibrary.path
-        let outputFile = "\(musicPath)/\(videoTitle).%(ext)s"
+        let fileManager = FileManager.default
+        let musicDirectory = URL(fileURLWithPath: destination.path, isDirectory: true)
+        let finalFile = musicDirectory.appendingPathComponent(videoTitle + ".mp3")
+        if fileManager.fileExists(atPath: finalFile.path) { return }
+        let workDirectory = musicDirectory.appendingPathComponent(".macmusicplayer-download-" + UUID().uuidString, isDirectory: true)
+        try fileManager.createDirectory(at: workDirectory, withIntermediateDirectories: false)
+        defer { try? fileManager.removeItem(at: workDirectory) }
+        let outputFile = workDirectory.path.replacingOccurrences(of: "%", with: "%%") + "/audio.%(ext)s"
         print(NSLocalizedString("Downloading to file: %@", comment: "Log message showing output file"), outputFile)
 
         do {
@@ -407,6 +337,7 @@ class DownloadManager {
                 arguments: [
                     "--ffmpeg-location", ffmpegPath,
                     "-f", formatId,
+                    "--no-playlist",
                     "--extract-audio",
                     "--audio-format", "mp3",
                     "--audio-quality", "0",
@@ -424,10 +355,18 @@ class DownloadManager {
             }
 
             if result.terminationStatus == 0 {
+                try Task.checkCancellation()
+                let completedFile = workDirectory.appendingPathComponent("audio.mp3")
+                guard renamex_np(completedFile.path, finalFile.path, UInt32(RENAME_EXCL)) == 0 else {
+                    throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+                }
                 print(NSLocalizedString("Download successful", comment: "Log message when download succeeds"))
 
                 DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: NSNotification.Name("RefreshMusicLibrary"), object: nil)
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("RefreshMusicLibrary"), object: nil,
+                        userInfo: ["libraryID": destination.id]
+                    )
                 }
             } else {
                 print(NSLocalizedString("Download failed, exit status: %d", comment: "Log message when download fails"), result.terminationStatus)
@@ -466,7 +405,7 @@ class DownloadManager {
                 arguments: [
                     "--ffmpeg-location", ffmpegPath,
                     "--flat-playlist",
-                    "--dump-json",
+                    "--dump-single-json",
                     url
                 ]
             )
@@ -488,30 +427,22 @@ class DownloadManager {
     }
 
     private func parsePlaylistFromOutput(_ output: String) throws -> PlaylistInfo {
-        var items: [PlaylistItem] = []
-        var playlistTitle = "Unknown Playlist"
-
-        for line in output.components(separatedBy: .newlines) where !line.isEmpty {
-            guard let data = line.data(using: .utf8),
-                  let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { continue }
-
-            let entryType = json["_type"] as? String
-            if entryType == "url" {
-                items.append(PlaylistItem(
-                    title: json["title"] as? String ?? "Unknown Title",
-                    url: json["url"] as? String ?? "",
-                    duration: json["duration_string"] as? String ?? ""
-                ))
-            } else if json["_type"] == nil || entryType == "playlist", let title = json["title"] as? String {
-                playlistTitle = title
-            }
-        }
-
-        if items.isEmpty {
+        guard let data = output.data(using: .utf8),
+              let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let entries = json["entries"] as? [Any] else {
             throw DownloadError.playlistFetchFailed
         }
-
-        return PlaylistInfo(title: playlistTitle, items: items)
+        let items = entries.compactMap { rawEntry -> PlaylistItem? in
+            guard let entry = rawEntry as? [String: Any],
+                  let url = entry["webpage_url"] as? String ?? entry["url"] as? String, !url.isEmpty else { return nil }
+            return PlaylistItem(
+                title: entry["title"] as? String ?? NSLocalizedString("Unknown Title", comment: ""),
+                url: url,
+                duration: durationText(entry)
+            )
+        }
+        guard !items.isEmpty else { throw DownloadError.playlistFetchFailed }
+        return PlaylistInfo(title: json["title"] as? String ?? NSLocalizedString("Playlist", comment: ""), items: items)
     }
 
     private func outputTitles(forPlaylistItems items: [PlaylistItem]) -> [String] {
@@ -543,9 +474,10 @@ class DownloadManager {
 
     func downloadPlaylistItems(
         _ items: [PlaylistItem],
+        destination: MusicLibrary,
         maxConcurrentDownloads: Int = 3,
         progressCallback: @escaping (PlaylistDownloadProgress) -> Void
-    ) async throws {
+    ) async throws -> PlaylistDownloadResult {
         if items.isEmpty {
             throw DownloadError.playlistDownloadFailed(NSLocalizedString("Playlist is empty", comment: "Error when playlist has no downloadable items"))
         }
@@ -563,14 +495,14 @@ class DownloadManager {
                 let outputTitle = outputTitles[nextIndex]
                 nextIndex += 1
 
-                let progress = PlaylistDownloadProgress(currentIndex: nextIndex, totalCount: totalCount, currentTitle: item.title)
+                let progress = PlaylistDownloadProgress(completedCount: completed, failedCount: failed, totalCount: totalCount, currentTitle: item.title)
                 await MainActor.run {
                     progressCallback(progress)
                 }
 
                 group.addTask {
                     do {
-                        try await self.downloadAudio(from: item.url, formatId: "bestaudio", outputTitle: outputTitle)
+                        try await self.downloadAudio(from: item.url, formatId: "bestaudio", destination: destination, outputTitle: outputTitle)
                         return (item, true)
                     } catch is CancellationError {
                         throw CancellationError()
@@ -593,7 +525,7 @@ class DownloadManager {
                     failed += 1
                 }
 
-                let progress = PlaylistDownloadProgress(currentIndex: nextIndex, totalCount: totalCount, currentTitle: item.title)
+                let progress = PlaylistDownloadProgress(completedCount: completed, failedCount: failed, totalCount: totalCount, currentTitle: item.title)
                 await MainActor.run {
                     progressCallback(progress)
                 }
@@ -607,20 +539,6 @@ class DownloadManager {
         }
 
         try Task.checkCancellation()
-        let finalProgress = PlaylistDownloadProgress(
-            currentIndex: totalCount,
-            totalCount: totalCount,
-            currentTitle: NSLocalizedString("Completed", comment: "Download completion status")
-        )
-
-        await MainActor.run {
-            progressCallback(finalProgress)
-        }
-
-        if failed > 0 && completed == 0 {
-            throw DownloadError.playlistDownloadFailed(NSLocalizedString("All downloads failed", comment: "Error when all playlist downloads fail"))
-        }
-
-        print(String(format: NSLocalizedString("Playlist download completed: %d successful, %d failed", comment: "Log message when playlist download completes"), completed, failed))
+        return PlaylistDownloadResult(completedCount: completed, failedCount: failed)
     }
 }

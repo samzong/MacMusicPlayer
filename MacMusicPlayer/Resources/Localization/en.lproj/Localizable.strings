@@ -175,3 +175,24 @@
 "Undo" = "Undo";
 "Redo" = "Redo";
 "Hide MacMusicPlayer" = "Hide MacMusicPlayer";
+
+"Paste a link or enter a song or artist" = "Paste a link or enter a song or artist";
+"Music Source" = "Music Source";
+"Parse" = "Parse";
+"Load" = "Load";
+"Find" = "Find";
+"Audio Source Format" = "Audio Source Format";
+"Auto Select Audio" = "Auto Select Audio";
+"Save to" = "Save to";
+"Start Download" = "Start Download";
+"Background Download" = "Background Download";
+"Download Selected (%d)" = "Download Selected (%d)";
+"Selected %d / %d" = "Selected %d / %d";
+"Parsing..." = "Parsing...";
+"Downloading" = "Downloading";
+"Stopping download..." = "Stopping download...";
+"Downloaded %d / %d · Failed %d · %@" = "Downloaded %d / %d · Failed %d · %@";
+"Downloaded %d / %d · Failed %d" = "Downloaded %d / %d · Failed %d";
+"Use" = "Use";
+"Unknown Title" = "Unknown Title";
+"Playlist" = "Playlist";

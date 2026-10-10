@@ -56,7 +56,7 @@ Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/
 
 - Download dependencies (yt-dlp, ffmpeg) are installed automatically via Homebrew; manual install (`brew install yt-dlp ffmpeg`) is required for DMG users.
 - Configure API URL and API Key in **Settings** to enable YouTube search (requires a custom search proxy service).
-- Pick the destination library in the Download window; use **Download All** button to download entire playlists, or **Refresh Current Library** to rescan music quickly.
+- Pick the destination library in the Download window and use **Download Selected** for the checked playlist songs. Closing the window keeps downloads running while the app stays open; **Stop** cancels the active download. Use **Refresh Current Library** to rescan music quickly.
 - For best metadata display, name your files as `Artist - Title.mp3` format.
 
 ## Screenshots

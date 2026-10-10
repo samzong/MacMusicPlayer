@@ -83,7 +83,7 @@ class PlayerManager: NSObject {
         queueController.volume = savedVolume
 
         NotificationCenter.default.addObserver(self,
-                                            selector: #selector(refreshMusicLibrary),
+                                            selector: #selector(handleLibraryRefresh(_:)),
                                             name: NSNotification.Name("RefreshMusicLibrary"),
                                             object: nil)
     }
@@ -321,6 +321,13 @@ class PlayerManager: NSObject {
         updateNowPlayingInfo()
     }
 
+
+    @MainActor
+    @objc private func handleLibraryRefresh(_ notification: Notification) {
+        if let libraryID = notification.userInfo?["libraryID"] as? UUID,
+           libraryManager.currentLibrary?.id != libraryID { return }
+        refreshMusicLibrary()
+    }
 
     @MainActor
     @objc func refreshMusicLibrary() {

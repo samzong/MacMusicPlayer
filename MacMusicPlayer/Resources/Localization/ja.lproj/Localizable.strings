@@ -175,3 +175,24 @@
 "Undo" = "取り消す";
 "Redo" = "やり直す";
 "Hide MacMusicPlayer" = "MacMusicPlayerを隠す";
+
+"Paste a link or enter a song or artist" = "リンク、曲名、アーティストを入力";
+"Music Source" = "音楽のソース";
+"Parse" = "解析";
+"Load" = "読み込む";
+"Find" = "検索";
+"Audio Source Format" = "音源形式";
+"Auto Select Audio" = "音源を自動選択";
+"Save to" = "保存先";
+"Start Download" = "ダウンロード開始";
+"Background Download" = "バックグラウンドで続行";
+"Download Selected (%d)" = "選択項目をダウンロード（%d）";
+"Selected %d / %d" = "選択 %d / %d";
+"Parsing..." = "解析中…";
+"Downloading" = "ダウンロード中";
+"Stopping download..." = "ダウンロード停止中…";
+"Downloaded %d / %d · Failed %d · %@" = "完了 %d / %d · 失敗 %d · %@";
+"Downloaded %d / %d · Failed %d" = "完了 %d / %d · 失敗 %d";
+"Use" = "選択";
+"Unknown Title" = "不明なタイトル";
+"Playlist" = "プレイリスト";

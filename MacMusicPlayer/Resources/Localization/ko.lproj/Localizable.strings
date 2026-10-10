@@ -175,3 +175,24 @@
 "Undo" = "실행 취소";
 "Redo" = "다시 실행";
 "Hide MacMusicPlayer" = "MacMusicPlayer 가리기";
+
+"Paste a link or enter a song or artist" = "링크, 곡명 또는 아티스트 입력";
+"Music Source" = "음악 소스";
+"Parse" = "분석";
+"Load" = "불러오기";
+"Find" = "찾기";
+"Audio Source Format" = "음원 형식";
+"Auto Select Audio" = "음원 자동 선택";
+"Save to" = "저장 위치";
+"Start Download" = "다운로드 시작";
+"Background Download" = "백그라운드 다운로드";
+"Download Selected (%d)" = "선택 항목 다운로드 (%d)";
+"Selected %d / %d" = "선택 %d / %d";
+"Parsing..." = "분석 중…";
+"Downloading" = "다운로드 중";
+"Stopping download..." = "다운로드 중지 중…";
+"Downloaded %d / %d · Failed %d · %@" = "완료 %d / %d · 실패 %d · %@";
+"Downloaded %d / %d · Failed %d" = "완료 %d / %d · 실패 %d";
+"Use" = "선택";
+"Unknown Title" = "알 수 없는 제목";
+"Playlist" = "재생목록";

@@ -117,6 +117,7 @@ class SimpleSongPickerWindow: NSPanel {
     private var nextButton: PickerButton!
     private var modeButton: PickerButton!
     private var moreButton: PickerButton!
+    private weak var downloadMenuItem: NSMenuItem?
     private var emptyLabel: NSTextField!
     private var filteredTracks: [Track] = []
     private var displayedLibraryID: UUID?
@@ -142,7 +143,7 @@ class SimpleSongPickerWindow: NSPanel {
         playerManager.$playlist.receive(on: DispatchQueue.main).sink { [weak self] _ in
             self?.synchronizeLibrary()
         }.store(in: &subscriptions)
-        for name in ["TrackChanged", "PlaybackStateChanged", "PlayModeChanged", "LibrariesChanged", "PlaylistUpdated"] {
+        for name in ["TrackChanged", "PlaybackStateChanged", "PlayModeChanged", "LibrariesChanged", "PlaylistUpdated", "DownloadStateChanged"] {
             NotificationCenter.default.publisher(for: NSNotification.Name(name))
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] _ in self?.synchronizeLibrary() }
@@ -398,6 +399,7 @@ class SimpleSongPickerWindow: NSPanel {
     }
 
     private func updateControls() {
+        updateDownloadMenuItem()
         let name = libraryManager.currentLibrary?.name ?? NSLocalizedString("Music Libraries", comment: "")
         libraryButton.title = name
         libraryButton.toolTip = name
@@ -475,14 +477,35 @@ class SimpleSongPickerWindow: NSPanel {
             let item = NSMenuItem(title: NSLocalizedString(title, comment: ""), action: action, keyEquivalent: "")
             item.target = self
             item.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
+            if title == "Download Music" {
+                downloadMenuItem = item
+                updateDownloadMenuItem()
+            }
             menu.addItem(item)
         }
         let menuTop = moreButton.isFlipped ? -menu.size.height - 6 : moreButton.bounds.maxY + menu.size.height + 6
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: menuTop), in: moreButton)
     }
 
+    private func updateDownloadMenuItem() {
+        guard let item = downloadMenuItem else { return }
+        let title = NSLocalizedString("Download Music", comment: "")
+        if actionTarget?.isDownloading == true {
+            let runningTitle = title + " · " + NSLocalizedString("Downloading", comment: "")
+            item.title = runningTitle
+            item.attributedTitle = NSAttributedString(
+                string: runningTitle,
+                attributes: [.foregroundColor: NSColor.controlAccentColor]
+            )
+            item.image = NSImage(systemSymbolName: "arrow.triangle.2.circlepath", accessibilityDescription: nil)
+        } else {
+            item.title = title
+            item.attributedTitle = nil
+            item.image = NSImage(systemSymbolName: "square.and.arrow.down", accessibilityDescription: nil)
+        }
+    }
+
     @objc private func showDownloads() {
-        close()
         actionTarget?.showDownloadWindow()
     }
 
