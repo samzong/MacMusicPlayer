@@ -111,10 +111,12 @@ class SimpleSongPickerWindow: NSPanel {
     private var tableView: NSTableView!
     private var contentHost: NSView!
     private var libraryButton: PickerButton!
+    private var luckyButton: PickerButton!
     private var previousButton: PickerButton!
     private var playButton: PickerButton!
     private var nextButton: PickerButton!
     private var modeButton: PickerButton!
+    private var moreButton: PickerButton!
     private var emptyLabel: NSTextField!
     private var filteredTracks: [Track] = []
     private var displayedLibraryID: UUID?
@@ -270,20 +272,22 @@ class SimpleSongPickerWindow: NSPanel {
         libraryButton.alignment = .center
         libraryButton.font = .systemFont(ofSize: 12)
         libraryButton.cell?.lineBreakMode = .byTruncatingTail
+        luckyButton = makeButton(symbol: "wand.and.stars", title: "Feeling Lucky", action: #selector(feelingLucky), size: 32)
         previousButton = makeButton(symbol: "backward.end.fill", title: "Previous", action: #selector(playPrevious), size: 32)
         playButton = makeButton(symbol: "play.fill", title: "Play", action: #selector(togglePlayback), size: 32)
         nextButton = makeButton(symbol: "forward.end.fill", title: "Next", action: #selector(playNext), size: 32)
         modeButton = makeButton(symbol: "repeat", title: "Playback Mode", action: #selector(showModes), size: 28)
-        let settings = makeButton(symbol: "gearshape", title: "Settings", action: #selector(showSettings), size: 28)
-        let transport = NSStackView(views: [previousButton, playButton, nextButton, modeButton])
+        moreButton = makeButton(symbol: "ellipsis", title: "More", action: #selector(showMore), size: 28)
+        let transport = NSStackView(views: [luckyButton, previousButton, playButton, nextButton, modeButton])
         transport.orientation = .horizontal
         transport.alignment = .centerY
         transport.spacing = 10
+        transport.setCustomSpacing(18, after: luckyButton)
         transport.setCustomSpacing(18, after: nextButton)
         transport.translatesAutoresizingMaskIntoConstraints = false
         footer.addSubview(transport)
         footer.addSubview(libraryButton)
-        footer.addSubview(settings)
+        footer.addSubview(moreButton)
         NSLayoutConstraint.activate([
             header.topAnchor.constraint(equalTo: contentHost.topAnchor),
             header.leadingAnchor.constraint(equalTo: contentHost.leadingAnchor),
@@ -310,8 +314,8 @@ class SimpleSongPickerWindow: NSPanel {
             libraryButton.trailingAnchor.constraint(lessThanOrEqualTo: transport.leadingAnchor, constant: -14),
             transport.centerXAnchor.constraint(equalTo: footer.centerXAnchor),
             transport.centerYAnchor.constraint(equalTo: footer.centerYAnchor),
-            settings.trailingAnchor.constraint(equalTo: footer.trailingAnchor, constant: -16),
-            settings.centerYAnchor.constraint(equalTo: footer.centerYAnchor),
+            moreButton.trailingAnchor.constraint(equalTo: footer.trailingAnchor, constant: -16),
+            moreButton.centerYAnchor.constraint(equalTo: footer.centerYAnchor),
             emptyLabel.centerXAnchor.constraint(equalTo: scroll.centerXAnchor),
             emptyLabel.centerYAnchor.constraint(equalTo: scroll.centerYAnchor)
         ])
@@ -400,6 +404,7 @@ class SimpleSongPickerWindow: NSPanel {
         libraryButton.setAccessibilityLabel(NSLocalizedString("Music Libraries", comment: "") + ": " + name)
         libraryButton.isEnabled = !libraryManager.libraries.isEmpty
         let hasTracks = !playerManager.playlist.isEmpty
+        luckyButton.isEnabled = hasTracks
         previousButton.isEnabled = hasTracks
         nextButton.isEnabled = hasTracks
         playButton.isEnabled = hasTracks && playerManager.currentTrack != nil
@@ -461,7 +466,28 @@ class SimpleSongPickerWindow: NSPanel {
         updateControls()
     }
 
+    @objc private func showMore() {
+        let menu = NSMenu()
+        for (title, symbol, action) in [
+            ("Download Music", "square.and.arrow.down", #selector(showDownloads)),
+            ("Settings", "gearshape", #selector(showSettings))
+        ] {
+            let item = NSMenuItem(title: NSLocalizedString(title, comment: ""), action: action, keyEquivalent: "")
+            item.target = self
+            item.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
+            menu.addItem(item)
+        }
+        let menuTop = moreButton.isFlipped ? -menu.size.height - 6 : moreButton.bounds.maxY + menu.size.height + 6
+        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: menuTop), in: moreButton)
+    }
+
+    @objc private func showDownloads() {
+        close()
+        actionTarget?.showDownloadWindow()
+    }
+
     @objc private func showSettings() { actionTarget?.showConfigWindow() }
+    @objc private func feelingLucky() { playerManager.feelingLucky() }
     @objc private func playPrevious() { playerManager.playPrevious() }
     @objc private func playNext() { playerManager.playNext() }
 
