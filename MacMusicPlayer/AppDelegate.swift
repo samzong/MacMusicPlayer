@@ -21,7 +21,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         playerManager = PlayerManager(libraryManager: libraryManager)
         sleepManager = SleepManager()
         launchManager = LaunchManager()
-        DownloadManager.shared.updateLibraryManager(libraryManager)
 
         if let currentLibrary = libraryManager.currentLibrary {
             playerManager.loadLibrary(currentLibrary)
@@ -146,6 +145,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return false
     }
 
+    var isDownloading: Bool {
+        (downloadWindow?.contentViewController as? DownloadViewController)?.isDownloading ?? false
+    }
+
     @objc func showDownloadWindow() {
         if let existingWindow = self.downloadWindow {
             existingWindow.makeKeyAndOrderFront(nil)
@@ -155,13 +158,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         let downloadVC = DownloadViewController(libraryManager: libraryManager, actionTarget: self)
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 400),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 218),
+            styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
         window.contentViewController = downloadVC
         window.title = NSLocalizedString("Download Music", comment: "")
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.backgroundColor = .clear
+        window.level = .floating
         window.center()
 
         window.isReleasedWhenClosed = false
@@ -375,11 +382,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 extension AppDelegate: NSWindowDelegate {
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        if sender == downloadWindow {
+            sender.orderOut(nil)
+            return false
+        }
+        return true
+    }
+
     func windowWillClose(_ notification: Notification) {
         if let window = notification.object as? NSWindow {
-            if window == downloadWindow {
-                downloadWindow = nil
-            } else if window == configWindow {
+            if window == configWindow {
                 configWindow = nil
                 if returnToPickerAfterConfig {
                     returnToPickerAfterConfig = false
