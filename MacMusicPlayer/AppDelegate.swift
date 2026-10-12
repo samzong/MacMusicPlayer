@@ -150,6 +150,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func showDownloadWindow() {
+        songPickerWindow?.close()
         if let existingWindow = self.downloadWindow {
             existingWindow.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
@@ -290,6 +291,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func showSongPickerWindow() {
+        downloadWindow?.orderOut(nil)
         if let configWindow, configWindow.isVisible {
             returnToPickerAfterConfig = true
             configWindow.performClose(nil)
