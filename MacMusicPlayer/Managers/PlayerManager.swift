@@ -34,14 +34,6 @@ class PlayerManager: NSObject {
 
     var hasPlaylist: Bool { !playlistStore.isEmpty }
 
-    var volume: Float {
-        get { queueController.volume }
-        set {
-            queueController.volume = newValue
-            UserDefaults.standard.set(newValue, forKey: "SavedVolume")
-        }
-    }
-
     var playMode: PlayMode = .sequential {
         didSet {
             UserDefaults.standard.set(playMode.rawValue, forKey: "PlayMode")

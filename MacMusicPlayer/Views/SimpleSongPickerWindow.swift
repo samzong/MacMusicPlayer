@@ -120,7 +120,6 @@ class SimpleSongPickerWindow: NSPanel {
     private weak var downloadMenuItem: NSMenuItem?
     private var emptyLabel: NSTextField!
     private var chooseFolderButton: NSButton!
-    private var volumeSlider: NSSlider!
     private var filteredTracks: [Track] = []
     private var displayedLibraryID: UUID?
     private var subscriptions = Set<AnyCancellable>()
@@ -298,23 +297,6 @@ class SimpleSongPickerWindow: NSPanel {
         footer.addSubview(transport)
         footer.addSubview(libraryButton)
         footer.addSubview(moreButton)
-        let volumeIcon = NSImageView()
-        volumeIcon.image = NSImage(systemSymbolName: "speaker.fill", accessibilityDescription: nil)
-        volumeIcon.symbolConfiguration = NSImage.SymbolConfiguration(pointSize: 12, weight: .regular)
-        volumeIcon.contentTintColor = .secondaryLabelColor
-        volumeIcon.translatesAutoresizingMaskIntoConstraints = false
-        volumeSlider = NSSlider(value: Double(playerManager.volume * 100), minValue: 0, maxValue: 100, target: self, action: #selector(volumeChanged))
-        volumeSlider.controlSize = .small
-        volumeSlider.translatesAutoresizingMaskIntoConstraints = false
-        let volumeTitle = NSLocalizedString("Volume", comment: "")
-        volumeSlider.toolTip = volumeTitle
-        volumeSlider.setAccessibilityLabel(volumeTitle)
-        let volumeStack = NSStackView(views: [volumeIcon, volumeSlider])
-        volumeStack.orientation = .horizontal
-        volumeStack.alignment = .centerY
-        volumeStack.spacing = 4
-        volumeStack.translatesAutoresizingMaskIntoConstraints = false
-        footer.addSubview(volumeStack)
         NSLayoutConstraint.activate([
             header.topAnchor.constraint(equalTo: contentHost.topAnchor),
             header.leadingAnchor.constraint(equalTo: contentHost.leadingAnchor),
@@ -343,9 +325,6 @@ class SimpleSongPickerWindow: NSPanel {
             transport.centerYAnchor.constraint(equalTo: footer.centerYAnchor),
             moreButton.trailingAnchor.constraint(equalTo: footer.trailingAnchor, constant: -16),
             moreButton.centerYAnchor.constraint(equalTo: footer.centerYAnchor),
-            volumeStack.centerYAnchor.constraint(equalTo: footer.centerYAnchor),
-            volumeStack.trailingAnchor.constraint(equalTo: moreButton.leadingAnchor, constant: -10),
-            volumeSlider.widthAnchor.constraint(equalToConstant: 72),
             emptyLabel.centerXAnchor.constraint(equalTo: scroll.centerXAnchor),
             emptyLabel.centerYAnchor.constraint(equalTo: scroll.centerYAnchor, constant: -16),
             chooseFolderButton.centerXAnchor.constraint(equalTo: scroll.centerXAnchor),
@@ -466,10 +445,6 @@ class SimpleSongPickerWindow: NSPanel {
         }
         modeButton.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)?
             .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 13, weight: .regular))
-        let volumeValue = Double(playerManager.volume * 100)
-        if abs(volumeSlider.doubleValue - volumeValue) > 1 {
-            volumeSlider.doubleValue = volumeValue
-        }
     }
 
     private func popUp(_ menu: NSMenu, above button: NSButton) {
@@ -555,7 +530,6 @@ class SimpleSongPickerWindow: NSPanel {
 
     @objc private func showSettings() { actionTarget?.showConfigWindow() }
     @objc private func chooseMusicFolder() { actionTarget?.addNewLibrary() }
-    @objc private func volumeChanged() { playerManager.volume = Float(volumeSlider.doubleValue / 100) }
     @objc private func feelingLucky() { playerManager.feelingLucky() }
     @objc private func playPrevious() { playerManager.playPrevious() }
     @objc private func playNext() { playerManager.playNext() }

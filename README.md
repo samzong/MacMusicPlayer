@@ -46,7 +46,6 @@ Download the latest `MacMusicPlayer-arm64.dmg` from the [Releases](https://githu
 - 🎧 Audio format support (mp3, m4a, wav, flac, aac, ogg, aiff)
 - 🔄 Multiple playback modes (Sequential, Single Loop, Random)
 - 📚 Multiple music libraries with quick switch (⌘R to refresh)
-- 🔊 Volume control with memory across launches
 - 📥 Built-in YouTube/SoundCloud search & playlist downloads with thumbnails and format selection (requires yt-dlp + ffmpeg)
 - 💾 Smart memory of last music library and last played track
 - 🚀 Launch at login (enabled by default)
