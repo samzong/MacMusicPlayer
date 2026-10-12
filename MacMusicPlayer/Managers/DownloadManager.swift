@@ -30,6 +30,7 @@ class DownloadManager {
     }
 
     struct PlaylistDownloadProgress {
+        let completedIndices: Set<Int>
         let completedCount: Int
         let failedCount: Int
         let totalCount: Int
@@ -475,27 +476,31 @@ class DownloadManager {
     func downloadPlaylistItems(
         _ items: [PlaylistItem],
         destination: MusicLibrary,
+        skippingIndices: Set<Int> = [],
         maxConcurrentDownloads: Int = 3,
-        progressCallback: @escaping (PlaylistDownloadProgress) -> Void
+        progressCallback: @escaping @MainActor (PlaylistDownloadProgress) -> Void
     ) async throws -> PlaylistDownloadResult {
         if items.isEmpty {
             throw DownloadError.playlistDownloadFailed(NSLocalizedString("Playlist is empty", comment: "Error when playlist has no downloadable items"))
         }
 
         var completed = 0
+        var completedIndices = Set<Int>()
         var failed = 0
         var nextIndex = 0
-        let totalCount = items.count
-        let concurrentLimit = max(1, min(maxConcurrentDownloads, totalCount))
+        let pendingIndices = items.indices.filter { !skippingIndices.contains($0) }
+        let totalCount = pendingIndices.count
+        let concurrentLimit = min(max(1, maxConcurrentDownloads), totalCount)
         let outputTitles = outputTitles(forPlaylistItems: items)
 
-        try await withThrowingTaskGroup(of: (PlaylistItem, Bool).self) { group in
+        try await withThrowingTaskGroup(of: (Int, Bool).self) { group in
             func startNextDownload() async {
-                let item = items[nextIndex]
-                let outputTitle = outputTitles[nextIndex]
+                let index = pendingIndices[nextIndex]
+                let item = items[index]
+                let outputTitle = outputTitles[index]
                 nextIndex += 1
 
-                let progress = PlaylistDownloadProgress(completedCount: completed, failedCount: failed, totalCount: totalCount, currentTitle: item.title)
+                let progress = PlaylistDownloadProgress(completedIndices: completedIndices, completedCount: completed, failedCount: failed, totalCount: totalCount, currentTitle: item.title)
                 await MainActor.run {
                     progressCallback(progress)
                 }
@@ -503,12 +508,12 @@ class DownloadManager {
                 group.addTask {
                     do {
                         try await self.downloadAudio(from: item.url, formatId: "bestaudio", destination: destination, outputTitle: outputTitle)
-                        return (item, true)
+                        return (index, true)
                     } catch is CancellationError {
                         throw CancellationError()
                     } catch {
                         print(String(format: NSLocalizedString("Failed to download: %@ - Error: %@", comment: "Log message when item download fails"), item.title, error.localizedDescription))
-                        return (item, false)
+                        return (index, false)
                     }
                 }
             }
@@ -517,15 +522,17 @@ class DownloadManager {
                 await startNextDownload()
             }
 
-            while let (item, succeeded) = try await group.next() {
+            while let (index, succeeded) = try await group.next() {
+                let item = items[index]
                 if succeeded {
                     completed += 1
+                    completedIndices.insert(index)
                     print(String(format: NSLocalizedString("Successfully downloaded: %@", comment: "Log message when item downloaded successfully"), item.title))
                 } else {
                     failed += 1
                 }
 
-                let progress = PlaylistDownloadProgress(completedCount: completed, failedCount: failed, totalCount: totalCount, currentTitle: item.title)
+                let progress = PlaylistDownloadProgress(completedIndices: completedIndices, completedCount: completed, failedCount: failed, totalCount: totalCount, currentTitle: item.title)
                 await MainActor.run {
                     progressCallback(progress)
                 }
