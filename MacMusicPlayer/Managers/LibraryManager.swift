@@ -87,7 +87,8 @@ class LibraryManager {
         }
 
         do {
-            libraries = try JSONDecoder().decode([MusicLibrary].self, from: data)
+            let decoded = try JSONDecoder().decode([MusicLibrary].self, from: data)
+            libraries = decoded
         } catch {
             print("Failed to load libraries: \(error)")
         }

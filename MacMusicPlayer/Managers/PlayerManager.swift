@@ -2,8 +2,10 @@ import Foundation
 import Combine
 import AppKit
 import MediaPlayer
+import os
 
 class PlayerManager: NSObject {
+    private let logger = Logger(subsystem: "com.seimotech.MacMusicPlayer", category: "playback")
     @Published var playlist: [Track] = []
     var currentTrack: Track? {
         didSet {
@@ -28,8 +30,17 @@ class PlayerManager: NSObject {
     private var nowPlayingPlaybackState: MPNowPlayingPlaybackState = .stopped
     private var currentLibraryID: UUID?
     private var libraryLoadGeneration = 0
+    private var brokenSkipCount = 0
 
     var hasPlaylist: Bool { !playlistStore.isEmpty }
+
+    var volume: Float {
+        get { queueController.volume }
+        set {
+            queueController.volume = newValue
+            UserDefaults.standard.set(newValue, forKey: "SavedVolume")
+        }
+    }
 
     var playMode: PlayMode = .sequential {
         didSet {
@@ -62,6 +73,9 @@ class PlayerManager: NSObject {
 
         queueController.onTrackChanged = { [weak self] track in
             guard let self = self else { return }
+            if track != nil {
+                self.brokenSkipCount = 0
+            }
             self.currentTrack = track
 
             if let track = track,
@@ -78,6 +92,10 @@ class PlayerManager: NSObject {
 
         queueController.onTrackFinished = { [weak self] finishedTrack in
             self?.handleAutomaticTrackCompletion(finishedTrack)
+        }
+
+        queueController.onTrackError = { [weak self] track in
+            self?.skipBrokenTrack(track)
         }
 
         queueController.volume = savedVolume
@@ -165,24 +183,28 @@ class PlayerManager: NSObject {
     ) {
         libraryLoadGeneration += 1
         let generation = libraryLoadGeneration
-        let fileManager = FileManager.default
         let existingTracksByPath = Dictionary(uniqueKeysWithValues: playlist.map { ($0.url.path, $0) })
+        let unknownArtist = NSLocalizedString("Unknown Artist", comment: "Default artist name when parsing filenames")
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
+            let fileManager = FileManager.default
 
         guard let enumerator = fileManager.enumerator(at: folderURL,
                                                     includingPropertiesForKeys: [.isRegularFileKey],
                                                     options: [.skipsHiddenFiles, .skipsPackageDescendants]) else {
-            print("Failed to enumerate folder contents")
+                self.logger.error("Failed to enumerate folder contents: \(folderURL.path, privacy: .public)")
             return
         }
 
         var newPlaylist: [Track] = []
 
-        for case let fileURL as URL in enumerator {
-            if isAudioFile(fileURL) {
+            for case let fileURL as URL in enumerator {
+                if self.isAudioFile(fileURL) {
                 let fileName = fileURL.deletingPathExtension().lastPathComponent
 
                 var title = fileName
-                var artist = NSLocalizedString("Unknown Artist", comment: "Default artist name when parsing filenames")
+                var artist = unknownArtist
 
                 if let range = fileName.range(of: " - ") {
                     artist = String(fileName[..<range.lowerBound]).trimmingCharacters(in: .whitespaces)
@@ -195,7 +217,18 @@ class PlayerManager: NSObject {
             }
         }
 
-        DispatchQueue.main.async {
+            DispatchQueue.main.async {
+                self.applyScannedTracks(newPlaylist, libraryID: libraryID, preservingCurrentItem: preservingCurrentItem, generation: generation)
+            }
+        }
+    }
+
+    private func applyScannedTracks(
+        _ newPlaylist: [Track],
+        libraryID: UUID,
+        preservingCurrentItem: Bool,
+        generation: Int
+    ) {
             guard self.currentLibraryID == libraryID, self.libraryLoadGeneration == generation else { return }
             let sortedTracks = newPlaylist.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
 
@@ -235,7 +268,6 @@ class PlayerManager: NSObject {
             }
 
             NotificationCenter.default.post(name: NSNotification.Name("PlaylistUpdated"), object: nil)
-        }
     }
 
     private func isAudioFile(_ url: URL) -> Bool {
@@ -245,20 +277,20 @@ class PlayerManager: NSObject {
 
     func play() {
         guard let track = currentTrack else {
-            print(NSLocalizedString("No current track to play", comment: ""))
+            logger.debug("Play requested with no current track")
             return
         }
 
         queueController.play()
 
-        print(NSLocalizedString("Started playing", comment: "") + ": \(track.title)")
+        logger.info("Started playing: \(track.title, privacy: .public)")
 
         updateNowPlayingInfo(playbackState: .playing)
     }
 
     func pause() {
         queueController.pause()
-        print(NSLocalizedString("Paused playback", comment: ""))
+        logger.debug("Paused playback")
         updateNowPlayingInfo(playbackState: .paused)
     }
 
@@ -347,6 +379,37 @@ class PlayerManager: NSObject {
     func feelingLucky() {
         guard !playlistStore.isEmpty, let index = playlistStore.nextIndex(for: .random) else { return }
         playTrack(at: index)
+    }
+
+    private func skipBrokenTrack(_ track: Track) {
+        logger.error("Skipping unplayable file: \(track.url.lastPathComponent, privacy: .public)")
+        brokenSkipCount += 1
+
+        guard !playlistStore.isEmpty, brokenSkipCount <= playlistStore.tracks.count else {
+            brokenSkipCount = 0
+            resetPlayback()
+            NotificationCenter.default.post(
+                name: NSNotification.Name("TrackError"),
+                object: nil,
+                userInfo: ["title": track.title]
+            )
+            return
+        }
+
+        if let index = playlistStore.tracks.firstIndex(where: { $0.id == track.id }) {
+            playlistStore.setCurrentIndex(index)
+        }
+
+        let wasPlaying = nowPlayingPlaybackState == .playing || isPlaying
+        playNext()
+        if wasPlaying {
+            queueController.play()
+        }
+        NotificationCenter.default.post(
+            name: NSNotification.Name("TrackError"),
+            object: nil,
+            userInfo: ["title": track.title]
+        )
     }
 
     private func handleAutomaticTrackCompletion(_ finishedTrack: Track?) {

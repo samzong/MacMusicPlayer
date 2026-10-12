@@ -5,7 +5,7 @@ class ConfigViewController: NSViewController {
     private let apiUrlLabel = NSTextField()
     private let apiUrlTextField = NSTextField()
     private let apiKeyLabel = NSTextField()
-    private let apiKeyTextField = NSTextField()
+    private let apiKeyTextField = NSSecureTextField()
     private let saveButton = NSButton()
     private let cancelButton = NSButton()
     private let statusLabel = NSTextField()
@@ -184,9 +184,14 @@ class ConfigViewController: NSViewController {
         if !apiUrl.isEmpty && !apiUrl.hasPrefix("http") {
             apiUrl = "https://" + apiUrl
         }
-        if apiUrlChanged && !apiUrl.isEmpty && URLComponents(string: apiUrl) == nil {
-            showStatus(NSLocalizedString("API URL is invalid", comment: "Error message when API URL is invalid"), isError: true)
-            return
+        if apiUrlChanged && !apiUrl.isEmpty {
+            guard let components = URLComponents(string: apiUrl),
+                  let scheme = components.scheme?.lowercased(),
+                  (scheme == "http" || scheme == "https"),
+                  components.host != nil else {
+                showStatus(NSLocalizedString("API URL is invalid", comment: "Error message when API URL is invalid"), isError: true)
+                return
+            }
         }
 
         if apiKeyChanged && apiKey.isEmpty {

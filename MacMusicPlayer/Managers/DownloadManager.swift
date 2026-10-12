@@ -277,7 +277,7 @@ class DownloadManager {
                 details.append("\(Int(bitrate)) kbps")
             }
             if let sampleRate = format["asr"] as? Int, sampleRate > 0 {
-                details.append("\(sampleRate) Hz")
+                details.append(String(format: "%.1f kHz", Double(sampleRate) / 1000))
             }
             return DownloadFormat(formatId: id, description: details.isEmpty ? id : details.joined(separator: " · "))
         }

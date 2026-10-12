@@ -1,7 +1,9 @@
 import Foundation
 import ServiceManagement
+import os
 
 class LaunchManager {
+    private let logger = Logger(subsystem: "com.seimotech.MacMusicPlayer", category: "launch")
     private let service = SMAppService.mainApp
     private let defaultsKey = "LaunchAtLogin"
 
@@ -9,18 +11,21 @@ class LaunchManager {
         get { service.status == .enabled }
         set {
             UserDefaults.standard.set(newValue, forKey: defaultsKey)
-            setLaunchAtLogin(newValue)
+            if !setLaunchAtLogin(newValue, notifyOnFailure: true) {
+                UserDefaults.standard.set(service.status == .enabled, forKey: defaultsKey)
+            }
         }
     }
 
     init() {
         let wanted = UserDefaults.standard.object(forKey: defaultsKey) as? Bool ?? true
         if wanted && service.status != .requiresApproval {
-            setLaunchAtLogin(true)
+            _ = setLaunchAtLogin(true, notifyOnFailure: false)
         }
     }
 
-    private func setLaunchAtLogin(_ enable: Bool) {
+    @discardableResult
+    private func setLaunchAtLogin(_ enable: Bool, notifyOnFailure: Bool) -> Bool {
         do {
             switch (enable, service.status) {
             case (true, .requiresApproval):
@@ -32,8 +37,17 @@ class LaunchManager {
             default:
                 break
             }
+            return true
         } catch {
-            print("Failed to \(enable ? "enable" : "disable") launch at login: \(error)")
+            logger.error("Failed to \(enable ? "enable" : "disable", privacy: .public) launch at login: \(error.localizedDescription, privacy: .public)")
+            if notifyOnFailure {
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("LaunchAtLoginFailed"),
+                    object: nil,
+                    userInfo: ["error": error.localizedDescription]
+                )
+            }
+            return false
         }
     }
 }

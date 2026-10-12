@@ -52,6 +52,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             name: NSNotification.Name("AddNewLibrary"),
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleLaunchAtLoginFailed(_:)),
+            name: NSNotification.Name("LaunchAtLoginFailed"),
+            object: nil
+        )
+        cleanStaleDownloadDirectories()
 
         DispatchQueue.main.async { [weak self] in
             self?.showSongPickerWindow()
@@ -119,6 +126,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func quit() {
         NSApplication.shared.terminate(self)
+    }
+
+    @objc private func handleLaunchAtLoginFailed(_ notification: Notification) {
+        let message = (notification.userInfo?["error"] as? String)
+            ?? NSLocalizedString("Launch at login could not be enabled.", comment: "")
+        let alert = NSAlert()
+        alert.messageText = NSLocalizedString("Launch at Login", comment: "")
+        alert.informativeText = message
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: NSLocalizedString("OK", comment: "Button title for confirming rename"))
+        alert.runModal()
+        statusMenuController.refresh()
+    }
+
+    private func cleanStaleDownloadDirectories() {
+        let paths = libraryManager.libraries.map { $0.path }
+        DispatchQueue.global(qos: .utility).async {
+            let fileManager = FileManager.default
+            for path in paths {
+                guard let contents = try? fileManager.contentsOfDirectory(atPath: path) else { continue }
+                for entry in contents where entry.hasPrefix(".macmusicplayer-download-") {
+                    try? fileManager.removeItem(atPath: (path as NSString).appendingPathComponent(entry))
+                }
+            }
+        }
     }
     @objc func togglePreventSleep() {
         sleepManager.preventSleep.toggle()
@@ -230,10 +262,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         playerManager.refreshMusicLibrary()
         statusMenuController.showTemporaryRefreshingIcon()
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.statusMenuController.updateStatusBarIcon()
-        }
     }
 
     @objc func renameCurrentLibrary() {
@@ -364,8 +392,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func updateStatusItemVisibility() {
-        NSApp.setActivationPolicy(.accessory)
         if ConfigManager.shared.showMenubarIcon {
+            NSApp.setActivationPolicy(.accessory)
             if statusItem == nil {
                 let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
                 statusItem = item
@@ -377,6 +405,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 NSStatusBar.system.removeStatusItem(statusItem)
                 self.statusItem = nil
             }
+            NSApp.setActivationPolicy(.regular)
+            NSApp.activate(ignoringOtherApps: true)
+            showSongPickerWindow()
         }
     }
 

@@ -121,7 +121,12 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
     }
 
     private func updateTrackInfo() {
-        trackLabel?.stringValue = playerManager.currentTrack?.title ?? NSLocalizedString("No Music Source", comment: "")
+        if let track = playerManager.currentTrack {
+            let unknownArtist = NSLocalizedString("Unknown Artist", comment: "Default artist name when parsing filenames")
+            trackLabel?.stringValue = track.artist == unknownArtist ? track.title : track.artist + " – " + track.title
+        } else {
+            trackLabel?.stringValue = NSLocalizedString("No Music Source", comment: "")
+        }
     }
 
     private func updatePlayPauseTitle() {
@@ -181,10 +186,10 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
     private func getVersionString() -> String {
         #if DEBUG
             let gitCommit = Bundle.main.object(forInfoDictionaryKey: "GitCommit") as? String ?? "unknown"
-            return String(format: NSLocalizedString("Dev: %@", comment: ""), gitCommit)
+            return "Dev: \(gitCommit)"
         #else
             let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
-            return String(format: NSLocalizedString("Version %@", comment: ""), appVersion)
+            return "Version \(appVersion)"
         #endif
     }
 }

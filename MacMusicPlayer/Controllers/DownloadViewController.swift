@@ -23,6 +23,9 @@ class DownloadViewController: NSViewController {
     private let nextPageButton = NSButton()
     private let backButton = NSButton()
     private let settingsButton = NSButton()
+    private let retryButton = NSButton()
+    private var canRetryLoad = false
+    private var canRetryDownload = false
     private var layoutStack: NSStackView!
     private var scrollHeight: NSLayoutConstraint!
     private var contentStack: NSStackView!
@@ -45,6 +48,7 @@ class DownloadViewController: NSViewController {
     private var isStopping = false
     private var completedAudio = false
     private var completedPlaylistRows = Set<Int>()
+    private let thumbnailCache = NSCache<NSString, NSImage>()
     private(set) var isDownloading = false
 
     init(libraryManager: LibraryManager, actionTarget: AppDelegate) {
@@ -193,6 +197,8 @@ class DownloadViewController: NSViewController {
         selectAllButton.action = #selector(toggleAll)
         selectionLabel.font = .systemFont(ofSize: 11)
         selectionLabel.textColor = .secondaryLabelColor
+        selectionLabel.lineBreakMode = .byTruncatingTail
+        selectionLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         let spacer = NSView()
         spacer.setContentHuggingPriority(NSLayoutConstraint.Priority(1), for: .horizontal)
         playlistHeader = row([selectAllButton, spacer, selectionLabel])
@@ -234,7 +240,12 @@ class DownloadViewController: NSViewController {
         statusLabel.setContentHuggingPriority(NSLayoutConstraint.Priority(1), for: .horizontal)
         configure(settingsButton, title: "Go to settings", action: #selector(openSettings))
         settingsButton.bezelStyle = .inline
-        statusStack = row([progressIndicator, statusLabel, settingsButton], spacing: 8)
+        configure(retryButton, title: "Retry", action: #selector(retryFailed))
+        retryButton.bezelStyle = .inline
+        retryButton.contentTintColor = .controlAccentColor
+        statusStack = row([progressIndicator, statusLabel, retryButton, settingsButton], spacing: 8)
+        let statusClick = NSClickGestureRecognizer(target: self, action: #selector(copyStatusError))
+        statusLabel.addGestureRecognizer(statusClick)
 
         let saveLabel = NSTextField(labelWithString: NSLocalizedString("Save to", comment: ""))
         saveLabel.font = .systemFont(ofSize: 12)
@@ -290,6 +301,7 @@ class DownloadViewController: NSViewController {
         nextPageButton.isEnabled = !isDownloading && loadID == nil
         contentStack.isHidden = audioInfo == nil && playlistInfo == nil && searchResults.isEmpty
         settingsButton.isHidden = isLink || ConfigManager.shared.isConfigValid || statusLabel.stringValue.isEmpty
+        retryButton.isHidden = !(canRetryLoad || canRetryDownload) || isDownloading || loadID != nil
         statusStack.isHidden = statusLabel.stringValue.isEmpty && loadID == nil && !isDownloading
         progressIndicator.isHidden = loadID == nil && !isDownloading
         if progressIndicator.isHidden { progressIndicator.stopAnimation(nil) } else { progressIndicator.startAnimation(nil) }
@@ -307,7 +319,9 @@ class DownloadViewController: NSViewController {
         if let playlistInfo {
             selectAllButton.state = selectedPlaylistRows.isEmpty ? .off :
                 (selectedPlaylistRows.count == playlistInfo.items.count ? .on : .mixed)
-            selectionLabel.stringValue = String(format: NSLocalizedString("Selected %d / %d", comment: ""), selectedPlaylistRows.count, playlistInfo.items.count)
+            let selection = String(format: NSLocalizedString("Selected %d / %d", comment: ""), selectedPlaylistRows.count, playlistInfo.items.count)
+            selectionLabel.stringValue = playlistInfo.title + " · " + selection
+            selectionLabel.toolTip = playlistInfo.title
         }
         tableView.reloadData()
         resizeWindow()
@@ -331,6 +345,8 @@ class DownloadViewController: NSViewController {
 
     private func clearContent() {
         clearCompletion()
+        canRetryLoad = false
+        canRetryDownload = false
         audioInfo = nil
         selectedFormatID = nil
         audioURL = nil
@@ -439,8 +455,12 @@ class DownloadViewController: NSViewController {
         if let error {
             statusLabel.stringValue = error.localizedDescription
             statusLabel.textColor = .systemRed
+            statusLabel.toolTip = NSLocalizedString("Click to copy", comment: "")
+            canRetryLoad = true
         } else {
             statusLabel.stringValue = ""
+            statusLabel.toolTip = nil
+            canRetryLoad = false
         }
         render()
     }
@@ -478,7 +498,6 @@ class DownloadViewController: NSViewController {
                 guard loadID == id, !Task.isCancelled else { return }
                 playlistInfo = info
                 selectedPlaylistRows = Set(info.items.indices)
-                selectAllButton.title = info.title
                 selectAllButton.toolTip = info.title
                 finishLoad(id: id)
             } catch {
@@ -491,6 +510,8 @@ class DownloadViewController: NSViewController {
         guard ConfigManager.shared.isConfigValid else {
             statusLabel.stringValue = NSLocalizedString("Please configure the search service API (API URL and API Key)", comment: "")
             statusLabel.textColor = .systemRed
+            statusLabel.toolTip = NSLocalizedString("Click to copy", comment: "")
+            canRetryLoad = true
             render()
             return
         }
@@ -616,6 +637,8 @@ class DownloadViewController: NSViewController {
         downloadTask = nil
         statusLabel.stringValue = message
         statusLabel.textColor = failed ? .systemRed : .secondaryLabelColor
+        statusLabel.toolTip = failed ? NSLocalizedString("Click to copy", comment: "") : nil
+        canRetryDownload = failed
         updateLibraries()
         render()
         notifyDownloadState()
@@ -637,8 +660,43 @@ class DownloadViewController: NSViewController {
         view.window?.orderOut(nil)
     }
 
+    @objc private func retryFailed() {
+        guard !isDownloading, loadID == nil else { return }
+        if canRetryDownload {
+            canRetryDownload = false
+            startDownload()
+        } else if canRetryLoad {
+            canRetryLoad = false
+            fetchSource()
+        }
+    }
+
+    @objc private func copyStatusError() {
+        guard statusLabel.textColor == .systemRed, !statusLabel.stringValue.isEmpty else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(statusLabel.stringValue, forType: .string)
+        statusLabel.toolTip = NSLocalizedString("Copied", comment: "")
+    }
+
     @objc private func openSettings() {
         actionTarget?.showConfigWindow()
+    }
+
+    private func loadThumbnail(urlString: String, videoId: String, row: Int, into imageView: NSImageView) {
+        let key = videoId as NSString
+        if let cached = thumbnailCache.object(forKey: key) {
+            imageView.image = cached
+            return
+        }
+        guard let url = URL(string: urlString) else { return }
+        Task {
+            guard let (data, _) = try? await URLSession.shared.data(from: url),
+                  let image = NSImage(data: data) else { return }
+            self.thumbnailCache.setObject(image, forKey: key)
+            guard self.searchResults.indices.contains(row),
+                  self.searchResults[row].videoId == videoId else { return }
+            imageView.image = image
+        }
     }
 }
 
@@ -667,7 +725,21 @@ extension DownloadViewController: NSTextFieldDelegate, NSTableViewDataSource, NS
             let item = searchResults[index]
             title = item.title
             duration = ""
-            leading = nil
+            if !item.thumbnailUrl.isEmpty {
+                let thumb = NSImageView()
+                thumb.wantsLayer = true
+                thumb.layer?.cornerRadius = 4
+                thumb.layer?.masksToBounds = true
+                thumb.layer?.backgroundColor = NSColor.quaternaryLabelColor.cgColor
+                thumb.imageScaling = .scaleAxesIndependently
+                thumb.widthAnchor.constraint(equalToConstant: 40).isActive = true
+                thumb.heightAnchor.constraint(equalToConstant: 30).isActive = true
+                thumb.setAccessibilityLabel(item.title)
+                loadThumbnail(urlString: item.thumbnailUrl, videoId: item.videoId, row: index, into: thumb)
+                leading = thumb
+            } else {
+                leading = nil
+            }
         }
         var views: [NSView] = []
         if let leading {
