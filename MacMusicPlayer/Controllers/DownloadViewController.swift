@@ -31,6 +31,7 @@ class DownloadViewController: NSViewController {
     private var statusStack: NSStackView!
     private var selectedDestinationID: UUID?
     private var audioInfo: DownloadManager.AudioInfo?
+    private var selectedFormatID: String?
     private var audioURL: String?
     private var playlistInfo: DownloadManager.PlaylistInfo?
     private var selectedPlaylistRows = Set<Int>()
@@ -42,6 +43,8 @@ class DownloadViewController: NSViewController {
     private var downloadID: UUID?
     private var downloadTask: Task<Void, Never>?
     private var isStopping = false
+    private var completedAudio = false
+    private var completedPlaylistRows = Set<Int>()
     private(set) var isDownloading = false
 
     init(libraryManager: LibraryManager, actionTarget: AppDelegate) {
@@ -175,6 +178,8 @@ class DownloadViewController: NSViewController {
         let formatLabel = NSTextField(labelWithString: NSLocalizedString("Audio Source Format", comment: ""))
         formatLabel.font = .systemFont(ofSize: 12)
         formatLabel.textColor = .secondaryLabelColor
+        formatPopup.target = self
+        formatPopup.action = #selector(selectFormat)
         formatPopup.identifier = NSUserInterfaceItemIdentifier("AudioSourceFormat")
         formatPopup.setContentHuggingPriority(NSLayoutConstraint.Priority(1), for: .horizontal)
         let formatRow = row([formatLabel, formatPopup])
@@ -291,11 +296,14 @@ class DownloadViewController: NSViewController {
         backgroundButton.isHidden = !isDownloading
         stopButton.isHidden = !isDownloading
         stopButton.isEnabled = !isStopping
-        downloadButton.isHidden = isDownloading
+        let pendingRows = selectedPlaylistRows.subtracting(completedPlaylistRows)
+        let selectionCompleted = audioInfo != nil ? completedAudio :
+            (playlistInfo != nil && !selectedPlaylistRows.isEmpty && pendingRows.isEmpty)
+        downloadButton.isHidden = isDownloading || selectionCompleted
         downloadButton.title = playlistInfo == nil ? NSLocalizedString("Start Download", comment: "") :
-            String(format: NSLocalizedString("Download Selected (%d)", comment: ""), selectedPlaylistRows.count)
-        downloadButton.isEnabled = loadID == nil && destination != nil &&
-            (audioInfo != nil || (playlistInfo != nil && !selectedPlaylistRows.isEmpty))
+            String(format: NSLocalizedString("Download Selected (%d)", comment: ""), pendingRows.count)
+        downloadButton.isEnabled = !isDownloading && !selectionCompleted && loadID == nil && destination != nil &&
+            (audioInfo != nil || (playlistInfo != nil && !pendingRows.isEmpty))
         if let playlistInfo {
             selectAllButton.state = selectedPlaylistRows.isEmpty ? .off :
                 (selectedPlaylistRows.count == playlistInfo.items.count ? .on : .mixed)
@@ -316,8 +324,15 @@ class DownloadViewController: NSViewController {
         window.setFrameOrigin(NSPoint(x: window.frame.minX, y: oldTop - window.frame.height))
     }
 
+    private func clearCompletion() {
+        completedAudio = false
+        completedPlaylistRows = []
+    }
+
     private func clearContent() {
+        clearCompletion()
         audioInfo = nil
+        selectedFormatID = nil
         audioURL = nil
         playlistInfo = nil
         searchResults = []
@@ -372,6 +387,7 @@ class DownloadViewController: NSViewController {
         if let index = libraryManager.libraries.firstIndex(where: { $0.id == selectedDestinationID }) {
             libraryPopup.selectItem(at: index)
         } else {
+            clearCompletion()
             selectedDestinationID = libraryManager.libraries.first?.id
             libraryPopup.selectItem(at: 0)
         }
@@ -379,7 +395,19 @@ class DownloadViewController: NSViewController {
 
     @objc private func selectLibrary() {
         guard !isDownloading else { return }
-        selectedDestinationID = libraryPopup.selectedItem?.representedObject as? UUID
+        let destinationID = libraryPopup.selectedItem?.representedObject as? UUID
+        guard destinationID != selectedDestinationID else { return }
+        selectedDestinationID = destinationID
+        clearCompletion()
+        render()
+    }
+
+    @objc private func selectFormat() {
+        guard !isDownloading else { return }
+        let formatID = formatPopup.selectedItem?.representedObject as? String
+        guard formatID != selectedFormatID else { return }
+        selectedFormatID = formatID
+        clearCompletion()
         render()
     }
 
@@ -434,6 +462,7 @@ class DownloadViewController: NSViewController {
                     formatPopup.addItem(withTitle: format.description)
                     formatPopup.lastItem?.representedObject = format.formatId
                 }
+                selectedFormatID = formatPopup.selectedItem?.representedObject as? String
                 finishLoad(id: id)
             } catch {
                 finishLoad(id: id, error: error)
@@ -497,7 +526,9 @@ class DownloadViewController: NSViewController {
     @objc private func returnToSearchResults() {
         guard !isDownloading, loadID == nil, !searchResults.isEmpty else { return }
         invalidateLoad()
+        clearCompletion()
         audioInfo = nil
+        selectedFormatID = nil
         audioURL = nil
         formatPopup.removeAllItems()
         statusLabel.stringValue = ""
@@ -524,11 +555,15 @@ class DownloadViewController: NSViewController {
     @objc private func startDownload() {
         guard !input.isEmpty, !isDownloading, loadID == nil, let destination else { return }
         let items: [DownloadManager.PlaylistItem]
+        let playlistRows = selectedPlaylistRows.sorted()
+        let skippedIndices = Set(playlistRows.indices.filter { completedPlaylistRows.contains(playlistRows[$0]) })
+        let pendingCount = playlistRows.count - skippedIndices.count
         let format: String
         if let playlistInfo {
-            items = selectedPlaylistRows.sorted().compactMap { playlistInfo.items.indices.contains($0) ? playlistInfo.items[$0] : nil }
+            guard pendingCount > 0 else { return }
+            items = playlistRows.compactMap { playlistInfo.items.indices.contains($0) ? playlistInfo.items[$0] : nil }
             format = "bestaudio"
-        } else if let audioInfo, let audioURL, let selectedFormat = formatPopup.selectedItem?.representedObject as? String {
+        } else if !completedAudio, let audioInfo, let audioURL, let selectedFormat = formatPopup.selectedItem?.representedObject as? String {
             items = [DownloadManager.PlaylistItem(title: audioInfo.title, url: audioURL, duration: audioInfo.duration)]
             format = selectedFormat
         } else { return }
@@ -545,23 +580,24 @@ class DownloadViewController: NSViewController {
         downloadTask = Task { [self] in
             do {
                 if isPlaylist {
-                    let result = try await DownloadManager.shared.downloadPlaylistItems(items, destination: destination) { [weak self] progress in
-                        Task { @MainActor in
-                            guard let self, self.downloadID == id, !self.isStopping else { return }
-                            self.statusLabel.stringValue = String(
-                                format: NSLocalizedString("Downloaded %d / %d · Failed %d · %@", comment: ""),
-                                progress.completedCount, progress.totalCount, progress.failedCount, progress.currentTitle
-                            )
-                        }
+                    let result = try await DownloadManager.shared.downloadPlaylistItems(items, destination: destination, skippingIndices: skippedIndices) { [weak self] progress in
+                        guard let self, self.downloadID == id else { return }
+                        self.completedPlaylistRows.formUnion(progress.completedIndices.map { playlistRows[$0] })
+                        guard !self.isStopping else { return }
+                        self.statusLabel.stringValue = String(
+                            format: NSLocalizedString("Downloaded %d / %d · Failed %d · %@", comment: ""),
+                            progress.completedCount, progress.totalCount, progress.failedCount, progress.currentTitle
+                        )
                     }
                     try Task.checkCancellation()
-                    let text = String(format: NSLocalizedString("Downloaded %d / %d · Failed %d", comment: ""), result.completedCount, items.count, result.failedCount)
+                    let text = String(format: NSLocalizedString("Downloaded %d / %d · Failed %d", comment: ""), result.completedCount, pendingCount, result.failedCount)
                     finishDownload(id: id, message: text, failed: result.failedCount > 0)
                 } else {
                     try await DownloadManager.shared.downloadAudio(
                         from: items[0].url, formatId: format, destination: destination, outputTitle: items[0].title
                     )
                     try Task.checkCancellation()
+                    completedAudio = true
                     finishDownload(id: id, message: NSLocalizedString("Download completed", comment: ""))
                 }
             } catch is CancellationError {
