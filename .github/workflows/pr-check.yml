@@ -22,6 +22,10 @@ jobs:
         GIT_COMMIT=$(git rev-parse --short HEAD)
         echo "VERSION=PR-${GIT_COMMIT}" >> $GITHUB_ENV
 
+    - name: Run Tests
+      run: |
+        swift test
+
     - name: Build and Package
       run: |
         make VERSION=${{ env.VERSION }} dmg

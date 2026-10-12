@@ -4,7 +4,7 @@
   <img src="./MacMusicPlayer/Assets.xcassets/AppIcon.appiconset/icon_256x256_2x.png" alt="MacMusicPlayer" width="128" />
   <br />
   <div id="download-section" style="margin: 20px 0;">
-    <a href="#" onclick="downloadLatest(); return false;" style="text-decoration: none;">
+    <a href="https://github.com/samzong/MacMusicPlayer/releases/latest" style="text-decoration: none;">
       <img src="https://img.shields.io/badge/⬇%20Download%20for%20Your%20System-28a745?style=for-the-badge&labelColor=28a745" alt="Download" />
     </a>
   </div>
@@ -33,23 +33,24 @@ brew install samzong/tap/mac-music-player
 
 ### DMG
 
-Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/samzong/MacMusicPlayer/releases) page.
+Download the latest `MacMusicPlayer-arm64.dmg` from the [Releases](https://github.com/samzong/MacMusicPlayer/releases) page.
 
-> **Security Note**: If you encounter a security warning on first launch, right-click the app and select "Open", or run: `xattr -dr com.apple.quarantine /Applications/MacMusicPlayer.app`
+> **Security Note**: The DMG is ad-hoc signed (no paid Apple Developer account yet). On first launch macOS may warn that the app is from an unidentified developer — right-click the app and select "Open" once to proceed. The Homebrew install above is built from source on your Mac and avoids this entirely.
 
 ## Features
 
 - 🎵 Lightweight menu bar player for instant music control
+- 🔍 Spotlight-style song picker (⌘F) with instant title, artist, and filename filtering
 - 🎨 Native macOS interface with perfect light/dark theme support
 - 🌍 Multi-language support (English, Simplified Chinese, Traditional Chinese, Japanese, Korean)
-- 🔎 Song picker (⌘F in menu) with instant filename filtering
 - 🎧 Audio format support (mp3, m4a, wav, flac, aac, ogg, aiff)
 - 🔄 Multiple playback modes (Sequential, Single Loop, Random)
 - 📚 Multiple music libraries with quick switch (⌘R to refresh)
-- 📥 Built-in YouTube/SoundCloud search & playlist downloads with format selection (requires yt-dlp + ffmpeg)
-- 💾 Smart memory of last music folder location and volume
+- 🔊 Volume control with memory across launches
+- 📥 Built-in YouTube/SoundCloud search & playlist downloads with thumbnails and format selection (requires yt-dlp + ffmpeg)
+- 💾 Smart memory of last music library and last played track
 - 🚀 Launch at login (enabled by default)
-- 🌙 Prevent-sleep toggle (enabled by default) and configurable song picker on launch
+- 🌙 Prevent-sleep toggle (enabled by default)
 - ⌨️ Media key control and keyboard shortcuts (⌘D Download, ⌘S Settings)
 
 ## Configuration & Tips
@@ -61,9 +62,9 @@ Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/
 
 ## Screenshots
 
-### Menu Items
+### Song Picker
 
-![](MenuItems.png)
+![](Picker.png)
 
 ### Download Music
 
@@ -72,6 +73,12 @@ Download the latest `MacMusicPlayer.dmg` from the [Releases](https://github.com/
 ## Contributing
 
 Contributions are welcome! Please feel free to submit Issues and Pull Requests.
+
+```bash
+swift test        # run unit tests
+make build        # build the Release app into build/
+make dmg          # build + package a self-signed arm64 DMG
+```
 
 ## License
 
