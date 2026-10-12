@@ -1,6 +1,8 @@
 import Foundation
+import os
 
 class LibraryManager {
+    private let logger = Logger(subsystem: "com.seimotech.MacMusicPlayer", category: "library")
     var libraries: [MusicLibrary] = []
     var currentLibrary: MusicLibrary?
 
@@ -77,7 +79,7 @@ class LibraryManager {
             let data = try JSONEncoder().encode(libraries)
             UserDefaults.standard.set(data, forKey: "MusicLibraries")
         } catch {
-            print("Failed to save libraries: \(error)")
+            logger.error("Failed to save libraries: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -90,7 +92,7 @@ class LibraryManager {
             let decoded = try JSONDecoder().decode([MusicLibrary].self, from: data)
             libraries = decoded
         } catch {
-            print("Failed to load libraries: \(error)")
+            logger.error("Failed to load libraries: \(error.localizedDescription, privacy: .public)")
         }
     }
 

@@ -1,7 +1,10 @@
 import Foundation
+import os
 
 class YTSearchManager {
     static let shared = YTSearchManager()
+
+    private let logger = Logger(subsystem: "com.seimotech.MacMusicPlayer", category: "search")
 
     private let configManager = ConfigManager.shared
 
@@ -47,7 +50,7 @@ class YTSearchManager {
             return
         }
 
-        print("YTSearchManager - Send request: URL: \(url.absoluteString), PageToken: \(pageToken ?? "nil")")
+        logger.debug("Search request to \(url.host ?? "", privacy: .public), pageToken: \(pageToken ?? "nil", privacy: .public)")
 
         var request = URLRequest(url: url)
         request.addValue("Bearer \(configManager.apiKey)", forHTTPHeaderField: "Authorization")
@@ -81,16 +84,13 @@ class YTSearchManager {
                 let decoder = JSONDecoder()
                 let result = try decoder.decode(SearchResult.self, from: data)
 
-                print("YTSearchManager -Response received: Number of items: \(result.items.count), NextPageToken: \(result.nextPageToken ?? "nil"), Total results: \(result.totalResults)")
+                self.logger.debug("Search response: \(result.items.count, privacy: .public) items, total: \(result.totalResults, privacy: .public)")
 
                 DispatchQueue.main.async {
                     completion(.success(result))
                 }
             } catch {
-                print("YTSearchManager - JSON parsing error: \(error)")
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    print("YTSearchManager - Original JSON: \(jsonString)")
-                }
+                self.logger.error("Search decoding failed: \(error.localizedDescription, privacy: .public)")
 
                 DispatchQueue.main.async {
                     completion(.failure(error))

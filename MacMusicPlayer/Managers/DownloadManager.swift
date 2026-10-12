@@ -1,9 +1,12 @@
 import Foundation
 import AppKit
 import Darwin
+import os
 
 class DownloadManager {
     static let shared = DownloadManager()
+
+    private let logger = Logger(subsystem: "com.seimotech.MacMusicPlayer", category: "download")
 
     private init() {}
 
@@ -189,27 +192,33 @@ class DownloadManager {
 
     private func executablePath(_ name: String, notFound: DownloadError) throws -> String {
         let task = Process()
-        task.launchPath = "/usr/bin/which"
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/which")
         task.arguments = [name]
 
         let pipe = Pipe()
         task.standardOutput = pipe
-        task.launch()
-        task.waitUntilExit()
+        do {
+            try task.run()
+            task.waitUntilExit()
+        } catch {
+            logger.error("Failed to locate \(name, privacy: .public): \(error.localizedDescription, privacy: .public)")
+        }
 
         if task.terminationStatus == 0,
            let path = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
            !path.isEmpty {
-            print(NSLocalizedString("Found \(name) path: %@", comment: ""), path)
+            logger.debug("Found \(name, privacy: .public) at \(path, privacy: .public)")
             return path
         }
 
-        if let path = ["/usr/local/bin/\(name)", "/opt/homebrew/bin/\(name)"].first(where: FileManager.default.fileExists(atPath:)) {
-            print(NSLocalizedString("Found \(name) path: %@", comment: ""), path)
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        let candidates = ["/usr/local/bin/\(name)", "/opt/homebrew/bin/\(name)", "\(home)/.local/bin/\(name)", "/opt/local/bin/\(name)"]
+        if let path = candidates.first(where: FileManager.default.fileExists(atPath:)) {
+            logger.debug("Found \(name, privacy: .public) at \(path, privacy: .public)")
             return path
         }
 
-        print(NSLocalizedString("Error checking \(name): %@", comment: ""), notFound)
+        logger.error("Missing dependency: \(name, privacy: .public)")
         throw notFound
     }
 
@@ -242,7 +251,7 @@ class DownloadManager {
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            print(NSLocalizedString("Error getting video title: %@", comment: "Log message when getting video title fails"), error)
+            logger.error("Failed to fetch video title: \(error.localizedDescription, privacy: .public)")
             throw DownloadError.titleFetchFailed
         }
     }
@@ -300,7 +309,7 @@ class DownloadManager {
     }
 
     func downloadAudio(from url: String, formatId: String, destination: MusicLibrary, outputTitle: String? = nil) async throws {
-        print(NSLocalizedString("Starting audio download, URL: %@, Format ID: %@", comment: "Log message when starting download"), url, formatId)
+        logger.info("Starting audio download, format: \(formatId, privacy: .public)")
 
         guard URL(string: url) != nil else {
             throw DownloadError.invalidURL
@@ -318,7 +327,7 @@ class DownloadManager {
             videoTitle = try await getVideoTitle(from: url, ytDlpPath: ytDlpPath)
         }
         try Task.checkCancellation()
-        print(NSLocalizedString("Video title: %@", comment: "Log message showing video title"), videoTitle)
+        logger.info("Video title: \(videoTitle, privacy: .public)")
 
         let fileManager = FileManager.default
         let musicDirectory = URL(fileURLWithPath: destination.path, isDirectory: true)
@@ -328,10 +337,10 @@ class DownloadManager {
         try fileManager.createDirectory(at: workDirectory, withIntermediateDirectories: false)
         defer { try? fileManager.removeItem(at: workDirectory) }
         let outputFile = workDirectory.path.replacingOccurrences(of: "%", with: "%%") + "/audio.%(ext)s"
-        print(NSLocalizedString("Downloading to file: %@", comment: "Log message showing output file"), outputFile)
+        logger.debug("Downloading to file: \(outputFile, privacy: .public)")
 
         do {
-            print(NSLocalizedString("Executing download command...", comment: "Log message when executing download command"))
+            logger.debug("Executing download command")
 
             let result = try await runCancellableProcess(
                 executablePath: ytDlpPath,
@@ -348,11 +357,11 @@ class DownloadManager {
             )
 
             if !result.standardOutput.isEmpty {
-                print(NSLocalizedString("Download output: %@", comment: "Log message showing download output"), result.standardOutput)
+                logger.debug("Download output: \(result.standardOutput, privacy: .public)")
             }
 
             if !result.standardError.isEmpty {
-                print(NSLocalizedString("Download error output: %@", comment: "Log message showing download error"), result.standardError)
+                logger.error("Download stderr: \(result.standardError, privacy: .public)")
             }
 
             if result.terminationStatus == 0 {
@@ -361,7 +370,7 @@ class DownloadManager {
                 guard renamex_np(completedFile.path, finalFile.path, UInt32(RENAME_EXCL)) == 0 else {
                     throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
                 }
-                print(NSLocalizedString("Download successful", comment: "Log message when download succeeds"))
+                logger.info("Download finished successfully")
 
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(
@@ -370,7 +379,7 @@ class DownloadManager {
                     )
                 }
             } else {
-                print(NSLocalizedString("Download failed, exit status: %d", comment: "Log message when download fails"), result.terminationStatus)
+                logger.error("Download failed, exit status: \(result.terminationStatus, privacy: .public)")
                 throw DownloadError.downloadFailed(result.standardError)
             }
         } catch is CancellationError {
@@ -378,7 +387,7 @@ class DownloadManager {
         } catch let error as DownloadError {
             throw error
         } catch {
-            print(NSLocalizedString("Error during download: %@", comment: "Log message when download error occurs"), error)
+            logger.error("Download error: \(error.localizedDescription, privacy: .public)")
             throw DownloadError.downloadFailed(error.localizedDescription)
         }
     }
@@ -389,7 +398,7 @@ class DownloadManager {
     }
 
     func fetchPlaylistInfo(from url: String) async throws -> PlaylistInfo {
-        print(NSLocalizedString("Getting playlist information, URL: %@", comment: "Log message when fetching playlist info"), url)
+        logger.info("Fetching playlist info")
 
         guard URL(string: url) != nil else {
             throw DownloadError.invalidURL
@@ -414,7 +423,7 @@ class DownloadManager {
             if result.terminationStatus == 0 {
                 return try parsePlaylistFromOutput(result.standardOutput)
             } else {
-                print(NSLocalizedString("Failed to get playlist info: %@", comment: "Log message when playlist fetching fails"), result.standardError)
+                logger.error("Playlist fetch failed: \(result.standardError, privacy: .public)")
                 throw DownloadError.playlistFetchFailed
             }
         } catch is CancellationError {
@@ -422,7 +431,7 @@ class DownloadManager {
         } catch let error as DownloadError {
             throw error
         } catch {
-            print(NSLocalizedString("Error getting playlist info: %@", comment: "Log message when getting playlist info fails"), error)
+            logger.error("Playlist fetch error: \(error.localizedDescription, privacy: .public)")
             throw DownloadError.playlistFetchFailed
         }
     }
@@ -512,7 +521,7 @@ class DownloadManager {
                     } catch is CancellationError {
                         throw CancellationError()
                     } catch {
-                        print(String(format: NSLocalizedString("Failed to download: %@ - Error: %@", comment: "Log message when item download fails"), item.title, error.localizedDescription))
+                        self.logger.error("Item failed: \(item.title, privacy: .public): \(error.localizedDescription, privacy: .public)")
                         return (index, false)
                     }
                 }
@@ -527,7 +536,7 @@ class DownloadManager {
                 if succeeded {
                     completed += 1
                     completedIndices.insert(index)
-                    print(String(format: NSLocalizedString("Successfully downloaded: %@", comment: "Log message when item downloaded successfully"), item.title))
+                    logger.info("Item downloaded: \(item.title, privacy: .public)")
                 } else {
                     failed += 1
                 }

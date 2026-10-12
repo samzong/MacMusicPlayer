@@ -37,9 +37,6 @@
 "Unknown Artist" = "未知藝術家";
 
 // Notifications
-"Started playing" = "正在播放";
-"Paused playback" = "已暫停";
-"No current track to play" = "沒有可播放的音樂";
 
 // System
 
@@ -52,96 +49,28 @@
 "Failed to get video title" = "無法獲取視頻標題";
 "Failed to get playlist information" = "獲取播放列表信息失敗";
 "Playlist download failed: %@" = "播放列表下載失敗：%@";
-"Found ffmpeg path: %@" = "找到 ffmpeg 路徑: %@";
-"Error checking ffmpeg: %@" = "檢查 ffmpeg 時出錯: %@";
-"Found yt-dlp path: %@" = "找到 yt-dlp 路徑: %@";
-"Error checking yt-dlp: %@" = "檢查 yt-dlp 時出錯: %@";
-"Error getting video title: %@" = "獲取視頻標題時出錯: %@";
-"Getting available formats, URL: %@" = "獲取可用格式，URL: %@";
-"stereo" = "立體聲";
-"mono" = "單聲道";
-"5.1 channels" = "5.1聲道";
-"%@ Audio (%@" = "%@ 音頻 (%@";
-"%@ Audio" = "%@ 音頻";
-"M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "M4A 音頻 (128kbps, 44kHz, 立體聲, 3.5MiB) [AAC]";
-"WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "WebM 音頻 (160kbps, 48kHz, 立體聲, 3.2MiB) [Opus]";
-"Failed to get formats: %@" = "獲取格式失敗: %@";
-"Starting audio download, URL: %@, Format ID: %@" = "開始下載音頻，URL: %@, 格式ID: %@";
-"Getting playlist information, URL: %@" = "獲取播放列表信息，URL: %@";
-"Successfully downloaded: %@" = "下載成功：%@";
-"Failed to download: %@ - Error: %@" = "下載失敗：%@ - 錯誤：%@";
-"Completed" = "已完成";
-"All downloads failed" = "所有下載都失敗";
-"Playlist download completed: %d successful, %d failed" = "播放列表下載完成：%d 成功，%d 失敗";
-"Video title: %@" = "視頻標題: %@";
-"Downloading to file: %@" = "下載到文件: %@";
-"Executing download command..." = "執行下載命令...";
-"Download output: %@" = "下載輸出: %@";
-"Download error output: %@" = "下載錯誤輸出: %@";
-"Download successful" = "下載成功";
-"Download failed, exit status: %d" = "下載失敗，退出狀態: %d";
-"Error during download: %@" = "下載時出錯: %@";
 
 // New UI Strings
-"Not installed" = "未安裝";
-"Installed" = "已安裝";
-"Please install missing dependencies" = "請安裝缺少的依賴";
-"Detect" = "檢測";
-"Download" = "下載"; 
 
 // Search UI Strings
-"Enter video URL or search keyword" = "輸入視頻網址或搜索關鍵詞";
 "Search" = "搜索";
-"Please enter a URL or search keyword" = "請輸入URL或搜索關鍵詞";
 "Searching..." = "正在搜索...";
-"Load more results..." = "加載更多結果...";
 "No results found" = "未找到結果";
-"Search Error: %@" = "搜索錯誤: %@";
-"Search error: API configuration not completed, please set API URL and API Key" = "搜索錯誤: API配置未完成，請設置API URL和API Key";
-"Search error: Invalid API URL, please check the configuration" = "搜索錯誤: API URL無效，請檢查配置";
-"Search error: API authentication failed, please check the API Key" = "搜索錯誤: API認證失敗，請檢查API Key是否正確";
-"Search error: Server error, please try again later" = "搜索錯誤: 伺服器錯誤，請稍後重試";
-"Copy error" = "複製錯誤";
-"Copied to clipboard" = "已複製到剪貼板";
 "Please configure the search service API (API URL and API Key)" = "請先配置搜索服務API (API URL 和 API Key)";
 "Go to settings" = "前往設置";
 "View more" = "查看更多";
 "Back to results" = "返回結果";
-"Found %d results" = "找到 %d 條結果";
-"Details" = "詳細";
-"Load Playlist" = "載入播放列表";
-"Download All" = "全部下載";
-"Download %d" = "下載 %d 項";
 "Stop" = "停止";
 "Download stopped" = "下載已停止";
 
 // Download Format UI Strings
-"Please enter a valid URL" = "請輸入有效的URL";
-"Detecting available formats..." = "正在檢測可用格式...";
-"Found %d available formats" = "找到 %d 個可用格式";
-"No formats found" = "未找到格式";
-"Error: %@" = "錯誤: %@";
-"Starting download..." = "開始下載...";
-"Download completed successfully" = "下載成功完成";
-"Loading formats..." = "正在加載格式...";
-"Downloading %@..." = "正在下載 %@...";
 "Download completed" = "下載完成";
-"Please enter a valid playlist URL" = "請輸入有效的播放列表URL";
 "Loading playlist information..." = "正在載入播放列表信息...";
-"Playlist: %@ (%d items)" = "播放列表：%@ (%d 項)";
 "Playlist is empty" = "播放列表為空";
-"Failed to load playlist: %@" = "載入播放列表失敗：%@";
-"Starting playlist download..." = "開始下載播放列表...";
-"Starting selected downloads..." = "開始下載選中項...";
-"Downloading (%d/%d) - %@" = "正在下載 (%d/%d) - %@";
-"Playlist download completed" = "播放列表下載完成";
-"Selected downloads completed" = "選中項下載完成";
 "Playlist download failed: %@" = "播放列表下載失敗：%@";
-"Selected downloads failed: %@" = "選中項下載失敗：%@";
 
 // Song Picker Window Status
 "search_songs_placeholder" = "搜尋歌曲...";
-"song_count_format" = "%d 首歌曲";
 "operation_hints" = "Tab 切換，回車播放，Esc 關閉";
 
 // Configuration Settings
@@ -204,3 +133,5 @@
 "Retry" = "重試";
 "Click to copy" = "按一下複製";
 "Copied" = "已複製";
+
+"Launch at login could not be enabled." = "無法啟用開機啟動。";

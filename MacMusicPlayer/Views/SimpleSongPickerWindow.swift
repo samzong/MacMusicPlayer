@@ -217,6 +217,7 @@ class SimpleSongPickerWindow: NSPanel {
         header.addSubview(searchIcon)
         searchField = NSTextField()
         searchField.placeholderString = NSLocalizedString("search_songs_placeholder", comment: "")
+        searchField.toolTip = NSLocalizedString("operation_hints", comment: "")
         searchField.setAccessibilityLabel(NSLocalizedString("Search", comment: ""))
         searchField.isBezeled = false
         searchField.isBordered = false
