@@ -106,6 +106,7 @@
 "Please configure the search service API (API URL and API Key)" = "请先配置搜索服务API (API URL 和 API Key)";
 "Go to settings" = "前往设置";
 "View more" = "查看更多";
+"Back to results" = "返回结果";
 "Found %d results" = "找到 %d 条结果";
 "Details" = "详情";
 "Load Playlist" = "加载播放列表";

@@ -106,6 +106,7 @@
 "Please configure the search service API (API URL and API Key)" = "검색 서비스 API를 구성하세요 (API URL 및 API 키)";
 "Go to settings" = "설정으로 이동";
 "View more" = "더 보기";
+"Back to results" = "결과로 돌아가기";
 "Found %d results" = "결과 %d개 찾음";
 "Details" = "상세 정보";
 "Load Playlist" = "재생목록 로드";

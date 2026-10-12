@@ -21,6 +21,7 @@ class DownloadViewController: NSViewController {
     private let selectAllButton = NSButton(checkboxWithTitle: "", target: nil, action: nil)
     private let selectionLabel = NSTextField(labelWithString: "")
     private let nextPageButton = NSButton()
+    private let backButton = NSButton()
     private let settingsButton = NSButton()
     private var layoutStack: NSStackView!
     private var scrollHeight: NSLayoutConstraint!
@@ -35,6 +36,7 @@ class DownloadViewController: NSViewController {
     private var selectedPlaylistRows = Set<Int>()
     private var searchResults: [YTSearchManager.SearchResult.VideoItem] = []
     private var nextPageToken: String?
+    private var searchScrollOrigin: NSPoint?
     private var loadID: UUID?
     private var loadTask: Task<Void, Never>?
     private var downloadID: UUID?
@@ -208,7 +210,12 @@ class DownloadViewController: NSViewController {
         configure(nextPageButton, title: "View more", action: #selector(loadNextPage))
         nextPageButton.bezelStyle = .inline
         nextPageButton.contentTintColor = .controlAccentColor
-        contentStack = column([audioStack, playlistHeader, scrollView, nextPageButton], spacing: 8)
+        configure(backButton, title: "Back to results", action: #selector(returnToSearchResults))
+        backButton.bezelStyle = .inline
+        backButton.contentTintColor = .controlAccentColor
+        backButton.image = NSImage(systemSymbolName: "chevron.left", accessibilityDescription: nil)
+        backButton.imagePosition = .imageLeading
+        contentStack = column([backButton, audioStack, playlistHeader, scrollView, nextPageButton], spacing: 8)
         for child in [audioStack!, playlistHeader!, scrollView] {
             child.widthAnchor.constraint(equalTo: contentStack.widthAnchor).isActive = true
         }
@@ -270,8 +277,11 @@ class DownloadViewController: NSViewController {
         selectAllButton.isEnabled = !isDownloading
         audioStack.isHidden = audioInfo == nil
         playlistHeader.isHidden = playlistInfo == nil
-        scrollView.isHidden = playlistInfo == nil && searchResults.isEmpty
-        nextPageButton.isHidden = nextPageToken == nil || audioInfo != nil || playlistInfo != nil
+        let showingSearchedAudio = audioInfo != nil && !searchResults.isEmpty
+        backButton.isHidden = !showingSearchedAudio
+        backButton.isEnabled = !isDownloading && loadID == nil
+        scrollView.isHidden = playlistInfo == nil && (searchResults.isEmpty || showingSearchedAudio)
+        nextPageButton.isHidden = nextPageToken == nil || showingSearchedAudio || playlistInfo != nil
         nextPageButton.isEnabled = !isDownloading && loadID == nil
         contentStack.isHidden = audioInfo == nil && playlistInfo == nil && searchResults.isEmpty
         settingsButton.isHidden = isLink || ConfigManager.shared.isConfigValid || statusLabel.stringValue.isEmpty
@@ -297,7 +307,7 @@ class DownloadViewController: NSViewController {
 
     private func resizeWindow() {
         guard let window = view.window else { return }
-        let rowCount = playlistInfo?.items.count ?? searchResults.count
+        let rowCount = playlistInfo?.items.count ?? (audioInfo == nil ? searchResults.count : 0)
         scrollHeight.constant = CGFloat(min(6, max(1, rowCount))) * 36
         view.layoutSubtreeIfNeeded()
         let height = ceil(layoutStack.fittingSize.height + 56)
@@ -313,6 +323,7 @@ class DownloadViewController: NSViewController {
         searchResults = []
         selectedPlaylistRows = []
         nextPageToken = nil
+        searchScrollOrigin = nil
         formatPopup.removeAllItems()
         settingsButton.isHidden = true
         statusLabel.stringValue = ""
@@ -415,8 +426,6 @@ class DownloadViewController: NSViewController {
                 audioInfo = info
                 audioURL = url
                 playlistInfo = nil
-                searchResults = []
-                nextPageToken = nil
                 summaryLabel.stringValue = info.title
                 summaryLabel.toolTip = info.title
                 durationLabel.stringValue = info.duration
@@ -481,7 +490,22 @@ class DownloadViewController: NSViewController {
 
     @objc private func chooseVideo(_ sender: NSButton) {
         guard !isDownloading, loadID == nil, searchResults.indices.contains(sender.tag) else { return }
+        searchScrollOrigin = scrollView.contentView.bounds.origin
         loadAudio(url: searchResults[sender.tag].videoUrl)
+    }
+
+    @objc private func returnToSearchResults() {
+        guard !isDownloading, loadID == nil, !searchResults.isEmpty else { return }
+        invalidateLoad()
+        audioInfo = nil
+        audioURL = nil
+        formatPopup.removeAllItems()
+        statusLabel.stringValue = ""
+        render()
+        if let searchScrollOrigin {
+            scrollView.contentView.scroll(to: searchScrollOrigin)
+            scrollView.reflectScrolledClipView(scrollView.contentView)
+        }
     }
 
     @objc private func toggleAll() {
@@ -592,7 +616,7 @@ extension DownloadViewController: NSTextFieldDelegate, NSTableViewDataSource, NS
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row index: Int) -> NSView? {
         let title: String
         let duration: String
-        let leading: NSView
+        let leading: NSView?
         if let playlistInfo {
             let item = playlistInfo.items[index]
             title = item.title
@@ -607,9 +631,13 @@ extension DownloadViewController: NSTextFieldDelegate, NSTableViewDataSource, NS
             let item = searchResults[index]
             title = item.title
             duration = ""
-            leading = NSView()
+            leading = nil
         }
-        leading.setContentHuggingPriority(.required, for: .horizontal)
+        var views: [NSView] = []
+        if let leading {
+            leading.setContentHuggingPriority(.required, for: .horizontal)
+            views.append(leading)
+        }
         let name = NSTextField(labelWithString: title)
         name.font = .systemFont(ofSize: 13)
         name.lineBreakMode = .byTruncatingTail
@@ -620,7 +648,7 @@ extension DownloadViewController: NSTextFieldDelegate, NSTableViewDataSource, NS
         time.font = .systemFont(ofSize: 11)
         time.textColor = .secondaryLabelColor
         time.setContentHuggingPriority(.required, for: .horizontal)
-        var views = [leading, name, time]
+        views.append(contentsOf: [name, time])
         if playlistInfo == nil {
             let choose = NSButton()
             configure(choose, title: "Use", action: #selector(chooseVideo(_:)))

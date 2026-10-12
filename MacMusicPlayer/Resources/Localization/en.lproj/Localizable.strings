@@ -106,6 +106,7 @@
 "Please configure the search service API (API URL and API Key)" = "Please configure the search service API (API URL and API Key)";
 "Go to settings" = "Go to settings";
 "View more" = "View more";
+"Back to results" = "Back to results";
 "Found %d results" = "Found %d results";
 "Details" = "Details";
 "Load Playlist" = "Load Playlist";
