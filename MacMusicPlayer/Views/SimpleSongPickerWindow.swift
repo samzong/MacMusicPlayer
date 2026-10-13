@@ -22,7 +22,7 @@ private final class PanelBorderView: NSView {
             xRadius: PanelCornerMetrics.panelRadius,
             yRadius: PanelCornerMetrics.panelRadius
         )
-        NSColor.white.withAlphaComponent(0.15).setStroke()
+        NSColor.labelColor.withAlphaComponent(0.12).setStroke()
         path.lineWidth = 1
         path.stroke()
     }
@@ -119,6 +119,7 @@ class SimpleSongPickerWindow: NSPanel {
     private var moreButton: PickerButton!
     private weak var downloadMenuItem: NSMenuItem?
     private var emptyLabel: NSTextField!
+    private var chooseFolderButton: NSButton!
     private var filteredTracks: [Track] = []
     private var displayedLibraryID: UUID?
     private var subscriptions = Set<AnyCancellable>()
@@ -215,6 +216,7 @@ class SimpleSongPickerWindow: NSPanel {
         header.addSubview(searchIcon)
         searchField = NSTextField()
         searchField.placeholderString = NSLocalizedString("search_songs_placeholder", comment: "")
+        searchField.toolTip = NSLocalizedString("operation_hints", comment: "")
         searchField.setAccessibilityLabel(NSLocalizedString("Search", comment: ""))
         searchField.isBezeled = false
         searchField.isBordered = false
@@ -236,7 +238,7 @@ class SimpleSongPickerWindow: NSPanel {
         tableView.dataSource = self
         tableView.headerView = nil
         tableView.rowSizeStyle = .custom
-        tableView.rowHeight = 36
+        tableView.rowHeight = 40
         tableView.intercellSpacing = .zero
         tableView.target = self
         tableView.doubleAction = #selector(playSelectedTrack)
@@ -251,8 +253,14 @@ class SimpleSongPickerWindow: NSPanel {
         emptyLabel = NSTextField(labelWithString: "")
         emptyLabel.font = .systemFont(ofSize: 13)
         emptyLabel.textColor = .secondaryLabelColor
+        emptyLabel.alignment = .center
         emptyLabel.translatesAutoresizingMaskIntoConstraints = false
         contentHost.addSubview(emptyLabel)
+        chooseFolderButton = NSButton(title: "", target: self, action: #selector(chooseMusicFolder))
+        chooseFolderButton.bezelStyle = .rounded
+        chooseFolderButton.font = .systemFont(ofSize: 13, weight: .medium)
+        chooseFolderButton.translatesAutoresizingMaskIntoConstraints = false
+        contentHost.addSubview(chooseFolderButton)
         let footer = NSView()
         footer.translatesAutoresizingMaskIntoConstraints = false
         contentHost.addSubview(footer)
@@ -318,7 +326,9 @@ class SimpleSongPickerWindow: NSPanel {
             moreButton.trailingAnchor.constraint(equalTo: footer.trailingAnchor, constant: -16),
             moreButton.centerYAnchor.constraint(equalTo: footer.centerYAnchor),
             emptyLabel.centerXAnchor.constraint(equalTo: scroll.centerXAnchor),
-            emptyLabel.centerYAnchor.constraint(equalTo: scroll.centerYAnchor)
+            emptyLabel.centerYAnchor.constraint(equalTo: scroll.centerYAnchor, constant: -16),
+            chooseFolderButton.centerXAnchor.constraint(equalTo: scroll.centerXAnchor),
+            chooseFolderButton.topAnchor.constraint(equalTo: emptyLabel.bottomAnchor, constant: 12)
         ])
         let border = PanelBorderView()
         border.translatesAutoresizingMaskIntoConstraints = false
@@ -379,7 +389,10 @@ class SimpleSongPickerWindow: NSPanel {
         let selectedID = preservingSelection ? selectedTrackID : nil
         let query = searchField.stringValue
         filteredTracks = playerManager.playlist.filter {
-            query.isEmpty || $0.url.deletingPathExtension().lastPathComponent.localizedCaseInsensitiveContains(query)
+            query.isEmpty
+                || $0.title.localizedCaseInsensitiveContains(query)
+                || $0.artist.localizedCaseInsensitiveContains(query)
+                || $0.url.deletingPathExtension().lastPathComponent.localizedCaseInsensitiveContains(query)
         }
         tableView.reloadData()
         tableView.deselectAll(nil)
@@ -388,6 +401,12 @@ class SimpleSongPickerWindow: NSPanel {
         selectRow(row, scrollIntoView: !preservingSelection || selectedID == nil)
         emptyLabel.isHidden = !filteredTracks.isEmpty
         emptyLabel.stringValue = NSLocalizedString(query.isEmpty ? "No Music Source" : "No results found", comment: "")
+        let showCTA = filteredTracks.isEmpty && query.isEmpty
+        chooseFolderButton.isHidden = !showCTA
+        if showCTA {
+            chooseFolderButton.title = NSLocalizedString("Choose Music Folder…", comment: "")
+            chooseFolderButton.setAccessibilityLabel(chooseFolderButton.title)
+        }
     }
 
     private func selectRow(_ row: Int, scrollIntoView: Bool = true) {
@@ -510,6 +529,7 @@ class SimpleSongPickerWindow: NSPanel {
     }
 
     @objc private func showSettings() { actionTarget?.showConfigWindow() }
+    @objc private func chooseMusicFolder() { actionTarget?.addNewLibrary() }
     @objc private func feelingLucky() { playerManager.feelingLucky() }
     @objc private func playPrevious() { playerManager.playPrevious() }
     @objc private func playNext() { playerManager.playNext() }
@@ -557,26 +577,38 @@ extension SimpleSongPickerWindow: NSTableViewDelegate {
         let cell = (tableView.makeView(withIdentifier: identifier, owner: self) as? NSTableCellView) ?? NSTableCellView()
         if cell.textField == nil {
             cell.identifier = identifier
-            let text = NSTextField(labelWithString: "")
-            text.font = .systemFont(ofSize: 13)
-            text.textColor = .labelColor
-            text.lineBreakMode = .byTruncatingTail
-            text.translatesAutoresizingMaskIntoConstraints = false
-            cell.addSubview(text)
-            cell.textField = text
+            let title = NSTextField(labelWithString: "")
+            title.font = .systemFont(ofSize: 13)
+            title.textColor = .labelColor
+            title.lineBreakMode = .byTruncatingTail
+            title.translatesAutoresizingMaskIntoConstraints = false
+            cell.addSubview(title)
+            cell.textField = title
+            let artist = NSTextField(labelWithString: "")
+            artist.font = .systemFont(ofSize: 11)
+            artist.textColor = .secondaryLabelColor
+            artist.lineBreakMode = .byTruncatingTail
+            artist.translatesAutoresizingMaskIntoConstraints = false
+            cell.addSubview(artist)
+            cell.setAccessibilityElement(true)
             NSLayoutConstraint.activate([
-                text.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 12),
-                text.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -12),
-                text.centerYAnchor.constraint(equalTo: cell.centerYAnchor)
+                title.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 12),
+                title.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -12),
+                title.topAnchor.constraint(equalTo: cell.topAnchor, constant: 3),
+                artist.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 12),
+                artist.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -12),
+                artist.topAnchor.constraint(equalTo: title.bottomAnchor, constant: 1)
             ])
         }
         let track = filteredTracks[row]
         let current = track.id == playerManager.currentTrack?.id
-        cell.textField?.stringValue = track.url.deletingPathExtension().lastPathComponent
+        cell.textField?.stringValue = track.title
         cell.textField?.textColor = current ? .controlAccentColor : .labelColor
         cell.textField?.font = .systemFont(ofSize: 13, weight: current ? .semibold : .regular)
-        let state = current ? ", " + NSLocalizedString(playerManager.isPlaying ? "Play" : "Pause", comment: "") : ""
-        cell.setAccessibilityLabel((cell.textField?.stringValue ?? "") + state)
+        let artistLabel = cell.subviews.compactMap { $0 as? NSTextField }.first { $0 !== cell.textField }
+        artistLabel?.stringValue = track.artist
+        let state = current ? ", " + NSLocalizedString(playerManager.isPlaying ? "Pause" : "Play", comment: "") : ""
+        cell.setAccessibilityLabel(track.title + " — " + track.artist + state)
         return cell
     }
 

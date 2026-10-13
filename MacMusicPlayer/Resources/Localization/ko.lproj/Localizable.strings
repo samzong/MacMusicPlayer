@@ -37,9 +37,6 @@
 "Unknown Artist" = "알 수 없는 아티스트";
 
 // Notifications
-"Started playing" = "재생 중";
-"Paused playback" = "일시정지됨";
-"No current track to play" = "재생할 음악이 없습니다";
 
 // System
 
@@ -52,96 +49,28 @@
 "Failed to get video title" = "비디오 제목을 가져오지 못했습니다";
 "Failed to get playlist information" = "재생목록 정보를 가져오지 못했습니다";
 "Playlist download failed: %@" = "재생목록 다운로드 실패: %@";
-"Found ffmpeg path: %@" = "ffmpeg 경로를 찾았습니다: %@";
-"Error checking ffmpeg: %@" = "ffmpeg 확인 중 오류 발생: %@";
-"Found yt-dlp path: %@" = "yt-dlp 경로를 찾았습니다: %@";
-"Error checking yt-dlp: %@" = "yt-dlp 확인 중 오류 발생: %@";
-"Error getting video title: %@" = "비디오 제목을 가져오는 중 오류 발생: %@";
-"Getting available formats, URL: %@" = "사용 가능한 형식을 가져오는 중, URL: %@";
-"stereo" = "스테레오";
-"mono" = "모노";
-"5.1 channels" = "5.1 채널";
-"%@ Audio (%@" = "%@ 오디오 (%@";
-"%@ Audio" = "%@ 오디오";
-"M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "M4A 오디오 (128kbps, 44kHz, 스테레오, 3.5MiB) [AAC]";
-"WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "WebM 오디오 (160kbps, 48kHz, 스테레오, 3.2MiB) [Opus]";
-"Failed to get formats: %@" = "형식을 가져오지 못했습니다: %@";
-"Starting audio download, URL: %@, Format ID: %@" = "오디오 다운로드 시작, URL: %@, 형식 ID: %@";
-"Getting playlist information, URL: %@" = "재생목록 정보 가져오는 중, URL: %@";
-"Successfully downloaded: %@" = "다운로드 성공: %@";
-"Failed to download: %@ - Error: %@" = "다운로드 실패: %@ - 오류: %@";
-"Completed" = "완료";
-"All downloads failed" = "모든 다운로드가 실패했습니다";
-"Playlist download completed: %d successful, %d failed" = "재생목록 다운로드 완료: %d 성공, %d 실패";
-"Video title: %@" = "비디오 제목: %@";
-"Downloading to file: %@" = "파일로 다운로드 중: %@";
-"Executing download command..." = "다운로드 명령 실행 중...";
-"Download output: %@" = "다운로드 출력: %@";
-"Download error output: %@" = "다운로드 오류 출력: %@";
-"Download successful" = "다운로드 성공";
-"Download failed, exit status: %d" = "다운로드 실패, 종료 상태: %d";
-"Error during download: %@" = "다운로드 중 오류 발생: %@";
 
 // New UI Strings
-"Not installed" = "설치되지 않음";
-"Installed" = "설치됨";
-"Please install missing dependencies" = "누락된 종속성을 설치하세요";
-"Detect" = "감지";
-"Download" = "다운로드"; 
 
 // Search UI Strings
-"Enter video URL or search keyword" = "비디오 URL 또는 검색 키워드 입력";
 "Search" = "검색";
-"Please enter a URL or search keyword" = "URL 또는 검색 키워드 입력";
 "Searching..." = "검색 중...";
-"Load more results..." = "더 많은 결과 로드...";
 "No results found" = "결과가 없습니다";
-"Search Error: %@" = "검색 오류: %@";
-"Search error: API configuration not completed, please set API URL and API Key" = "검색 오류: API 구성이 완료되지 않았습니다. API URL과 API 키를 설정하세요";
-"Search error: Invalid API URL, please check the configuration" = "검색 오류: API URL이 유효하지 않습니다. 구성을 확인하세요";
-"Search error: API authentication failed, please check the API Key" = "검색 오류: API 인증 실패, API 키를 확인하세요";
-"Search error: Server error, please try again later" = "검색 오류: 서버 오류, 잠시 후 다시 시도하세요";
-"Copy error" = "복사 오류";
-"Copied to clipboard" = "클립보드에 복사됨";
 "Please configure the search service API (API URL and API Key)" = "검색 서비스 API를 구성하세요 (API URL 및 API 키)";
 "Go to settings" = "설정으로 이동";
 "View more" = "더 보기";
 "Back to results" = "결과로 돌아가기";
-"Found %d results" = "결과 %d개 찾음";
-"Details" = "상세 정보";
-"Load Playlist" = "재생목록 로드";
-"Download All" = "모두 다운로드";
-"Download %d" = "%d개 다운로드";
 "Stop" = "중지";
 "Download stopped" = "다운로드 중지됨";
 
 // Download Format UI Strings
-"Please enter a valid URL" = "유효한 URL 입력";
-"Detecting available formats..." = "사용 가능한 형식 감지 중...";
-"Found %d available formats" = "사용 가능한 형식 %d개 찾음";
-"No formats found" = "형식이 없습니다";
-"Error: %@" = "오류: %@";
-"Starting download..." = "다운로드 시작 중...";
-"Download completed successfully" = "다운로드 성공";
-"Loading formats..." = "형식 로드 중...";
-"Downloading %@..." = "다운로드 중: %@...";
 "Download completed" = "다운로드 완료";
-"Please enter a valid playlist URL" = "유효한 재생목록 URL을 입력하세요";
 "Loading playlist information..." = "재생목록 정보 로드 중...";
-"Playlist: %@ (%d items)" = "재생목록: %@ (%d개 항목)";
 "Playlist is empty" = "재생목록이 비어있습니다";
-"Failed to load playlist: %@" = "재생목록 로드 실패: %@";
-"Starting playlist download..." = "재생목록 다운로드 시작...";
-"Starting selected downloads..." = "선택 항목 다운로드 시작...";
-"Downloading (%d/%d) - %@" = "다운로드 중 (%d/%d) - %@";
-"Playlist download completed" = "재생목록 다운로드 완료";
-"Selected downloads completed" = "선택 항목 다운로드 완료";
 "Playlist download failed: %@" = "재생목록 다운로드 실패: %@";
-"Selected downloads failed: %@" = "선택 항목 다운로드 실패: %@";
 
 // Song Picker Window Status
 "search_songs_placeholder" = "곡 검색...";
-"song_count_format" = "%d 곡";
 "operation_hints" = "Tab 전환，Enter 재생，Esc 닫기";
 
 // Configuration Settings
@@ -197,3 +126,11 @@
 "Use" = "선택";
 "Unknown Title" = "알 수 없는 제목";
 "Playlist" = "재생목록";
+
+"Choose Music Folder…" = "음악 폴더 선택…";
+
+"Retry" = "다시 시도";
+"Click to copy" = "클릭하여 복사";
+"Copied" = "복사됨";
+
+"Launch at login could not be enabled." = "로그인 시 실행을 활성화할 수 없습니다.";

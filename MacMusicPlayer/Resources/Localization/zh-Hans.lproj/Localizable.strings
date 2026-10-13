@@ -37,9 +37,6 @@
 "Unknown Artist" = "未知艺术家";
 
 // Notifications
-"Started playing" = "正在播放";
-"Paused playback" = "已暂停";
-"No current track to play" = "没有可播放的音乐";
 
 // System
 
@@ -52,96 +49,28 @@
 "Failed to get video title" = "无法获取视频标题";
 "Failed to get playlist information" = "获取播放列表信息失败";
 "Playlist download failed: %@" = "播放列表下载失败：%@";
-"Found ffmpeg path: %@" = "找到 ffmpeg 路径: %@";
-"Error checking ffmpeg: %@" = "检查 ffmpeg 时出错: %@";
-"Found yt-dlp path: %@" = "找到 yt-dlp 路径: %@";
-"Error checking yt-dlp: %@" = "检查 yt-dlp 时出错: %@";
-"Error getting video title: %@" = "获取视频标题时出错: %@";
-"Getting available formats, URL: %@" = "获取可用格式，URL: %@";
-"stereo" = "立体声";
-"mono" = "单声道";
-"5.1 channels" = "5.1声道";
-"%@ Audio (%@" = "%@ 音频 (%@";
-"%@ Audio" = "%@ 音频";
-"M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "M4A 音频 (128kbps, 44kHz, 立体声, 3.5MiB) [AAC]";
-"WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "WebM 音频 (160kbps, 48kHz, 立体声, 3.2MiB) [Opus]";
-"Failed to get formats: %@" = "获取格式失败: %@";
-"Starting audio download, URL: %@, Format ID: %@" = "开始下载音频，URL: %@, 格式ID: %@";
-"Getting playlist information, URL: %@" = "获取播放列表信息，URL: %@";
-"Successfully downloaded: %@" = "下载成功：%@";
-"Failed to download: %@ - Error: %@" = "下载失败：%@ - 错误：%@";
-"Completed" = "已完成";
-"All downloads failed" = "所有下载都失败";
-"Playlist download completed: %d successful, %d failed" = "播放列表下载完成：%d 成功，%d 失败";
-"Video title: %@" = "视频标题: %@";
-"Downloading to file: %@" = "下载到文件: %@";
-"Executing download command..." = "执行下载命令...";
-"Download output: %@" = "下载输出: %@";
-"Download error output: %@" = "下载错误输出: %@";
-"Download successful" = "下载成功";
-"Download failed, exit status: %d" = "下载失败，退出状态: %d";
-"Error during download: %@" = "下载时出错: %@";
 
 // New UI Strings
-"Not installed" = "未安装";
-"Installed" = "已安装";
-"Please install missing dependencies" = "请安装缺少的依赖";
-"Detect" = "检测";
-"Download" = "下载";
 
 // Search UI Strings
-"Enter video URL or search keyword" = "输入视频网址或搜索关键词";
 "Search" = "搜索";
-"Please enter a URL or search keyword" = "请输入URL或搜索关键词";
 "Searching..." = "正在搜索...";
-"Load more results..." = "加载更多结果...";
 "No results found" = "未找到结果";
-"Search Error: %@" = "搜索错误: %@";
-"Search error: API configuration not completed, please set API URL and API Key" = "搜索错误: API配置未完成，请设置API URL和API Key";
-"Search error: Invalid API URL, please check the configuration" = "搜索错误: API URL无效，请检查配置";
-"Search error: API authentication failed, please check the API Key" = "搜索错误: API认证失败，请检查API Key是否正确";
-"Search error: Server error, please try again later" = "搜索错误: 服务器错误，请稍后重试";
-"Copy error" = "复制错误";
-"Copied to clipboard" = "已复制到剪贴板";
 "Please configure the search service API (API URL and API Key)" = "请先配置搜索服务API (API URL 和 API Key)";
 "Go to settings" = "前往设置";
 "View more" = "查看更多";
 "Back to results" = "返回结果";
-"Found %d results" = "找到 %d 条结果";
-"Details" = "详情";
-"Load Playlist" = "加载播放列表";
-"Download All" = "全部下载";
-"Download %d" = "下载 %d 项";
 "Stop" = "停止";
 "Download stopped" = "下载已停止";
 
 // Download Format UI Strings
-"Please enter a valid URL" = "请输入有效的URL";
-"Detecting available formats..." = "正在检测可用格式...";
-"Found %d available formats" = "找到 %d 个可用格式";
-"No formats found" = "未找到格式";
-"Error: %@" = "错误: %@";
-"Starting download..." = "开始下载...";
-"Download completed successfully" = "下载成功完成";
-"Loading formats..." = "正在加载格式...";
-"Downloading %@..." = "正在下载 %@...";
 "Download completed" = "下载完成";
-"Please enter a valid playlist URL" = "请输入有效的播放列表URL";
 "Loading playlist information..." = "正在加载播放列表信息...";
-"Playlist: %@ (%d items)" = "播放列表：%@ (%d 项)";
 "Playlist is empty" = "播放列表为空";
-"Failed to load playlist: %@" = "加载播放列表失败：%@";
-"Starting playlist download..." = "开始下载播放列表...";
-"Starting selected downloads..." = "开始下载选中项...";
-"Downloading (%d/%d) - %@" = "正在下载 (%d/%d) - %@";
-"Playlist download completed" = "播放列表下载完成";
-"Selected downloads completed" = "选中项下载完成";
 "Playlist download failed: %@" = "播放列表下载失败：%@";
-"Selected downloads failed: %@" = "选中项下载失败：%@";
 
 // Song Picker Window Status
 "search_songs_placeholder" = "搜索歌曲...";
-"song_count_format" = "%d 首歌曲";
 "operation_hints" = "Tab 切换，回车播放，Esc 关闭";
 
 // Configuration Settings
@@ -197,3 +126,11 @@
 "Use" = "选用";
 "Unknown Title" = "未知标题";
 "Playlist" = "播放列表";
+
+"Choose Music Folder…" = "选择音乐文件夹…";
+
+"Retry" = "重试";
+"Click to copy" = "点击复制";
+"Copied" = "已复制";
+
+"Launch at login could not be enabled." = "无法启用开机启动。";

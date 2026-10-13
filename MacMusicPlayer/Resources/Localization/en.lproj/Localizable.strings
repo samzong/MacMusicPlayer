@@ -37,9 +37,6 @@
 "Unknown Artist" = "Unknown Artist";
 
 // Notifications
-"Started playing" = "Now Playing";
-"Paused playback" = "Playback Paused";
-"No current track to play" = "No Music to Play";
 
 // System
 
@@ -52,96 +49,28 @@
 "Failed to get video title" = "Failed to get video title";
 "Failed to get playlist information" = "Failed to get playlist information";
 "Playlist download failed: %@" = "Playlist download failed: %@";
-"Found ffmpeg path: %@" = "Found ffmpeg path: %@";
-"Error checking ffmpeg: %@" = "Error checking ffmpeg: %@";
-"Found yt-dlp path: %@" = "Found yt-dlp path: %@";
-"Error checking yt-dlp: %@" = "Error checking yt-dlp: %@";
-"Error getting video title: %@" = "Error getting video title: %@";
-"Getting available formats, URL: %@" = "Getting available formats, URL: %@";
-"stereo" = "stereo";
-"mono" = "mono";
-"5.1 channels" = "5.1 channels";
-"%@ Audio (%@" = "%@ Audio (%@";
-"%@ Audio" = "%@ Audio";
-"M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]" = "M4A Audio (128kbps, 44kHz, stereo, 3.5MiB) [AAC]";
-"WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]" = "WebM Audio (160kbps, 48kHz, stereo, 3.2MiB) [Opus]";
-"Failed to get formats: %@" = "Failed to get formats: %@";
-"Starting audio download, URL: %@, Format ID: %@" = "Starting audio download, URL: %@, Format ID: %@";
-"Getting playlist information, URL: %@" = "Getting playlist information, URL: %@";
-"Successfully downloaded: %@" = "Successfully downloaded: %@";
-"Failed to download: %@ - Error: %@" = "Failed to download: %@ - Error: %@";
-"Completed" = "Completed";
-"All downloads failed" = "All downloads failed";
-"Playlist download completed: %d successful, %d failed" = "Playlist download completed: %d successful, %d failed";
-"Video title: %@" = "Video title: %@";
-"Downloading to file: %@" = "Downloading to file: %@";
-"Executing download command..." = "Executing download command...";
-"Download output: %@" = "Download output: %@";
-"Download error output: %@" = "Download error output: %@";
-"Download successful" = "Download successful";
-"Download failed, exit status: %d" = "Download failed, exit status: %d";
-"Error during download: %@" = "Error during download: %@";
 
 // New UI Strings
-"Not installed" = "Not installed";
-"Installed" = "Installed";
-"Please install missing dependencies" = "Please install missing dependencies";
-"Detect" = "Detect";
-"Download" = "Download"; 
 
 // Search UI Strings
-"Enter video URL or search keyword" = "Enter video URL or search keyword";
 "Search" = "Search";
-"Please enter a URL or search keyword" = "Please enter a URL or search keyword";
 "Searching..." = "Searching...";
-"Load more results..." = "Load more results...";
 "No results found" = "No results found";
-"Search Error: %@" = "Search Error: %@";
-"Search error: API configuration not completed, please set API URL and API Key" = "Search error: API configuration not completed, please set API URL and API Key";
-"Search error: Invalid API URL, please check the configuration" = "Search error: Invalid API URL, please check the configuration";
-"Search error: API authentication failed, please check the API Key" = "Search error: API authentication failed, please check the API Key";
-"Search error: Server error, please try again later" = "Search error: Server error, please try again later";
-"Copy error" = "Copy error";
-"Copied to clipboard" = "Copied to clipboard";
 "Please configure the search service API (API URL and API Key)" = "Please configure the search service API (API URL and API Key)";
 "Go to settings" = "Go to settings";
 "View more" = "View more";
 "Back to results" = "Back to results";
-"Found %d results" = "Found %d results";
-"Details" = "Details";
-"Load Playlist" = "Load Playlist";
-"Download All" = "Download All";
-"Download %d" = "Download %d";
 "Stop" = "Stop";
 "Download stopped" = "Download stopped";
 
 // Download Format UI Strings
-"Please enter a valid URL" = "Please enter a valid URL";
-"Detecting available formats..." = "Detecting available formats...";
-"Found %d available formats" = "Found %d available formats";
-"No formats found" = "No formats found";
-"Error: %@" = "Error: %@";
-"Starting download..." = "Starting download...";
-"Download completed successfully" = "Download completed successfully";
-"Loading formats..." = "Loading formats...";
-"Downloading %@..." = "Downloading %@...";
 "Download completed" = "Download completed";
-"Please enter a valid playlist URL" = "Please enter a valid playlist URL";
 "Loading playlist information..." = "Loading playlist information...";
-"Playlist: %@ (%d items)" = "Playlist: %@ (%d items)";
 "Playlist is empty" = "Playlist is empty";
-"Failed to load playlist: %@" = "Failed to load playlist: %@";
-"Starting playlist download..." = "Starting playlist download...";
-"Starting selected downloads..." = "Starting selected downloads...";
-"Downloading (%d/%d) - %@" = "Downloading (%d/%d) - %@";
-"Playlist download completed" = "Playlist download completed";
-"Selected downloads completed" = "Selected downloads completed";
 "Playlist download failed: %@" = "Playlist download failed: %@";
-"Selected downloads failed: %@" = "Selected downloads failed: %@";
 
 // Song Picker Window Status
 "search_songs_placeholder" = "Search songs...";
-"song_count_format" = "%d Song";
 "operation_hints" = "Tab to switch, Enter to play, Esc to close";
 
 // Configuration Settings
@@ -197,3 +126,11 @@
 "Use" = "Use";
 "Unknown Title" = "Unknown Title";
 "Playlist" = "Playlist";
+
+"Choose Music Folder…" = "Choose Music Folder…";
+
+"Retry" = "Retry";
+"Click to copy" = "Click to copy";
+"Copied" = "Copied";
+
+"Launch at login could not be enabled." = "Launch at login could not be enabled.";

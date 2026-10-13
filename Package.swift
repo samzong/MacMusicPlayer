@@ -9,6 +9,11 @@ let package = Package(
             name: "MacMusicPlayer",
             path: "MacMusicPlayer",
             exclude: ["Info.plist", "Assets.xcassets", "Resources"]
+        ),
+        .testTarget(
+            name: "MacMusicPlayerTests",
+            dependencies: ["MacMusicPlayer"],
+            path: "MacMusicPlayerTests"
         )
     ]
 )

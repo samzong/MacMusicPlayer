@@ -31,6 +31,7 @@ class PlaylistStore {
             return (currentIndex + 1) % tracks.count
 
         case .random:
+            guard !tracks.isEmpty else { return nil }
             guard tracks.count > 1 else { return currentIndex }
             var randomIndex = Int.random(in: 0..<tracks.count)
             while randomIndex == currentIndex {

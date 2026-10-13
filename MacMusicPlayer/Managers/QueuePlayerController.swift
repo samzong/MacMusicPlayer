@@ -12,6 +12,7 @@ class QueuePlayerController: NSObject {
     var onTrackChanged: ((Track?) -> Void)?
     var onPlaybackStateChanged: ((Bool) -> Void)?
     var onTrackFinished: ((Track?) -> Void)?
+    var onTrackError: ((Track) -> Void)?
 
     var isPlaying: Bool {
         guard let currentItem = queuePlayer.currentItem else { return false }
@@ -64,7 +65,11 @@ class QueuePlayerController: NSObject {
             queuePlayer.observe(\.currentItem) { [weak self] _, _ in
                 guard let self else { return }
                 self.observeCurrentItemStatus()
-                guard self.queuePlayer.currentItem != nil else { return }
+                guard self.queuePlayer.currentItem != nil else {
+                    self.onTrackChanged?(nil)
+                    self.onPlaybackStateChanged?(false)
+                    return
+                }
                 self.updateCurrentTrackIndex()
                 self.appendNextItemIfNeeded()
                 self.onTrackChanged?(self.currentTrack)
@@ -78,11 +83,35 @@ class QueuePlayerController: NSObject {
             guard item.status == .failed else { return }
 
             DispatchQueue.main.async { [weak self] in
-                guard let self,
-                      self.queuePlayer.currentItem == nil || self.queuePlayer.currentItem === item else { return }
-                self.onTrackChanged?(nil)
-                self.onPlaybackStateChanged?(false)
+                self?.handleCurrentItemFailure(item)
             }
+        }
+    }
+
+    private func handleCurrentItemFailure(_ item: AVPlayerItem) {
+        guard queuePlayer.currentItem === item else { return }
+        let failedTrack = itemIndices[ObjectIdentifier(item)]
+            .flatMap { tracks.indices.contains($0) ? tracks[$0] : nil }
+        let wasPlaying = queuePlayer.rate > 0
+        itemIndices.removeValue(forKey: ObjectIdentifier(item))
+
+        if queuePlayer.items().count > 1 {
+            queuePlayer.advanceToNextItem()
+            updateCurrentTrackIndex()
+            appendNextItemIfNeeded()
+            onTrackChanged?(currentTrack)
+            onPlaybackStateChanged?(isPlaying)
+            if wasPlaying {
+                queuePlayer.play()
+            }
+        } else {
+            queuePlayer.remove(item)
+            onTrackChanged?(nil)
+            onPlaybackStateChanged?(false)
+        }
+
+        if let failedTrack {
+            onTrackError?(failedTrack)
         }
     }
 
