@@ -30,7 +30,6 @@ class PlayerManager: NSObject {
     private var nowPlayingPlaybackState: MPNowPlayingPlaybackState = .stopped
     private var currentLibraryID: UUID?
     private var libraryLoadGeneration = 0
-    private var brokenSkipCount = 0
 
     var hasPlaylist: Bool { !playlistStore.isEmpty }
 
@@ -55,19 +54,8 @@ class PlayerManager: NSObject {
 
         super.init()
 
-        let savedVolume: Float
-        if UserDefaults.standard.object(forKey: "SavedVolume") == nil {
-            savedVolume = 0.3
-            UserDefaults.standard.set(savedVolume, forKey: "SavedVolume")
-        } else {
-            savedVolume = UserDefaults.standard.float(forKey: "SavedVolume")
-        }
-
         queueController.onTrackChanged = { [weak self] track in
             guard let self = self else { return }
-            if track != nil {
-                self.brokenSkipCount = 0
-            }
             self.currentTrack = track
 
             if let track = track,
@@ -85,12 +73,6 @@ class PlayerManager: NSObject {
         queueController.onTrackFinished = { [weak self] finishedTrack in
             self?.handleAutomaticTrackCompletion(finishedTrack)
         }
-
-        queueController.onTrackError = { [weak self] track in
-            self?.skipBrokenTrack(track)
-        }
-
-        queueController.volume = savedVolume
 
         NotificationCenter.default.addObserver(self,
                                             selector: #selector(handleLibraryRefresh(_:)),
@@ -371,37 +353,6 @@ class PlayerManager: NSObject {
     func feelingLucky() {
         guard !playlistStore.isEmpty, let index = playlistStore.nextIndex(for: .random) else { return }
         playTrack(at: index)
-    }
-
-    private func skipBrokenTrack(_ track: Track) {
-        logger.error("Skipping unplayable file: \(track.url.lastPathComponent, privacy: .public)")
-        brokenSkipCount += 1
-
-        guard !playlistStore.isEmpty, brokenSkipCount <= playlistStore.tracks.count else {
-            brokenSkipCount = 0
-            resetPlayback()
-            NotificationCenter.default.post(
-                name: NSNotification.Name("TrackError"),
-                object: nil,
-                userInfo: ["title": track.title]
-            )
-            return
-        }
-
-        if let index = playlistStore.tracks.firstIndex(where: { $0.id == track.id }) {
-            playlistStore.setCurrentIndex(index)
-        }
-
-        let wasPlaying = nowPlayingPlaybackState == .playing || isPlaying
-        playNext()
-        if wasPlaying {
-            queueController.play()
-        }
-        NotificationCenter.default.post(
-            name: NSNotification.Name("TrackError"),
-            object: nil,
-            userInfo: ["title": track.title]
-        )
     }
 
     private func handleAutomaticTrackCompletion(_ finishedTrack: Track?) {

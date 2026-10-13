@@ -56,9 +56,19 @@ INFO_PLIST_KEYS = \
 
 # ── Build ────────────────────────────────────────────────────────────────────
 
-.PHONY: build install-app
+.PHONY: build install-app menubar-guard
 
-build: ## Build the Release app into build/
+menubar-guard: ## Fail if the app could ever show a Dock icon
+	@if [ "$$(plutil -extract LSUIElement raw $(APP_NAME)/Info.plist)" != "true" ]; then \
+		echo "❌ $(APP_NAME)/Info.plist must keep LSUIElement=true: the app is menu bar only (see AGENTS.md)."; \
+		exit 1; \
+	fi
+	@if grep -rnE 'setActivationPolicy|TransformProcessType' --include='*.swift' $(APP_NAME); then \
+		echo "❌ The app must never change its activation policy: it is menu bar only (see AGENTS.md)."; \
+		exit 1; \
+	fi
+
+build: menubar-guard ## Build the Release app into build/
 	@echo "==> Build $(APP_NAME)..."
 	$(SWIFT_BUILD)
 	rm -rf "$(BUILT_APP_PATH)" "$(ICONSET)"
