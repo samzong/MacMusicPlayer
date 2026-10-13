@@ -12,7 +12,6 @@ class QueuePlayerController: NSObject {
     var onTrackChanged: ((Track?) -> Void)?
     var onPlaybackStateChanged: ((Bool) -> Void)?
     var onTrackFinished: ((Track?) -> Void)?
-    var onTrackError: ((Track) -> Void)?
 
     var isPlaying: Bool {
         guard let currentItem = queuePlayer.currentItem else { return false }
@@ -24,11 +23,6 @@ class QueuePlayerController: NSObject {
               currentItem.status != .failed,
               currentTrackIndex < tracks.count else { return nil }
         return tracks[currentTrackIndex]
-    }
-
-    var volume: Float {
-        get { queuePlayer.volume }
-        set { queuePlayer.volume = newValue }
     }
 
     var currentItemDuration: TimeInterval? {
@@ -90,29 +84,8 @@ class QueuePlayerController: NSObject {
 
     private func handleCurrentItemFailure(_ item: AVPlayerItem) {
         guard queuePlayer.currentItem === item else { return }
-        let failedTrack = itemIndices[ObjectIdentifier(item)]
-            .flatMap { tracks.indices.contains($0) ? tracks[$0] : nil }
-        let wasPlaying = queuePlayer.rate > 0
         itemIndices.removeValue(forKey: ObjectIdentifier(item))
-
-        if queuePlayer.items().count > 1 {
-            queuePlayer.advanceToNextItem()
-            updateCurrentTrackIndex()
-            appendNextItemIfNeeded()
-            onTrackChanged?(currentTrack)
-            onPlaybackStateChanged?(isPlaying)
-            if wasPlaying {
-                queuePlayer.play()
-            }
-        } else {
-            queuePlayer.remove(item)
-            onTrackChanged?(nil)
-            onPlaybackStateChanged?(false)
-        }
-
-        if let failedTrack {
-            onTrackError?(failedTrack)
-        }
+        queuePlayer.remove(item)
     }
 
     @objc private func playerItemDidFinish(_ notification: Notification) {

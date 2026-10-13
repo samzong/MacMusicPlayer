@@ -393,21 +393,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func updateStatusItemVisibility() {
         if ConfigManager.shared.showMenubarIcon {
-            NSApp.setActivationPolicy(.accessory)
             if statusItem == nil {
                 let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
                 statusItem = item
                 statusMenuController.configureStatusItem(item)
             }
-        } else {
-            if let statusItem {
-                statusItem.menu = nil
-                NSStatusBar.system.removeStatusItem(statusItem)
-                self.statusItem = nil
-            }
-            NSApp.setActivationPolicy(.regular)
-            NSApp.activate(ignoringOtherApps: true)
-            showSongPickerWindow()
+        } else if let statusItem {
+            statusItem.menu = nil
+            NSStatusBar.system.removeStatusItem(statusItem)
+            self.statusItem = nil
         }
     }
 
