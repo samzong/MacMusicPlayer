@@ -2,6 +2,12 @@ import Cocoa
 
 @MainActor
 class DownloadViewController: NSViewController {
+    private enum LoadRequest {
+        case audio(String)
+        case playlist(String)
+        case search(keyword: String, pageToken: String?)
+    }
+
     private let libraryManager: LibraryManager
     private weak var actionTarget: AppDelegate?
     private let sourceField = NSTextField()
@@ -25,6 +31,7 @@ class DownloadViewController: NSViewController {
     private let settingsButton = NSButton()
     private let retryButton = NSButton()
     private var canRetryLoad = false
+    private var lastLoadRequest: LoadRequest?
     private var canRetryDownload = false
     private var layoutStack: NSStackView!
     private var scrollHeight: NSLayoutConstraint!
@@ -346,6 +353,7 @@ class DownloadViewController: NSViewController {
     private func clearContent() {
         clearCompletion()
         canRetryLoad = false
+        lastLoadRequest = nil
         canRetryDownload = false
         audioInfo = nil
         selectedFormatID = nil
@@ -431,10 +439,20 @@ class DownloadViewController: NSViewController {
         guard !input.isEmpty, !isDownloading, loadID == nil else { return }
         clearContent()
         if isLink {
-            if DownloadManager.shared.isPlaylistURL(input) { loadPlaylist(url: input) }
-            else { loadAudio(url: input) }
+            if DownloadManager.shared.isPlaylistURL(input) { load(.playlist(input)) }
+            else { load(.audio(input)) }
         } else {
-            search(keyword: input)
+            load(.search(keyword: input, pageToken: nil))
+        }
+    }
+
+    private func load(_ request: LoadRequest) {
+        lastLoadRequest = request
+        canRetryLoad = false
+        switch request {
+        case .audio(let url): loadAudio(url: url)
+        case .playlist(let url): loadPlaylist(url: url)
+        case .search(let keyword, let pageToken): search(keyword: keyword, pageToken: pageToken)
         }
     }
 
@@ -535,13 +553,13 @@ class DownloadViewController: NSViewController {
 
     @objc private func loadNextPage() {
         guard let nextPageToken, !isDownloading, loadID == nil else { return }
-        search(keyword: input, pageToken: nextPageToken)
+        load(.search(keyword: input, pageToken: nextPageToken))
     }
 
     @objc private func chooseVideo(_ sender: NSButton) {
         guard !isDownloading, loadID == nil, searchResults.indices.contains(sender.tag) else { return }
         searchScrollOrigin = scrollView.contentView.bounds.origin
-        loadAudio(url: searchResults[sender.tag].videoUrl)
+        load(.audio(searchResults[sender.tag].videoUrl))
     }
 
     @objc private func returnToSearchResults() {
@@ -665,9 +683,8 @@ class DownloadViewController: NSViewController {
         if canRetryDownload {
             canRetryDownload = false
             startDownload()
-        } else if canRetryLoad {
-            canRetryLoad = false
-            fetchSource()
+        } else if canRetryLoad, let lastLoadRequest {
+            load(lastLoadRequest)
         }
     }
 

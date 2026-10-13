@@ -65,7 +65,11 @@ class QueuePlayerController: NSObject {
             queuePlayer.observe(\.currentItem) { [weak self] _, _ in
                 guard let self else { return }
                 self.observeCurrentItemStatus()
-                guard self.queuePlayer.currentItem != nil else { return }
+                guard self.queuePlayer.currentItem != nil else {
+                    self.onTrackChanged?(nil)
+                    self.onPlaybackStateChanged?(false)
+                    return
+                }
                 self.updateCurrentTrackIndex()
                 self.appendNextItemIfNeeded()
                 self.onTrackChanged?(self.currentTrack)

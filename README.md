@@ -35,7 +35,7 @@ brew install samzong/tap/mac-music-player
 
 Download the latest `MacMusicPlayer-arm64.dmg` from the [Releases](https://github.com/samzong/MacMusicPlayer/releases) page.
 
-> **Security Note**: The DMG is ad-hoc signed (no paid Apple Developer account yet). On first launch macOS may warn that the app is from an unidentified developer — right-click the app and select "Open" once to proceed. The Homebrew install above is built from source on your Mac and avoids this entirely.
+> **Security Note**: The DMG is ad-hoc signed (no paid Apple Developer account yet). On first launch macOS may warn that the app is from an unidentified developer — right-click the app and select "Open" once to proceed. The Homebrew cask installs the same prebuilt DMG and clears the app's quarantine attribute after installation.
 
 ## Features
 
