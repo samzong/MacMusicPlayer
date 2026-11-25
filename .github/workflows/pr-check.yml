@@ -30,6 +30,12 @@ jobs:
       run: |
         make VERSION=${{ env.VERSION }} dmg
 
+    - name: Match the packaged build number to Info.plist
+      run: |
+        tracked_build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' MacMusicPlayer/Info.plist)
+        packaged_build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' build/MacMusicPlayer.app/Contents/Info.plist)
+        test "$packaged_build" = "$tracked_build"
+
     - name: Check Build Status
       if: failure()
       uses: actions/github-script@v6
