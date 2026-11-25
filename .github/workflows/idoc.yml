@@ -48,7 +48,7 @@ jobs:
             <script>
               function downloadLatest() {
                 if (navigator.platform.toLowerCase().includes('mac')) {
-                  window.location.href = 'https://github.com/samzong/MacMusicPlayer/releases/latest/download/MacMusicPlayer-arm64.dmg';
+                  window.location.href = 'https://github.com/samzong/MacMusicPlayer/releases/latest';
                 } else {
                   window.open('https://github.com/samzong/MacMusicPlayer/releases/latest', '_blank');
                 }

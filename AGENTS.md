@@ -53,3 +53,13 @@ Use a short, descriptive heading and these fields. Evidence should use repositor
 - Evidence: [Fix in PR #92](https://github.com/samzong/MacMusicPlayer/pull/92), commit `9b1ec077419dc7e2e72ea92cb68bf3477af0f501`; `MacMusicPlayer/AppDelegate.swift`, `showDownloadWindow()`, `showSongPickerWindow()`, and `windowWillClose(_:)`.
 - Verification: Open the picker, open downloads, then reopen the picker; check that only the requested window is visible and an active download continues. PR #92 ran an AppKit probe of both transitions that fails on the base commit and passes on the fix; the installed app with an active download is unverified.
 - Follow-up: Rerun the interactive sequence when changing either window transition; source inspection alone does not verify AppKit runtime behavior. Committing an AppKit probe of both transitions as a test would replace this lesson.
+
+### Preserve published tags during version repair
+
+- Applies to: Release metadata repairs when published tags disagree with tracked `Info.plist` values.
+- Problem: `v0.6.0` contains `CFBundleShortVersionString=1.0.0`. The version audit reads the tagged file, so correcting the current file cannot clear that historical finding.
+- Cause: The release workflow did not compare the tag core with the tracked version before building the app.
+- Action: Implemented a first-step SemVer and tracked version gate in `.github/workflows/release.yml`. Keep published tags unchanged and distinguish historical findings from current workflow failures.
+- Evidence: `git show v0.6.0:MacMusicPlayer/Info.plist`; issue #97; the `Verify SemVer tag and tracked Info.plist` release step.
+- Verification: The corrected workflow rejected malformed tags and a mismatched plist. Channel and DMG path probes detected injected faults. The audit reports both workflow checks as `match`, with only historical tag parity unresolved.
+- Follow-up: At the next separately authorized release, commit matching version metadata before tagging, then rerun the version audit. Do not move `v0.6.0` to clear the finding.
