@@ -12,7 +12,7 @@ ICON_SRC = $(APP_NAME)/Assets.xcassets/AppIcon.appiconset
 ICONSET = $(BUILD_DIR)/AppIcon.iconset
 
 BUILT_APP_PATH = $(BUILD_DIR)/$(APP_NAME).app
-DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-arm64.dmg
+DMG_PATH = $(BUILD_DIR)/$(APP_NAME)-$(patsubst v%,%,$(VERSION))-arm64.dmg
 SDK_PATH := $(shell xcrun --show-sdk-path)
 SDK_VERSION := $(shell xcrun --show-sdk-version)
 SWIFT_BUILD = swift build -c release --triple arm64-apple-macosx$(MACOS_MIN) \

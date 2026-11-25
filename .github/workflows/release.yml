@@ -13,36 +13,62 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Verify SemVer tag and tracked Info.plist
+        id: meta
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(alpha|beta|rc)\.[1-9][0-9]*)?$ ]]; then
+            echo "::error::Invalid SemVer release tag: $RELEASE_TAG"
+            exit 1
+          fi
+          version="${RELEASE_TAG#v}"
+          core="${version%%-*}"
+          plist_short="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' MacMusicPlayer/Info.plist)"
+          if [[ "$plist_short" != "$core" ]]; then
+            echo "::error::Info.plist version $plist_short does not match release core $core"
+            exit 1
+          fi
+          is_prerelease=false
+          if [[ "$version" == *-* ]]; then
+            is_prerelease=true
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=$is_prerelease" >> "$GITHUB_OUTPUT"
 
       - name: Build Packages
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
         run: |
-          make VERSION=${{ env.VERSION }} dmg
+          make VERSION="$VERSION" dmg
+          hdiutil verify "build/MacMusicPlayer-${VERSION}-arm64.dmg"
 
       - name: Generate Release Notes
         id: release_notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          # Generate GitHub-style release notes using the GitHub CLI
+          set -euo pipefail
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
             /repos/${{ github.repository }}/releases/generate-notes \
-            -f tag_name='${{ env.VERSION }}' > generated_notes.json
+            -f tag_name="$RELEASE_TAG" > generated_notes.json
           
-          jq -r '.body' generated_notes.json > release_notes.md
+          jq -er '.body | select(test("\\S"))' generated_notes.json > release_notes.md
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          name: ${{ env.VERSION }}
+          name: ${{ github.ref_name }}
           body_path: release_notes.md
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.meta.outputs.is_prerelease == 'true' }}
+          make_latest: ${{ steps.meta.outputs.is_prerelease == 'true' && 'false' || 'true' }}
+          fail_on_unmatched_files: true
           files: |
-            build/MacMusicPlayer-arm64.dmg
+            build/MacMusicPlayer-${{ steps.meta.outputs.version }}-arm64.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
