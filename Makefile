@@ -39,7 +39,7 @@ MARKETING_SEMVER := $(shell \
 endif
 
 ifndef BUILD_NUMBER
-BUILD_NUMBER := $(shell git rev-list --count HEAD)
+BUILD_NUMBER := $(shell /usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' $(APP_NAME)/Info.plist)
 endif
 
 INFO_PLIST_KEYS = \
